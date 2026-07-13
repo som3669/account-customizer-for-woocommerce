@@ -1,0 +1,239 @@
+/* =========================================================================
+   My Account Customizer – modern frontend menu
+   Tokens (--acfw-*) are injected inline from the Style settings.
+   ========================================================================= */
+
+.woocommerce-MyAccount-navigation.acfw-menu {
+	--acfw-accent: #2271b1;
+	--acfw-text: #333;
+	--acfw-accent-tint: rgba(34, 113, 177, 0.1);
+	--acfw-radius: 12px;
+	--acfw-surface: #fff;
+	--acfw-border: #e6e8eb;
+	--acfw-muted: #8a9099;
+	font-size: 15px;
+	line-height: 1.4;
+}
+
+@media (prefers-color-scheme: dark) {
+	.woocommerce-MyAccount-navigation.acfw-menu {
+		--acfw-surface: #1e2127;
+		--acfw-border: #2f343c;
+		--acfw-text: #e4e6eb;
+		--acfw-muted: #9aa0aa;
+	}
+}
+
+.acfw-menu ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+/* ---- Item base ---- */
+.acfw-menu .acfw-menu-item > a,
+.acfw-menu .acfw-group-toggle {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 11px 14px;
+	border-radius: var(--acfw-radius);
+	color: var(--acfw-text);
+	text-decoration: none;
+	font-weight: 500;
+	line-height: 1.2;
+	transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
+}
+
+.acfw-menu .acfw-menu-item > a:hover,
+.acfw-menu .acfw-group-toggle:hover {
+	background: var(--acfw-accent-tint);
+	color: var(--acfw-accent);
+}
+
+.acfw-menu .acfw-menu-item > a:active {
+	transform: translateY(1px);
+}
+
+/* ---- Icon chip ---- */
+.acfw-menu .acfw-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	flex: 0 0 34px;
+	border-radius: 9px;
+	background: var(--acfw-accent-tint);
+	color: var(--acfw-accent);
+	font-size: 18px;
+	transition: background 0.18s ease, color 0.18s ease;
+}
+
+.acfw-menu .acfw-label {
+	flex: 1 1 auto;
+}
+
+/* ---- Active state ---- */
+.acfw-menu .acfw-menu-item.is-active > a {
+	background: var(--acfw-accent);
+	color: #fff;
+	box-shadow: 0 6px 16px -6px var(--acfw-accent);
+}
+
+.acfw-menu .acfw-menu-item.is-active > a .acfw-icon {
+	background: rgba(255, 255, 255, 0.22);
+	color: #fff;
+}
+
+/* =========================================================================
+   Layout: simple (default) – clean list, subtle divider on hover only
+   ========================================================================= */
+.acfw-menu.layout-simple ul {
+	gap: 2px;
+}
+
+/* =========================================================================
+   Layout: modern – each item a raised card
+   ========================================================================= */
+.acfw-menu.layout-modern .acfw-menu-item > a,
+.acfw-menu.layout-modern .acfw-group-toggle {
+	background: var(--acfw-surface);
+	border: 1px solid var(--acfw-border);
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+}
+
+.acfw-menu.layout-modern .acfw-menu-item > a:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 14px rgba(16, 24, 40, 0.1);
+}
+
+/* =========================================================================
+   Layout: no-borders – flat, minimal
+   ========================================================================= */
+.acfw-menu.layout-no-borders .acfw-menu-item > a {
+	border: none;
+	background: transparent;
+}
+
+.acfw-menu.layout-no-borders .acfw-icon {
+	background: transparent;
+}
+
+.acfw-menu.layout-no-borders .acfw-menu-item.is-active > a .acfw-icon {
+	background: rgba(255, 255, 255, 0.22);
+}
+
+/* =========================================================================
+   Position: horizontal – scrollable pill bar
+   ========================================================================= */
+.acfw-menu.position-horizontal ul {
+	flex-direction: row;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	gap: 6px;
+	padding-bottom: 4px;
+	scrollbar-width: thin;
+}
+
+.acfw-menu.position-horizontal .acfw-menu-item > a {
+	white-space: nowrap;
+}
+
+/* =========================================================================
+   Groups
+   ========================================================================= */
+.acfw-menu .acfw-type-group .acfw-group-toggle {
+	cursor: pointer;
+	font-weight: 600;
+	position: relative;
+}
+
+.acfw-menu .acfw-type-group .acfw-group-toggle::after {
+	content: "";
+	width: 8px;
+	height: 8px;
+	margin-left: auto;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(45deg);
+	transition: transform 0.2s ease;
+	opacity: 0.6;
+}
+
+.acfw-menu .acfw-type-group.is-open .acfw-group-toggle::after {
+	transform: rotate(-135deg);
+}
+
+.acfw-menu .acfw-submenu {
+	margin: 4px 0 4px 12px !important;
+	padding-left: 12px !important;
+	border-left: 2px solid var(--acfw-border);
+	overflow: hidden;
+	max-height: 1000px;
+	transition: max-height 0.25s ease;
+}
+
+.acfw-menu .acfw-type-group:not(.is-open) .acfw-submenu {
+	max-height: 0;
+	margin: 0 0 0 12px !important;
+}
+
+.acfw-menu .acfw-submenu .acfw-menu-item > a {
+	padding: 8px 12px;
+	font-weight: 400;
+}
+
+/* =========================================================================
+   AJAX loading state
+   ========================================================================= */
+.acfw-loading {
+	position: relative;
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+.acfw-loading::after {
+	content: "";
+	position: absolute;
+	top: 24px;
+	left: 50%;
+	width: 28px;
+	height: 28px;
+	margin-left: -14px;
+	border: 3px solid var(--acfw-border, #e6e8eb);
+	border-top-color: var(--acfw-accent, #2271b1);
+	border-radius: 50%;
+	animation: acfw-spin 0.7s linear infinite;
+}
+
+@keyframes acfw-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* =========================================================================
+   Responsive – collapse to icons on small screens (vertical menus)
+   ========================================================================= */
+@media (max-width: 600px) {
+	.acfw-menu:not(.position-horizontal) .acfw-label {
+		font-size: 14px;
+	}
+	.acfw-menu .acfw-menu-item > a,
+	.acfw-menu .acfw-group-toggle {
+		padding: 10px 12px;
+	}
+}
+
+/* Uploaded icon image (menu) */
+.acfw-menu .acfw-icon-img {
+	width: 22px;
+	height: 22px;
+	object-fit: contain;
+	border-radius: 6px;
+	background: transparent;
+}
