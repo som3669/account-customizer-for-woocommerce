@@ -9,6 +9,12 @@
 			$( '.acfw-color' ).wpColorPicker();
 		}
 
+		/* ---- Role chips (select2 / selectWoo) ---- */
+		var sel2 = $.fn.selectWoo || $.fn.select2;
+		if ( sel2 ) {
+			sel2.call( $( '.acfw-roles-select' ), { width: '100%', placeholder: 'All roles', closeOnSelect: false } );
+		}
+
 		var $details = $( '.acfw-builder-detail' );
 		var initedEditors = {};
 
@@ -52,6 +58,12 @@
 			selectItem( $( this ).closest( '.acfw-node' ).data( 'key' ) );
 		} );
 
+		/* ---- Auto-select the first item on load (reference shows options immediately) ---- */
+		var $firstNode = $( '.acfw-sortable-root > .acfw-node' ).first();
+		if ( $firstNode.length ) {
+			selectItem( $firstNode.data( 'key' ) );
+		}
+
 		/* ---- Active on/off toggle (persists immediately) ---- */
 		$( document ).on( 'change', '.acfw-active-proxy', function () {
 			var key = $( this ).data( 'key' );
@@ -61,6 +73,12 @@
 			$form.find( '.acfw-active-input' ).val( on ? '1' : '0' );
 			syncEditors();
 			$form.trigger( 'submit' );
+		} );
+
+		/* ---- Radio-box groups (reference-style radio controls) ---- */
+		$( document ).on( 'change', '.acfw-radio-group input[type="radio"]', function () {
+			$( this ).closest( '.acfw-radio-group' ).find( '.acfw-radio-box' ).removeClass( 'is-active' );
+			$( this ).closest( '.acfw-radio-box' ).addClass( 'is-active' );
 		} );
 
 		/* ---- Icon source toggle ---- */
@@ -96,6 +114,32 @@
 				return;
 			}
 			$( '.acfw-delete-form' ).find( '.acfw-delete-key' ).val( $( this ).data( 'key' ) ).end().trigger( 'submit' );
+		} );
+
+		/* ---- Insert smart tag into the content editor ---- */
+		$( document ).on( 'change', '.acfw-smarttag-select', function () {
+			var tag = this.value;
+			var targetId = $( this ).data( 'target' );
+			if ( ! tag || ! targetId ) {
+				return;
+			}
+			var ed = window.tinymce && window.tinymce.get( targetId );
+			if ( ed && ! ed.isHidden() ) {
+				ed.execCommand( 'mceInsertContent', false, tag );
+			} else {
+				var $ta = $( '#' + targetId );
+				$ta.val( ( $ta.val() || '' ) + tag );
+			}
+			this.selectedIndex = 0;
+		} );
+
+		/* ---- Delete banner (switches the form action) ---- */
+		$( document ).on( 'click', '.acfw-banner-delete', function ( e ) {
+			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {
+				e.preventDefault();
+				return;
+			}
+			$( this ).closest( 'form' ).find( 'input[name="acfw_action"]' ).val( 'remove_banner' );
 		} );
 
 		/* ---- Push TinyMCE content back to textareas before any save ---- */

@@ -140,7 +140,13 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 			$this->items = array();
 
 			if ( empty( $order ) || ! is_array( $order ) ) {
-				$this->items = $defaults;
+				// No saved order: use defaults, but honour any per-item saved options.
+				foreach ( $defaults as $key => $options ) {
+					$stored              = get_option( 'acfw_item_' . $key, array() );
+					$this->items[ $key ] = ( is_array( $stored ) && ! empty( $stored ) )
+						? array_merge( $options, $stored )
+						: $options;
+				}
 				return;
 			}
 

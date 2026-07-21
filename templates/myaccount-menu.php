@@ -20,9 +20,18 @@ $wrap_classes = array(
 	'position-' . sanitize_html_class( $position ),
 	'layout-' . sanitize_html_class( $layout ),
 );
+
+if ( ! empty( $theme ) ) {
+	$wrap_classes[] = 'acfw-theme-' . sanitize_html_class( $theme );
+}
 ?>
+<button type="button" class="acfw-nav-toggle" aria-expanded="false" aria-controls="acfw-menu-list">
+	<span class="dashicons dashicons-menu-alt"></span>
+	<span class="acfw-nav-toggle-label"><?php esc_html_e( 'Account menu', 'account-customizer-for-woocommerce' ); ?></span>
+</button>
 <nav class="woocommerce-MyAccount-navigation <?php echo esc_attr( implode( ' ', $wrap_classes ) ); ?>">
-	<ul>
+	<span class="acfw-nav-backdrop"></span>
+	<ul id="acfw-menu-list">
 		<?php
 		foreach ( $items as $key => $item ) :
 

@@ -64,6 +64,63 @@ function acfw_get_template( $template, $args = array() ) {
 }
 
 /**
+ * Registered smart tags: token => human label.
+ *
+ * @return array
+ */
+function acfw_smart_tags() {
+	return apply_filters(
+		'acfw_smart_tags',
+		array(
+			'{display_name}' => __( 'Display name', 'account-customizer-for-woocommerce' ),
+			'{first_name}'   => __( 'First name', 'account-customizer-for-woocommerce' ),
+			'{last_name}'    => __( 'Last name', 'account-customizer-for-woocommerce' ),
+			'{username}'     => __( 'Username', 'account-customizer-for-woocommerce' ),
+			'{user_email}'   => __( 'Email address', 'account-customizer-for-woocommerce' ),
+			'{site_title}'   => __( 'Site title', 'account-customizer-for-woocommerce' ),
+			'{order_count}'  => __( 'Order count', 'account-customizer-for-woocommerce' ),
+		)
+	);
+}
+
+/**
+ * Replace smart tags in a string with the current user's values.
+ *
+ * @param string       $content Raw content.
+ * @param WP_User|null $user    User ( defaults to current ).
+ * @return string
+ */
+function acfw_apply_smart_tags( $content, $user = null ) {
+
+	if ( false === strpos( $content, '{' ) && false === strpos( $content, '%%' ) ) {
+		return $content;
+	}
+
+	$user = $user ? $user : wp_get_current_user();
+
+	$orders = 0;
+	if ( ! empty( $user->ID ) && function_exists( 'wc_get_customer_order_count' ) ) {
+		$orders = wc_get_customer_order_count( $user->ID );
+	}
+
+	$map = array(
+		'{display_name}' => $user->display_name ?? '',
+		'{first_name}'   => $user->first_name ?? '',
+		'{last_name}'    => $user->last_name ?? '',
+		'{username}'     => $user->user_login ?? '',
+		'{user_email}'   => $user->user_email ?? '',
+		'{site_title}'   => get_bloginfo( 'name' ),
+		'{order_count}'  => (string) $orders,
+		// Back-compat token.
+		'%%customer_name%%' => $user->display_name ?? '',
+	);
+
+	$map = apply_filters( 'acfw_smart_tag_values', $map, $user );
+
+	return str_replace( array_keys( $map ), array_map( 'esc_html', array_values( $map ) ), $content );
+}
+
+/**
  * Default option set for an endpoint item.
  *
  * @param string $key Item key.
@@ -83,6 +140,8 @@ function acfw_default_endpoint_options( $key = '' ) {
 		'visibility'       => 'all',    // all | roles.
 		'usr_roles'        => array(),
 		'class'            => '',
+		'banner_slug'      => '',
+		'banner_position'  => 'top',    // top | bottom.
 	);
 }
 

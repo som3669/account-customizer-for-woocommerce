@@ -9,6 +9,26 @@
 			$( this ).closest( '.acfw-type-group' ).toggleClass( 'is-open' );
 		} );
 
+		// Mobile nav drawer.
+		var $nav = $( '.woocommerce-MyAccount-navigation.acfw-menu' );
+		function closeDrawer() {
+			$nav.removeClass( 'is-open' );
+			$( 'body' ).removeClass( 'acfw-nav-open' );
+			$( '.acfw-nav-toggle' ).attr( 'aria-expanded', 'false' );
+		}
+		$( document ).on( 'click', '.acfw-nav-toggle', function () {
+			var open = ! $nav.hasClass( 'is-open' );
+			$nav.toggleClass( 'is-open', open );
+			$( 'body' ).toggleClass( 'acfw-nav-open', open );
+			$( this ).attr( 'aria-expanded', open ? 'true' : 'false' );
+		} );
+		$( document ).on( 'click', '.acfw-nav-backdrop', closeDrawer );
+		$( document ).on( 'keyup', function ( e ) {
+			if ( 27 === e.keyCode ) {
+				closeDrawer();
+			}
+		} );
+
 		// AJAX navigation between endpoints.
 		if ( ! acfw || ! acfw.ajaxNavigation ) {
 			return;

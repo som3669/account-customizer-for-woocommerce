@@ -59,7 +59,12 @@ if ( ! class_exists( 'ACFW' ) ) {
 		 */
 		private function __construct() {
 
+			require_once ACFW_DIR . 'includes/class-acfw-banners.php';
+			require_once ACFW_DIR . 'includes/class-acfw-import-export.php';
+			require_once ACFW_DIR . 'includes/class-acfw-customizer.php';
+
 			$this->items = new ACFW_Items();
+			new ACFW_Customizer();
 
 			if ( is_admin() ) {
 				require_once ACFW_DIR . 'includes/admin/class-acfw-admin.php';

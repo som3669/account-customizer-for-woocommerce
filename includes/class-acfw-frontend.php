@@ -36,10 +36,15 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			add_action( 'wp', array( $this, 'setup' ), 20 );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ), 15 );
 
+			// Avatar block above the navigation.
+			add_action( 'woocommerce_account_navigation', array( $this, 'render_avatar' ), 4 );
 			// Replace the default WooCommerce navigation.
 			add_action( 'woocommerce_account_navigation', array( $this, 'render_menu' ), 5 );
 			// Inject per-endpoint custom content.
 			add_action( 'woocommerce_account_content', array( $this, 'setup_endpoint_content' ), 1 );
+			// Endpoint banners (top / bottom).
+			add_action( 'woocommerce_account_content', array( $this, 'render_banner_top' ), 2 );
+			add_action( 'woocommerce_account_content', array( $this, 'render_banner_bottom' ), 20 );
 		}
 
 		/**
@@ -151,19 +156,30 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * @return string
 		 */
 		protected function dynamic_css() {
-			$accent = sanitize_hex_color( get_option( 'acfw_accent_color', '#2271b1' ) );
-			$text   = sanitize_hex_color( get_option( 'acfw_text_color', '#333333' ) );
-			$accent = $accent ? $accent : '#2271b1';
-			$text   = $text ? $text : '#333333';
-			$radius = absint( get_option( 'acfw_menu_radius', 12 ) );
-			$tint   = $this->hex_to_rgba( $accent, 0.10 );
+			$accent  = sanitize_hex_color( get_option( 'acfw_accent_color', '#2563eb' ) );
+			$text    = sanitize_hex_color( get_option( 'acfw_text_color', '#383838' ) );
+			$accent  = $accent ? $accent : '#2563eb';
+			$text    = $text ? $text : '#383838';
+			$radius  = absint( get_option( 'acfw_menu_radius', 8 ) );
+			$gap     = absint( get_option( 'acfw_menu_gap', 4 ) );
+			$padding = absint( get_option( 'acfw_item_padding', 11 ) );
+			$avatar  = absint( get_option( 'acfw_avatar_size', 72 ) );
+			$fsize   = absint( get_option( 'acfw_font_size', 15 ) );
+			$fweight = preg_replace( '/[^0-9]/', '', (string) get_option( 'acfw_font_weight', '500' ) );
+			$fweight = $fweight ? $fweight : '500';
+			$tint    = $this->hex_to_rgba( $accent, 0.10 );
 
 			return sprintf(
-				'.acfw-menu{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;}',
+				'.acfw-menu,.acfw-avatar-block{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;}',
 				$accent,
 				$text,
 				$tint,
-				$radius
+				$radius,
+				$gap,
+				$padding,
+				$avatar ? $avatar : 72,
+				$fsize ? $fsize : 15,
+				$fweight
 			);
 		}
 
@@ -186,6 +202,74 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		}
 
 		/**
+		 * Render the customer avatar block above the menu.
+		 */
+		public function render_avatar() {
+
+			if ( 'yes' !== get_option( 'acfw_avatar_enable', 'no' ) ) {
+				return;
+			}
+
+			$user = wp_get_current_user();
+			if ( empty( $user->ID ) ) {
+				return;
+			}
+
+			$size = absint( get_option( 'acfw_avatar_size', 72 ) );
+			$size = $size ? $size : 72;
+
+			$role_label = '';
+			if ( ! empty( $user->roles[0] ) ) {
+				$roles      = wp_roles()->get_names();
+				$role_label = isset( $roles[ $user->roles[0] ] ) ? translate_user_role( $roles[ $user->roles[0] ] ) : '';
+			}
+
+			acfw_get_template(
+				'myaccount-avatar.php',
+				array(
+					'user'       => $user,
+					'avatar'     => get_avatar( $user->ID, $size ),
+					'shape'      => get_option( 'acfw_avatar_shape', 'circle' ),
+					'align'      => get_option( 'acfw_avatar_align', 'center' ),
+					'show_name'  => 'yes' === get_option( 'acfw_avatar_show_name', 'yes' ),
+					'show_role'  => 'yes' === get_option( 'acfw_avatar_show_role', 'no' ),
+					'role_label' => $role_label,
+				)
+			);
+		}
+
+		/**
+		 * Render the current endpoint's banner when positioned at the top.
+		 */
+		public function render_banner_top() {
+			$this->render_banner( 'top' );
+		}
+
+		/**
+		 * Render the current endpoint's banner when positioned at the bottom.
+		 */
+		public function render_banner_bottom() {
+			$this->render_banner( 'bottom' );
+		}
+
+		/**
+		 * Render the current endpoint's assigned banner at a position.
+		 *
+		 * @param string $position top|bottom.
+		 */
+		protected function render_banner( $position ) {
+			$item = $this->current_item();
+			if ( empty( $item['banner_slug'] ) ) {
+				return;
+			}
+			$item_pos = isset( $item['banner_position'] ) && 'bottom' === $item['banner_position'] ? 'bottom' : 'top';
+			if ( $item_pos !== $position ) {
+				return;
+			}
+			echo ACFW_Banners::render( $item['banner_slug'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderer.
+		}
+
+		/**
 		 * Render the custom account menu.
 		 */
 		public function render_menu() {
@@ -200,6 +284,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'current'  => acfw_get_current_endpoint(),
 					'position' => $position,
 					'layout'   => $layout,
+					'theme'    => sanitize_html_class( get_template() ),
 					'frontend' => $this,
 				)
 			);
@@ -260,7 +345,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			$user    = wp_get_current_user();
-			$content = str_replace( '%%customer_name%%', esc_html( $user->display_name ), $item['content'] );
+			$content = acfw_apply_smart_tags( $item['content'], $user );
 			$content = wpautop( $content );
 			$content = apply_filters( 'acfw_endpoint_content', $content, $item, $user );
 
