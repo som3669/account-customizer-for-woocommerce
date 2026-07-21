@@ -97,6 +97,11 @@
 	flex: 1 1 auto;
 }
 
+/* Hide icons when disabled in the Customizer */
+.acfw-menu.acfw-hide-icons .acfw-icon {
+	display: none;
+}
+
 /* ---- Active state (understated: accent text + left bar) ---- */
 .acfw-menu .acfw-menu-item.is-active > a {
 	background: var(--acfw-accent-tint);
@@ -363,11 +368,51 @@
 	margin: 0 0 20px;
 	padding: 20px 24px;
 	border-radius: var(--acfw-radius, 8px);
+	color: var(--acfw-b-text, #1d2327);
+	background: var(--acfw-b-bg, #f3f6fb);
+	border: 1px solid var(--acfw-b-border, transparent);
+	transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.acfw-banner:hover {
+	color: var(--acfw-b-text-hover, var(--acfw-b-text, #111827));
+	background: var(--acfw-b-bg-hover, var(--acfw-b-bg, #e9eefb));
+	border-color: var(--acfw-b-border-hover, var(--acfw-b-border, transparent));
 }
 
 .acfw-banner:last-child {
 	margin-bottom: 0;
 	margin-top: 20px;
+}
+
+.acfw-banner-inner {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+}
+
+.acfw-banner-icon {
+	flex: 0 0 auto;
+	color: inherit;
+}
+
+.acfw-banner-body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.acfw-banner-badge {
+	display: inline-block;
+	min-width: 20px;
+	padding: 1px 7px;
+	margin-left: 6px;
+	border-radius: 20px;
+	background: currentColor;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 18px;
+	text-align: center;
 }
 
 .acfw-banner-image {

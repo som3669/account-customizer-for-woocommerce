@@ -9,14 +9,26 @@
 			$( '.acfw-color' ).wpColorPicker();
 		}
 
-		/* ---- Role chips (select2 / selectWoo) ---- */
-		var sel2 = $.fn.selectWoo || $.fn.select2;
-		if ( sel2 ) {
-			sel2.call( $( '.acfw-roles-select' ), { width: '100%', placeholder: 'All roles', closeOnSelect: false } );
+		/* ---- Role chips + searchable icon picker with glyphs (bundled select2) ---- */
+		if ( $.fn.select2 ) {
+			$( '.acfw-roles-select' ).select2( { width: '100%', placeholder: 'All roles', closeOnSelect: false } );
+
+			var iconTpl = function ( data ) {
+				if ( ! data.id ) {
+					return data.text;
+				}
+				return $( '<span class="acfw-icon-opt"><i class="' + data.id + '"></i> <span>' + data.text + '</span></span>' );
+			};
+			$( '.acfw-icon-select' ).select2( {
+				width: '100%',
+				placeholder: 'Select an icon',
+				allowClear: true,
+				templateResult: iconTpl,
+				templateSelection: iconTpl
+			} );
 		}
 
 		var $details = $( '.acfw-builder-detail' );
-		var initedEditors = {};
 
 		/* ---- Add item ---- */
 		var $addForm = $( '.acfw-add-form' );
@@ -39,15 +51,14 @@
 			$details.find( '.acfw-detail' ).attr( 'hidden', 'hidden' );
 			var $form = $details.find( '.acfw-detail[data-key="' + key + '"]' ).removeAttr( 'hidden' );
 
-			// Lazily boot the rich editor for endpoint content.
-			var $ta = $form.find( '.acfw-content-editor' );
-			if ( $ta.length && ! initedEditors[ key ] && window.wp && wp.editor ) {
-				wp.editor.initialize( $ta.attr( 'id' ), {
-					tinymce: { wpautop: true, plugins: 'lists,link,paste,wordpress,wplink', toolbar1: 'bold,italic,bullist,numlist,link,undo,redo' },
-					quicktags: true,
-					mediaButtons: true
-				} );
-				initedEditors[ key ] = true;
+			// The editor is rendered server-side (wp_editor) inside a hidden form;
+			// repaint TinyMCE now it is visible so the iframe sizes correctly.
+			if ( window.tinymce ) {
+				var ed = window.tinymce.get( 'acfw_content_' + String( key ).replace( /-/g, '_' ) );
+				if ( ed ) {
+					ed.hide();
+					ed.show();
+				}
 			}
 		}
 
@@ -64,21 +75,18 @@
 			selectItem( $firstNode.data( 'key' ) );
 		}
 
-		/* ---- Active on/off toggle (persists immediately) ---- */
+		/* ---- Active on/off toggle (saved with the single Save button) ---- */
 		$( document ).on( 'change', '.acfw-active-proxy', function () {
 			var key = $( this ).data( 'key' );
 			var on = this.checked;
 			$( this ).closest( '.acfw-node' ).toggleClass( 'is-inactive', ! on );
-			var $form = $details.find( '.acfw-detail[data-key="' + key + '"]' );
-			$form.find( '.acfw-active-input' ).val( on ? '1' : '0' );
-			syncEditors();
-			$form.trigger( 'submit' );
+			$details.find( '.acfw-detail[data-key="' + key + '"]' ).find( '.acfw-active-input' ).val( on ? '1' : '0' );
 		} );
 
 		/* ---- Radio-box groups (reference-style radio controls) ---- */
 		$( document ).on( 'change', '.acfw-radio-group input[type="radio"]', function () {
-			$( this ).closest( '.acfw-radio-group' ).find( '.acfw-radio-box' ).removeClass( 'is-active' );
-			$( this ).closest( '.acfw-radio-box' ).addClass( 'is-active' );
+			$( this ).closest( '.acfw-radio-group' ).find( '.acfw-radio-box, .acfw-image-card' ).removeClass( 'is-active' );
+			$( this ).closest( '.acfw-radio-box, .acfw-image-card' ).addClass( 'is-active' );
 		} );
 
 		/* ---- Icon source toggle ---- */
@@ -91,20 +99,62 @@
 			$form.find( '.acfw-icon-choose' ).attr( 'hidden', upload ? 'hidden' : null );
 		} );
 
-		/* ---- Media picker for uploaded icon ---- */
-		$( document ).on( 'click', '.acfw-icon-media', function ( e ) {
+		/* ---- Media library picker (uploader box: icons + banner images) ---- */
+		function acfwSetImage( $wrap, url ) {
+			$wrap.find( '.acfw-media-input' ).val( url );
+			var $preview = $wrap.find( '.acfw-media-preview' );
+			if ( url ) {
+				$preview.attr( 'src', url ).removeAttr( 'hidden' );
+				$wrap.find( '.acfw-uploader-box' ).addClass( 'has-image' );
+			} else {
+				$preview.attr( 'src', '' ).attr( 'hidden', 'hidden' );
+				$wrap.find( '.acfw-uploader-box' ).removeClass( 'has-image' );
+			}
+		}
+
+		$( document ).on( 'click', '.acfw-media-btn', function ( e ) {
 			e.preventDefault();
-			var $field = $( this ).siblings( '.acfw-icon-url' );
+			var $wrap = $( this ).closest( '.acfw-uploader' );
+			if ( ! $wrap.length ) {
+				$wrap = $( this ).closest( '.acfw-media-row' ).parent();
+			}
 			var frame = wp.media( {
 				title: acfwAdmin.mediaTitle,
 				button: { text: acfwAdmin.mediaButton },
+				library: { type: 'image' },
 				multiple: false
 			} );
 			frame.on( 'select', function () {
 				var att = frame.state().get( 'selection' ).first().toJSON();
-				$field.val( att.url );
+				acfwSetImage( $wrap, att.url );
 			} );
 			frame.open();
+		} );
+
+		// Click empty dropzone opens the media library.
+		$( document ).on( 'click', '.acfw-uploader-box:not(.has-image) .acfw-uploader-empty', function ( e ) {
+			if ( ! $( e.target ).is( 'button' ) ) {
+				$( this ).closest( '.acfw-uploader' ).find( '.acfw-media-btn' ).first().trigger( 'click' );
+			}
+		} );
+
+		// Remove image.
+		$( document ).on( 'click', '.acfw-uploader-remove', function ( e ) {
+			e.preventDefault();
+			acfwSetImage( $( this ).closest( '.acfw-uploader' ), '' );
+		} );
+
+		// Paste-URL reflects into the preview.
+		$( document ).on( 'change', '.acfw-uploader .acfw-media-input', function () {
+			acfwSetImage( $( this ).closest( '.acfw-uploader' ), $( this ).val() );
+		} );
+
+		// Basic drag styling ( click/URL/media are the upload paths ).
+		$( document ).on( 'dragover', '.acfw-uploader-box', function ( e ) {
+			e.preventDefault();
+			$( this ).addClass( 'is-dragover' );
+		} ).on( 'dragleave drop', '.acfw-uploader-box', function () {
+			$( this ).removeClass( 'is-dragover' );
 		} );
 
 		/* ---- Delete item ---- */
@@ -117,12 +167,24 @@
 		} );
 
 		/* ---- Insert smart tag into the content editor ---- */
-		$( document ).on( 'change', '.acfw-smarttag-select', function () {
-			var tag = this.value;
-			var targetId = $( this ).data( 'target' );
-			if ( ! tag || ! targetId ) {
-				return;
+		/* ---- Smart tags button + menu (beside Add Media) ---- */
+		$( document ).on( 'click', '.acfw-smarttag-btn', function ( e ) {
+			e.preventDefault();
+			var $menu = $( this ).siblings( '.acfw-smarttag-menu' );
+			$( '.acfw-smarttag-menu' ).not( $menu ).attr( 'hidden', 'hidden' );
+			$menu.data( 'target', $( this ).data( 'target' ) );
+			if ( $menu.attr( 'hidden' ) ) {
+				$menu.removeAttr( 'hidden' );
+			} else {
+				$menu.attr( 'hidden', 'hidden' );
 			}
+		} );
+
+		$( document ).on( 'click', '.acfw-smarttag-item', function ( e ) {
+			e.preventDefault();
+			var $menu = $( this ).closest( '.acfw-smarttag-menu' );
+			var targetId = $menu.data( 'target' );
+			var tag = $( this ).data( 'tag' );
 			var ed = window.tinymce && window.tinymce.get( targetId );
 			if ( ed && ! ed.isHidden() ) {
 				ed.execCommand( 'mceInsertContent', false, tag );
@@ -130,7 +192,13 @@
 				var $ta = $( '#' + targetId );
 				$ta.val( ( $ta.val() || '' ) + tag );
 			}
-			this.selectedIndex = 0;
+			$menu.attr( 'hidden', 'hidden' );
+		} );
+
+		$( document ).on( 'click', function ( e ) {
+			if ( ! $( e.target ).closest( '.acfw-smarttag-wrap' ).length ) {
+				$( '.acfw-smarttag-menu' ).attr( 'hidden', 'hidden' );
+			}
 		} );
 
 		/* ---- Delete banner (switches the form action) ---- */
@@ -142,13 +210,12 @@
 			$( this ).closest( 'form' ).find( 'input[name="acfw_action"]' ).val( 'remove_banner' );
 		} );
 
-		/* ---- Push TinyMCE content back to textareas before any save ---- */
+		/* ---- Push TinyMCE content back to textareas before save ---- */
 		function syncEditors() {
 			if ( window.tinymce ) {
 				window.tinymce.triggerSave();
 			}
 		}
-		$( document ).on( 'submit', '.acfw-item-form', syncEditors );
 
 		/* ---- Drag & drop (nestable, 1 level into groups) ---- */
 		$( '.acfw-sortable' ).sortable( {
@@ -180,7 +247,8 @@
 			return order;
 		}
 
-		$( '.acfw-order-form' ).on( 'submit', function () {
+		$( document ).on( 'submit', '.acfw-items-form', function () {
+			syncEditors();
 			$( this ).find( '.acfw-order-input' ).val( JSON.stringify( serialize( $( '.acfw-sortable-root' ) ) ) );
 		} );
 	} );

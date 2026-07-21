@@ -24,6 +24,12 @@ $wrap_classes = array(
 if ( ! empty( $theme ) ) {
 	$wrap_classes[] = 'acfw-theme-' . sanitize_html_class( $theme );
 }
+
+if ( empty( $show_icons ) ) {
+	$wrap_classes[] = 'acfw-hide-icons';
+}
+
+$acfw_group_open = ! empty( $group_open );
 ?>
 <button type="button" class="acfw-nav-toggle" aria-expanded="false" aria-controls="acfw-menu-list">
 	<span class="dashicons dashicons-menu-alt"></span>
@@ -38,15 +44,11 @@ if ( ! empty( $theme ) ) {
 			$type = isset( $item['type'] ) ? $item['type'] : 'endpoint';
 
 			if ( 'group' === $type ) :
-				$open_class = ! empty( $item['open'] ) ? ' is-open' : '';
+				$open_class = ( ! empty( $item['open'] ) || $acfw_group_open ) ? ' is-open' : '';
 				?>
 				<li class="acfw-menu-item acfw-type-group<?php echo esc_attr( $open_class ); ?>">
 					<span class="acfw-group-toggle">
-						<?php if ( ! empty( $item['icon_url'] ) ) : ?>
-							<img class="acfw-icon acfw-icon-img" src="<?php echo esc_url( $item['icon_url'] ); ?>" alt="" />
-						<?php elseif ( ! empty( $item['icon'] ) ) : ?>
-							<span class="acfw-icon dashicons <?php echo esc_attr( $item['icon'] ); ?>"></span>
-						<?php endif; ?>
+						<?php echo acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper. ?>
 						<?php echo esc_html( $item['label'] ); ?>
 					</span>
 					<?php if ( ! empty( $item['children'] ) ) : ?>

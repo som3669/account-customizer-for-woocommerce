@@ -17,11 +17,9 @@ defined( 'ABSPATH' ) || exit;
 ?>
 <li class="<?php echo esc_attr( $classes ); ?>">
 	<a href="<?php echo esc_url( $url ); ?>"<?php echo $target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static attribute string. ?>>
-		<?php if ( ! empty( $item['icon_url'] ) ) : ?>
-			<img class="acfw-icon acfw-icon-img" src="<?php echo esc_url( $item['icon_url'] ); ?>" alt="" />
-		<?php elseif ( ! empty( $item['icon'] ) ) : ?>
-			<span class="acfw-icon dashicons <?php echo esc_attr( $item['icon'] ); ?>"></span>
-		<?php endif; ?>
+		<?php
+		echo acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper.
+		?>
 		<span class="acfw-label"><?php echo esc_html( $item['label'] ); ?></span>
 	</a>
 </li>

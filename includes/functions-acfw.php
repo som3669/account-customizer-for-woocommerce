@@ -8,6 +8,59 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Full FontAwesome icon list ( class strings ) used by icon pickers.
+ *
+ * @return array
+ */
+function acfw_icon_list() {
+	$list = include ACFW_DIR . 'includes/icon-list.php';
+	return is_array( $list ) ? $list : array();
+}
+
+/**
+ * Sanitize an icon class, preserving the space in multi-class icons
+ * like "fas fa-cart" ( sanitize_html_class strips spaces ).
+ *
+ * @param string $value Raw icon class.
+ * @return string
+ */
+function acfw_sanitize_icon( $value ) {
+	$value = wp_strip_all_tags( (string) $value );
+	return trim( preg_replace( '/[^a-z0-9 _-]/i', '', $value ) );
+}
+
+/**
+ * Whether an icon value is a FontAwesome class ( vs a dashicon ).
+ *
+ * @param string $icon Icon value.
+ * @return bool
+ */
+function acfw_is_fa_icon( $icon ) {
+	return is_string( $icon ) && false !== strpos( $icon, 'fa-' );
+}
+
+/**
+ * Render an icon ( FontAwesome, dashicon or uploaded image ) with a wrapper class.
+ *
+ * @param string $icon      Icon class ( fa or dashicons ).
+ * @param string $icon_url  Uploaded image URL ( takes priority ).
+ * @param string $wrapper   Wrapper CSS class.
+ * @return string
+ */
+function acfw_icon_markup( $icon, $icon_url = '', $wrapper = 'acfw-icon' ) {
+	if ( ! empty( $icon_url ) ) {
+		return sprintf( '<img class="%s acfw-icon-img" src="%s" alt="" />', esc_attr( $wrapper ), esc_url( $icon_url ) );
+	}
+	if ( acfw_is_fa_icon( $icon ) ) {
+		return sprintf( '<i class="%s %s"></i>', esc_attr( $wrapper ), esc_attr( $icon ) );
+	}
+	if ( ! empty( $icon ) ) {
+		return sprintf( '<span class="%s dashicons %s"></span>', esc_attr( $wrapper ), esc_attr( $icon ) );
+	}
+	return '';
+}
+
+/**
  * Sanitize a string into a safe item key / slug.
  *
  * @param string $value Raw value.

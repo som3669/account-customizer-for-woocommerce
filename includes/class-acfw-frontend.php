@@ -123,9 +123,15 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			wp_enqueue_style(
+				'acfw-fontawesome',
+				ACFW_ASSETS_URL . '/css/fontawesome/all.min.css',
+				array(),
+				ACFW_VERSION
+			);
+			wp_enqueue_style(
 				'acfw-frontend',
 				ACFW_ASSETS_URL . '/css/frontend.css',
-				array(),
+				array( 'acfw-fontawesome' ),
 				ACFW_VERSION
 			);
 			wp_add_inline_style( 'acfw-frontend', $this->dynamic_css() );
@@ -218,6 +224,12 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$size = absint( get_option( 'acfw_avatar_size', 72 ) );
 			$size = $size ? $size : 72;
 
+			// Custom avatar image overrides the gravatar when set.
+			$custom = get_option( 'acfw_avatar_image', '' );
+			$avatar = $custom
+				? sprintf( '<img src="%s" alt="" width="%2$d" height="%2$d" />', esc_url( $custom ), $size )
+				: get_avatar( $user->ID, $size );
+
 			$role_label = '';
 			if ( ! empty( $user->roles[0] ) ) {
 				$roles      = wp_roles()->get_names();
@@ -228,7 +240,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				'myaccount-avatar.php',
 				array(
 					'user'       => $user,
-					'avatar'     => get_avatar( $user->ID, $size ),
+					'avatar'     => $avatar,
 					'shape'      => get_option( 'acfw_avatar_shape', 'circle' ),
 					'align'      => get_option( 'acfw_avatar_align', 'center' ),
 					'show_name'  => 'yes' === get_option( 'acfw_avatar_show_name', 'yes' ),
@@ -280,12 +292,14 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			acfw_get_template(
 				'myaccount-menu.php',
 				array(
-					'items'    => $this->menu_items,
-					'current'  => acfw_get_current_endpoint(),
-					'position' => $position,
-					'layout'   => $layout,
-					'theme'    => sanitize_html_class( get_template() ),
-					'frontend' => $this,
+					'items'      => $this->menu_items,
+					'current'    => acfw_get_current_endpoint(),
+					'position'   => $position,
+					'layout'     => $layout,
+					'theme'      => sanitize_html_class( get_template() ),
+					'show_icons' => 'no' !== get_option( 'acfw_show_icons', 'yes' ),
+					'group_open' => 'yes' === get_option( 'acfw_group_open', 'no' ),
+					'frontend'   => $this,
 				)
 			);
 		}

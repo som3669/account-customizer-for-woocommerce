@@ -12,7 +12,8 @@
 	--acfw-muted: #646970;
 	--acfw-radius: 8px;
 	--acfw-tint: rgba(37, 99, 235, 0.08);
-	max-width: 1180px;
+	max-width: none;
+	margin-right: 20px;
 }
 
 /* ---- Header ---- */
@@ -38,6 +39,18 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	line-height: 1;
+}
+
+.acfw-header-brand h1 {
+	line-height: 1.1;
+	align-self: center;
+}
+
+.acfw-header-icon {
+	flex: 0 0 42px;
+	align-self: center;
+	object-fit: contain;
 }
 
 .acfw-header-actions {
@@ -59,7 +72,7 @@
 .acfw-header-btn .dashicons {
 	font-size: 16px;
 	width: 16px;
-	height: 16px;
+	height: 30px;
 }
 
 /* ---- Form footer (right-aligned actions bar) ---- */
@@ -77,15 +90,10 @@
 }
 
 .acfw-header-icon {
-	font-size: 24px;
+	display: block;
 	width: 42px;
 	height: 42px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	border-radius: 11px;
-	background: linear-gradient(135deg, var(--acfw-accent), var(--acfw-accent-dark));
-	color: #fff;
 }
 
 .acfw-header h1 {
@@ -220,6 +228,53 @@
 	border-radius: 50%;
 }
 
+/* ---- Image radio (visual thumbnail option picker) ---- */
+.acfw-image-radio {
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.acfw-image-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	min-width: 90px;
+	border: 1px solid var(--acfw-border);
+	border-radius: 10px;
+	background: #fff;
+	cursor: pointer;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.acfw-image-card input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.acfw-image-card img {
+	width: 52px;
+	height: 38px;
+	object-fit: contain;
+}
+
+.acfw-image-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--acfw-muted);
+}
+
+.acfw-image-card.is-active {
+	border-color: var(--acfw-accent);
+	box-shadow: 0 0 0 1px var(--acfw-accent);
+}
+
+.acfw-image-card.is-active .acfw-image-label {
+	color: var(--acfw-accent);
+}
+
 /* ---- Larger toggle variant for settings rows ---- */
 .acfw-switch-lg {
 	width: 40px;
@@ -304,7 +359,7 @@
 .acfw-add-btn .dashicons {
 	font-size: 16px;
 	width: 16px;
-	height: 16px;
+	height: 30px;
 }
 
 .acfw-add-form {
@@ -604,6 +659,101 @@
 	color: #b5741a;
 }
 
+/* ---- select2 (role chips) to match our theme ---- */
+.acfw-field .select2-container {
+	width: 100% !important;
+	max-width: 460px;
+}
+
+.select2-container--default .select2-selection--multiple {
+	border: 1px solid var(--acfw-border, #e2e4e7) !important;
+	border-radius: 8px !important;
+	min-height: 40px;
+	padding: 3px 6px;
+	line-height: 1.6;
+}
+
+/* Single select ( icon picker ): match input height + show glyph and label */
+.select2-container--default .select2-selection--single {
+	height: 38px !important;
+	border: 1px solid var(--acfw-border, #e2e4e7) !important;
+	border-radius: 8px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: 36px !important;
+	padding-left: 12px;
+	color: var(--acfw-text, #383838);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 36px !important;
+}
+
+.acfw-icon-opt i {
+	width: 18px;
+	text-align: center;
+	margin-right: 6px;
+	color: var(--acfw-accent, #2563eb);
+}
+
+.select2-results__option .acfw-icon-opt i {
+	color: inherit;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+	border-color: var(--acfw-accent, #2563eb) !important;
+	box-shadow: 0 0 0 1px var(--acfw-accent, #2563eb);
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+	background: var(--acfw-tint, rgba(37, 99, 235, 0.08)) !important;
+	border: 1px solid var(--acfw-accent, #2563eb) !important;
+	color: var(--acfw-accent, #2563eb) !important;
+	border-radius: 6px !important;
+	padding: 2px 8px;
+	font-weight: 600;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+	color: var(--acfw-accent, #2563eb) !important;
+	margin-right: 5px;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+	background: var(--acfw-accent, #2563eb) !important;
+}
+
+.acfw-icon-opt i {
+	display: inline-block;
+	width: 18px;
+	text-align: center;
+	margin-right: 6px;
+	color: var(--acfw-accent, #2563eb);
+}
+
+/* ---- Banner colour swatches ---- */
+.acfw-swatch-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.acfw-swatch {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.acfw-swatch-label {
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--acfw-muted);
+}
+
 /* ---- Banners tab ---- */
 .acfw-section-title {
 	margin: 0 0 4px;
@@ -647,6 +797,13 @@
 	font-weight: 600;
 	font-size: 13px;
 	padding-top: 8px;
+	grid-column: 1;
+}
+
+/* Any control(s) after the label stack in the second column, full width. */
+.acfw-field > :not(label) {
+	grid-column: 2;
+	min-width: 0;
 }
 
 .acfw-field input[type="text"],
@@ -665,6 +822,100 @@
 	margin: 6px 0 0;
 	color: var(--acfw-muted);
 	font-size: 12px;
+}
+
+/* ---- Smart tags button + menu (beside Add Media) ---- */
+.acfw-smarttag-wrap {
+	position: relative;
+	display: inline-block;
+	margin-left: 4px;
+}
+
+.acfw-smarttag-btn {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 5px;
+	vertical-align: top;
+}
+
+.acfw-smarttag-btn .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 30px;
+	line-height: 30px;
+	margin: 0;
+}
+
+.acfw-wrap .wp-header-end {
+	display: none;
+}
+
+.acfw-sublabel {
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--acfw-muted);
+	margin-bottom: 6px;
+}
+
+
+.acfw-smarttag-menu {
+	position: absolute;
+	z-index: 100;
+	top: calc(100% + 4px);
+	left: 0;
+	min-width: 240px;
+	max-height: 300px;
+	overflow: auto;
+	background: #fff;
+	border: 1px solid var(--acfw-border);
+	border-radius: 8px;
+	box-shadow: 0 6px 20px rgba(16, 24, 40, 0.12);
+	padding: 4px;
+}
+
+.acfw-smarttag-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	text-align: left;
+	border: 0;
+	background: none;
+	padding: 7px 10px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--acfw-text, #383838);
+}
+
+.acfw-smarttag-item:hover {
+	background: var(--acfw-tint);
+	color: var(--acfw-accent);
+}
+
+.acfw-smarttag-item code {
+	font-size: 11px;
+	color: var(--acfw-muted);
+	background: #f0f1f3;
+	padding: 1px 5px;
+	border-radius: 4px;
+}
+
+/* ---- Field info tooltip ---- */
+.acfw-tip {
+	font-size: 15px;
+	width: 15px;
+	height: 15px;
+	color: #a7aeb8;
+	cursor: help;
+	vertical-align: text-top;
+	margin-left: 3px;
+}
+
+.acfw-tip:hover {
+	color: var(--acfw-accent);
 }
 
 /* Icon source radio cards */
@@ -698,10 +949,128 @@
 	background: var(--acfw-tint);
 }
 
-.acfw-icon-upload {
+.acfw-icon-upload[hidden],
+.acfw-icon-choose[hidden] {
+	display: none !important;
+}
+
+.acfw-media-row {
 	display: flex;
 	gap: 8px;
 	align-items: center;
+}
+
+.acfw-media-input {
+	flex: 1 1 auto;
+}
+
+.acfw-media-btn {
+	white-space: nowrap;
+	display: inline-flex !important;
+	align-items: center;
+	gap: 4px;
+	border-radius: 8px !important;
+}
+
+.acfw-media-btn .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.acfw-media-preview {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+
+/* ---- Dropzone-style uploader ---- */
+.acfw-uploader {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-width: 460px;
+}
+
+.acfw-uploader-box {
+	position: relative;
+	border: 2px dashed var(--acfw-border);
+	border-radius: 10px;
+	background: #fafbfc;
+	min-height: 118px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.acfw-uploader-box.is-dragover {
+	border-color: var(--acfw-accent);
+	background: var(--acfw-tint);
+}
+
+.acfw-uploader-empty {
+	text-align: center;
+	color: var(--acfw-muted);
+	padding: 18px;
+	font-size: 13px;
+}
+
+.acfw-uploader-empty .dashicons {
+	font-size: 26px;
+	width: 26px;
+	height: 26px;
+	display: block;
+	margin: 0 auto 6px;
+	opacity: 0.55;
+}
+
+.acfw-uploader-browse {
+	border: 0;
+	background: none;
+	color: var(--acfw-accent);
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+	text-decoration: underline;
+}
+
+.acfw-uploader-box.has-image .acfw-uploader-empty {
+	display: none;
+}
+
+.acfw-uploader-box:not(.has-image) .acfw-uploader-preview {
+	display: none;
+}
+
+.acfw-uploader-preview {
+	position: relative;
+	padding: 12px;
+}
+
+.acfw-uploader-preview img {
+	max-width: 100%;
+	max-height: 150px;
+	border-radius: 8px;
+	display: block;
+	margin: 0 auto;
+}
+
+.acfw-uploader-remove {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 0;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
 }
 
 .acfw-roles-select {
@@ -727,5 +1096,9 @@
 	}
 	.acfw-field > label {
 		padding-top: 0;
+		grid-column: 1;
+	}
+	.acfw-field > :not(label) {
+		grid-column: 1;
 	}
 }

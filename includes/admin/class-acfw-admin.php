@@ -25,6 +25,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			add_action( 'admin_init', array( $this, 'register_settings' ) );
 			add_action( 'admin_init', array( $this, 'handle_actions' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+			add_action( 'media_buttons', array( $this, 'render_smart_tag_button' ), 20 );
 			add_filter(
 				'plugin_action_links_' . plugin_basename( ACFW_FILE ),
 				array( $this, 'action_links' )
@@ -35,14 +36,37 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * Register the submenu page under WooCommerce.
 		 */
 		public function register_menu() {
-			add_submenu_page(
-				'woocommerce',
+
+			$icon = 'data:image/svg+xml;base64,' . base64_encode( '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><circle cx="19" cy="18" r="5" fill="#a7aaad"/><path d="M9 35c0-5.5 4.5-9.5 10-9.5s10 4 10 9.5" fill="#a7aaad"/><path d="M35 12v24" stroke="#a7aaad" stroke-width="2.4" stroke-linecap="round"/><circle cx="35" cy="21" r="4" fill="#a7aaad"/></svg>' ); // phpcs:ignore
+
+			add_menu_page(
 				__( 'My Account Customizer', 'account-customizer-for-woocommerce' ),
 				__( 'My Account', 'account-customizer-for-woocommerce' ),
 				'manage_woocommerce',
 				self::PAGE,
-				array( $this, 'render_page' )
+				array( $this, 'render_page' ),
+				$icon,
+				56
 			);
+
+			$base = 'admin.php?page=' . self::PAGE;
+			$subs = array(
+				self::PAGE            => __( 'General', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=items'  => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
+				ACFW_Customizer::url() => __( 'Customizer', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=banners' => __( 'Banners', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=tools'  => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
+			);
+			foreach ( $subs as $slug => $title ) {
+				add_submenu_page(
+					self::PAGE,
+					$title,
+					$title,
+					'manage_woocommerce',
+					$slug,
+					self::PAGE === $slug ? array( $this, 'render_page' ) : ''
+				);
+			}
 		}
 
 		/**
@@ -94,12 +118,18 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * @param string $hook Current admin page hook.
 		 */
 		public function enqueue_assets( $hook ) {
-			if ( 'woocommerce_page_' . self::PAGE !== $hook ) {
+			if ( 'toplevel_page_' . self::PAGE !== $hook ) {
 				return;
 			}
 
 			wp_enqueue_style( 'dashicons' );
 			wp_enqueue_style( 'wp-color-picker' );
+			wp_enqueue_style(
+				'acfw-fontawesome',
+				ACFW_ASSETS_URL . '/css/fontawesome/all.min.css',
+				array(),
+				ACFW_VERSION
+			);
 			wp_enqueue_style(
 				'acfw-admin',
 				ACFW_ASSETS_URL . '/css/admin.css',
@@ -111,13 +141,25 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			wp_enqueue_editor();
 			wp_enqueue_media();
 
-			// WooCommerce's select2 ( selectWoo ) for role chips, when available.
-			$deps = array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker', 'editor' );
-			if ( wp_script_is( 'selectWoo', 'registered' ) ) {
-				wp_enqueue_script( 'selectWoo' );
-				wp_enqueue_style( 'select2' );
-				$deps[] = 'selectWoo';
-			}
+			// Avoid conflicts with WooCommerce's selectWoo fork on our screen.
+			wp_dequeue_script( 'selectWoo' );
+			wp_dequeue_script( 'select2' );
+
+			// Bundled select2 ( role chips + searchable icon picker with glyphs ).
+			wp_enqueue_style(
+				'acfw-select2',
+				ACFW_ASSETS_URL . '/css/select2/select2.min.css',
+				array(),
+				ACFW_VERSION
+			);
+			wp_enqueue_script(
+				'acfw-select2',
+				ACFW_ASSETS_URL . '/js/select2/select2.min.js',
+				array( 'jquery' ),
+				ACFW_VERSION,
+				true
+			);
+			$deps = array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker', 'editor', 'acfw-select2' );
 
 			wp_enqueue_script(
 				'acfw-admin',
@@ -144,7 +186,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 */
 		protected function current_tab() {
 			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return in_array( $tab, array( 'general', 'items', 'style', 'avatar', 'banners', 'tools' ), true ) ? $tab : 'general';
+			return in_array( $tab, array( 'general', 'items', 'banners', 'tools' ), true ) ? $tab : 'general';
 		}
 
 		/**
@@ -180,37 +222,59 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							),
 							false
 						);
-						$order         = json_decode( get_option( 'acfw_items_order', '[]' ), true );
-						$order         = is_array( $order ) ? $order : array();
+						$order = json_decode( get_option( 'acfw_items_order', '[]' ), true );
+						$order = is_array( $order ) ? $order : array();
+						// Seed with current items so the new one lands at the end
+						// ( otherwise default items append after it ).
+						if ( empty( $order ) ) {
+							foreach ( $items->get_items() as $existing_key => $existing ) {
+								$order[ $existing_key ] = array( 'type' => $existing['type'] ?? 'endpoint' );
+							}
+						}
 						$order[ $key ] = array( 'type' => $type );
 						$items->save_order( $order );
 					}
 					break;
 
-				case 'save_item':
-					$key  = isset( $_POST['item_key'] ) ? acfw_sanitize_key( wp_unslash( $_POST['item_key'] ) ) : '';
-					$type = isset( $_POST['item_type'] ) ? sanitize_key( wp_unslash( $_POST['item_type'] ) ) : 'endpoint';
-					if ( '' !== $key ) {
-						$roles       = isset( $_POST['usr_roles'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['usr_roles'] ) ) : array();
-						$icon_source = isset( $_POST['icon_source'] ) ? sanitize_key( wp_unslash( $_POST['icon_source'] ) ) : 'choose';
+				case 'save_all':
+					$items_in = isset( $_POST['items'] ) && is_array( $_POST['items'] ) ? wp_unslash( $_POST['items'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- each field sanitized below.
+					foreach ( $items_in as $raw_key => $data ) {
+						$key = acfw_sanitize_key( $raw_key );
+						if ( '' === $key || ! is_array( $data ) ) {
+							continue;
+						}
+						$type        = isset( $data['type'] ) ? sanitize_key( $data['type'] ) : 'endpoint';
+						$roles       = isset( $data['usr_roles'] ) ? array_map( 'sanitize_key', (array) $data['usr_roles'] ) : array();
+						$icon_source = isset( $data['icon_source'] ) ? sanitize_key( $data['icon_source'] ) : 'choose';
 
-						$data = array(
-							'label'            => isset( $_POST['label'] ) ? sanitize_text_field( wp_unslash( $_POST['label'] ) ) : '',
-							'icon_source'      => 'upload' === $icon_source ? 'upload' : 'choose',
-							'icon'             => ( 'upload' !== $icon_source && isset( $_POST['icon'] ) ) ? sanitize_html_class( wp_unslash( $_POST['icon'] ) ) : '',
-							'icon_url'         => ( 'upload' === $icon_source && isset( $_POST['icon_url'] ) ) ? esc_url_raw( wp_unslash( $_POST['icon_url'] ) ) : '',
-							'class'            => isset( $_POST['class'] ) ? sanitize_html_class( wp_unslash( $_POST['class'] ) ) : '',
-							'active'           => ! empty( $_POST['active'] ),
-							'content'          => isset( $_POST['content'] ) ? wp_kses_post( wp_unslash( $_POST['content'] ) ) : '',
-							'content_position' => isset( $_POST['content_position'] ) ? sanitize_key( wp_unslash( $_POST['content_position'] ) ) : 'before',
-							'usr_roles'        => $roles,
-							'visibility'       => empty( $roles ) ? 'all' : 'roles',
-							'url'              => isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '',
-							'slug'             => isset( $_POST['slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['slug'] ) ) : $key,
-							'banner_slug'      => isset( $_POST['banner_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['banner_slug'] ) ) : '',
-							'banner_position'  => ( isset( $_POST['banner_position'] ) && 'bottom' === $_POST['banner_position'] ) ? 'bottom' : 'top',
+						$items->save_item(
+							$key,
+							$type,
+							array(
+								'label'            => isset( $data['label'] ) ? sanitize_text_field( $data['label'] ) : '',
+								'icon_source'      => 'upload' === $icon_source ? 'upload' : 'choose',
+								'icon'             => ( 'upload' !== $icon_source && isset( $data['icon'] ) ) ? acfw_sanitize_icon( $data['icon'] ) : '',
+								'icon_url'         => ( 'upload' === $icon_source && isset( $data['icon_url'] ) ) ? esc_url_raw( $data['icon_url'] ) : '',
+								'class'            => isset( $data['class'] ) ? sanitize_html_class( $data['class'] ) : '',
+								'active'           => ! empty( $data['active'] ),
+								'content'          => isset( $data['content'] ) ? wp_kses_post( $data['content'] ) : '',
+								'content_position' => isset( $data['content_position'] ) ? sanitize_key( $data['content_position'] ) : 'before',
+								'usr_roles'        => $roles,
+								'visibility'       => empty( $roles ) ? 'all' : 'roles',
+								'url'              => isset( $data['url'] ) ? esc_url_raw( $data['url'] ) : '',
+								'banner_slug'      => isset( $data['banner_slug'] ) ? acfw_sanitize_key( $data['banner_slug'] ) : '',
+								'banner_position'  => ( isset( $data['banner_position'] ) && 'bottom' === $data['banner_position'] ) ? 'bottom' : 'top',
+							),
+							false
 						);
-						$items->save_item( $key, $type, $data );
+					}
+
+					$raw   = isset( $_POST['acfw_order'] ) ? sanitize_textarea_field( wp_unslash( $_POST['acfw_order'] ) ) : '';
+					$order = json_decode( $raw, true );
+					if ( is_array( $order ) && ! empty( $order ) ) {
+						$items->save_order( $order );
+					} else {
+						$items->build( true );
 					}
 					break;
 
@@ -236,18 +300,28 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 				case 'save_banner':
 					$roles = isset( $_POST['banner_roles'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['banner_roles'] ) ) : array();
+					$bdata = array(
+						'type'          => isset( $_POST['banner_type'] ) ? sanitize_key( wp_unslash( $_POST['banner_type'] ) ) : 'widget',
+						'title'         => isset( $_POST['banner_title'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_title'] ) ) : '',
+						'content'       => isset( $_POST['banner_content'] ) ? wp_kses_post( wp_unslash( $_POST['banner_content'] ) ) : '',
+						'image_url'     => isset( $_POST['banner_image_url'] ) ? esc_url_raw( wp_unslash( $_POST['banner_image_url'] ) ) : '',
+						'icon'          => isset( $_POST['banner_icon'] ) ? acfw_sanitize_icon( wp_unslash( $_POST['banner_icon'] ) ) : '',
+						'icon_source'   => isset( $_POST['banner_icon_source'] ) ? sanitize_key( wp_unslash( $_POST['banner_icon_source'] ) ) : 'choose',
+						'icon_url'      => isset( $_POST['banner_icon_url'] ) ? esc_url_raw( wp_unslash( $_POST['banner_icon_url'] ) ) : '',
+						'icon_width'    => isset( $_POST['banner_icon_width'] ) ? absint( wp_unslash( $_POST['banner_icon_width'] ) ) : 40,
+						'widget_width'  => isset( $_POST['banner_widget_width'] ) ? absint( wp_unslash( $_POST['banner_widget_width'] ) ) : 250,
+						'show_count'    => ! empty( $_POST['banner_show_count'] ) ? 'yes' : 'no',
+						'link_type'     => isset( $_POST['banner_link_type'] ) ? sanitize_key( wp_unslash( $_POST['banner_link_type'] ) ) : 'none',
+						'link_endpoint' => isset( $_POST['banner_link_endpoint'] ) ? acfw_sanitize_key( wp_unslash( $_POST['banner_link_endpoint'] ) ) : '',
+						'link'          => isset( $_POST['banner_link'] ) ? esc_url_raw( wp_unslash( $_POST['banner_link'] ) ) : '',
+						'roles'         => $roles,
+					);
+					foreach ( array_keys( ACFW_Banners::color_fields() ) as $ckey ) {
+						$bdata[ $ckey ] = isset( $_POST[ 'banner_' . $ckey ] ) ? sanitize_hex_color( wp_unslash( $_POST[ 'banner_' . $ckey ] ) ) : '';
+					}
 					ACFW_Banners::save(
 						isset( $_POST['banner_key'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_key'] ) ) : '',
-						array(
-							'type'       => isset( $_POST['banner_type'] ) ? sanitize_key( wp_unslash( $_POST['banner_type'] ) ) : 'widget',
-							'title'      => isset( $_POST['banner_title'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_title'] ) ) : '',
-							'content'    => isset( $_POST['banner_content'] ) ? wp_kses_post( wp_unslash( $_POST['banner_content'] ) ) : '',
-							'image_url'  => isset( $_POST['banner_image_url'] ) ? esc_url_raw( wp_unslash( $_POST['banner_image_url'] ) ) : '',
-							'link'       => isset( $_POST['banner_link'] ) ? esc_url_raw( wp_unslash( $_POST['banner_link'] ) ) : '',
-							'bg_color'   => isset( $_POST['banner_bg_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['banner_bg_color'] ) ) : '',
-							'text_color' => isset( $_POST['banner_text_color'] ) ? sanitize_hex_color( wp_unslash( $_POST['banner_text_color'] ) ) : '',
-							'roles'      => $roles,
-						)
+						$bdata
 					);
 					break;
 
@@ -300,8 +374,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			$tabs = array(
 				'general' => __( 'General', 'account-customizer-for-woocommerce' ),
 				'items'   => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
-				'style'   => __( 'Style', 'account-customizer-for-woocommerce' ),
-				'avatar'  => __( 'Avatar', 'account-customizer-for-woocommerce' ),
+				'customizer' => __( 'Customizer', 'account-customizer-for-woocommerce' ),
 				'banners' => __( 'Banners', 'account-customizer-for-woocommerce' ),
 				'tools'   => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
 			);
@@ -310,12 +383,16 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				<div class="acfw-header">
 					<div class="acfw-header-left">
 						<div class="acfw-header-brand">
-							<span class="dashicons dashicons-admin-customizer acfw-header-icon"></span>
-							<h1><?php esc_html_e( 'My Account Customizer', 'account-customizer-for-woocommerce' ); ?></h1>
+							<img class="acfw-header-icon" src="<?php echo esc_url( ACFW_ASSETS_URL . '/images/icon.svg' ); ?>" alt="<?php esc_attr_e( 'My Account Customizer', 'account-customizer-for-woocommerce' ); ?>" width="42" height="42" />
 						</div>
 						<nav class="acfw-tabs">
-							<?php foreach ( $tabs as $slug => $label ) : ?>
-								<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE . '&tab=' . $slug ) ); ?>"
+							<?php
+							foreach ( $tabs as $slug => $label ) :
+								$tab_url = 'customizer' === $slug
+									? ACFW_Customizer::url()
+									: admin_url( 'admin.php?page=' . self::PAGE . '&tab=' . $slug );
+								?>
+								<a href="<?php echo esc_url( $tab_url ); ?>"
 									class="acfw-tab <?php echo $tab === $slug ? 'is-active' : ''; ?>">
 									<?php echo esc_html( $label ); ?>
 								</a>
@@ -323,10 +400,6 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						</nav>
 					</div>
 					<div class="acfw-header-actions">
-						<a href="<?php echo esc_url( ACFW_Customizer::url() ); ?>" class="button acfw-header-btn">
-							<span class="dashicons dashicons-admin-customizer"></span>
-							<?php esc_html_e( 'Live preview', 'account-customizer-for-woocommerce' ); ?>
-						</a>
 						<?php if ( 'items' === $tab ) : ?>
 							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="endpoint">
 								<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add endpoint', 'account-customizer-for-woocommerce' ); ?>
@@ -346,6 +419,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						<?php endif; ?>
 					</div>
 				</div>
+				<hr class="wp-header-end" />
 
 				<?php if ( isset( $_GET['updated'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 					<div class="notice notice-success is-dismissible acfw-notice"><p><?php esc_html_e( 'Changes saved.', 'account-customizer-for-woocommerce' ); ?></p></div>
@@ -427,13 +501,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							<th scope="row"><?php esc_html_e( 'Menu position', 'account-customizer-for-woocommerce' ); ?></th>
 							<td>
 								<?php
-								$this->buttonset(
+								$this->image_radio(
 									'acfw_menu_position',
 									get_option( 'acfw_menu_position', 'vertical-left' ),
 									array(
-										'vertical-left'  => __( 'Left', 'account-customizer-for-woocommerce' ),
-										'vertical-right' => __( 'Right', 'account-customizer-for-woocommerce' ),
-										'horizontal'     => __( 'Top', 'account-customizer-for-woocommerce' ),
+										'vertical-left'  => array( 'label' => __( 'Left', 'account-customizer-for-woocommerce' ), 'img' => 'vertical-left.svg' ),
+										'vertical-right' => array( 'label' => __( 'Right', 'account-customizer-for-woocommerce' ), 'img' => 'vertical-right.svg' ),
+										'horizontal'     => array( 'label' => __( 'Top', 'account-customizer-for-woocommerce' ), 'img' => 'top-horizontal.svg' ),
 									),
 									'vertical-left'
 								);
@@ -526,12 +600,12 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							<th scope="row"><?php esc_html_e( 'Avatar shape', 'account-customizer-for-woocommerce' ); ?></th>
 							<td>
 								<?php
-								$this->buttonset(
+								$this->image_radio(
 									'acfw_avatar_shape',
 									get_option( 'acfw_avatar_shape', 'circle' ),
 									array(
-										'circle' => __( 'Circle', 'account-customizer-for-woocommerce' ),
-										'square' => __( 'Square', 'account-customizer-for-woocommerce' ),
+										'circle' => array( 'label' => __( 'Circle', 'account-customizer-for-woocommerce' ), 'img' => 'circle-profile.svg' ),
+										'square' => array( 'label' => __( 'Square', 'account-customizer-for-woocommerce' ), 'img' => 'square-profile.svg' ),
 									),
 									'circle'
 								);
@@ -543,13 +617,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							<th scope="row"><?php esc_html_e( 'Avatar alignment', 'account-customizer-for-woocommerce' ); ?></th>
 							<td>
 								<?php
-								$this->buttonset(
+								$this->image_radio(
 									'acfw_avatar_align',
 									get_option( 'acfw_avatar_align', 'center' ),
 									array(
-										'left'   => __( 'Left', 'account-customizer-for-woocommerce' ),
-										'center' => __( 'Center', 'account-customizer-for-woocommerce' ),
-										'right'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+										'left'   => array( 'label' => __( 'Left', 'account-customizer-for-woocommerce' ), 'img' => 'align-left.svg' ),
+										'center' => array( 'label' => __( 'Center', 'account-customizer-for-woocommerce' ), 'img' => 'align-center.svg' ),
+										'right'  => array( 'label' => __( 'Right', 'account-customizer-for-woocommerce' ), 'img' => 'align-right.svg' ),
 									),
 									'center'
 								);
@@ -610,6 +684,97 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				(int) $max,
 				(int) $current
 			);
+		}
+
+		/**
+		 * Info tooltip icon markup for a field label.
+		 *
+		 * @param string $text Tooltip text.
+		 * @return string
+		 */
+		protected function tip( $text ) {
+			return ' <span class="acfw-tip dashicons dashicons-info-outline" title="' . esc_attr( $text ) . '"></span>';
+		}
+
+		/**
+		 * Render a media uploader box ( dropzone-style: click / drag to pick from
+		 * the media library, or paste a URL ) with live preview.
+		 *
+		 * @param string $name  Field name storing the image URL.
+		 * @param string $value Current URL.
+		 */
+		protected function uploader( $name, $value ) {
+			$has = ! empty( $value );
+			?>
+			<div class="acfw-uploader">
+				<div class="acfw-uploader-box <?php echo $has ? 'has-image' : ''; ?>">
+					<div class="acfw-uploader-empty">
+						<span class="dashicons dashicons-upload"></span>
+						<p><?php esc_html_e( 'Drag & drop or', 'account-customizer-for-woocommerce' ); ?> <button type="button" class="acfw-uploader-browse acfw-media-btn"><?php esc_html_e( 'upload a file', 'account-customizer-for-woocommerce' ); ?></button></p>
+					</div>
+					<div class="acfw-uploader-preview">
+						<img class="acfw-media-preview" src="<?php echo esc_url( $value ); ?>" alt="" <?php echo $has ? '' : 'hidden'; ?> />
+						<button type="button" class="acfw-uploader-remove" title="<?php esc_attr_e( 'Remove', 'account-customizer-for-woocommerce' ); ?>">&times;</button>
+					</div>
+				</div>
+				<div class="acfw-media-row">
+					<input type="url" name="<?php echo esc_attr( $name ); ?>" class="acfw-media-input" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php esc_attr_e( 'Paste image URL', 'account-customizer-for-woocommerce' ); ?>" />
+					<button type="button" class="button acfw-media-btn"><span class="dashicons dashicons-admin-media"></span> <?php esc_html_e( 'Media library', 'account-customizer-for-woocommerce' ); ?></button>
+				</div>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Add an "Add smart tags" button beside the editor's Add Media button.
+		 * Fires on the core `media_buttons` hook; only for our editors.
+		 *
+		 * @param string $editor_id Current editor ID.
+		 */
+		public function render_smart_tag_button( $editor_id ) {
+			if ( 0 !== strpos( (string) $editor_id, 'acfw_content_' ) ) {
+				return;
+			}
+			?>
+			<span class="acfw-smarttag-wrap">
+				<button type="button" class="button acfw-smarttag-btn" data-target="<?php echo esc_attr( $editor_id ); ?>">
+					<span class="dashicons dashicons-tag"></span> <?php esc_html_e( 'Add smart tags', 'account-customizer-for-woocommerce' ); ?>
+				</button>
+				<div class="acfw-smarttag-menu" hidden>
+					<?php foreach ( acfw_smart_tags() as $tag => $tag_label ) : ?>
+						<button type="button" class="acfw-smarttag-item" data-tag="<?php echo esc_attr( $tag ); ?>"><?php echo esc_html( $tag_label ); ?> <code><?php echo esc_html( $tag ); ?></code></button>
+					<?php endforeach; ?>
+				</div>
+			</span>
+			<?php
+		}
+
+		/**
+		 * Render a visual image-radio control ( thumbnail option picker ).
+		 *
+		 * @param string $name    Option / field name.
+		 * @param string $current Current value.
+		 * @param array  $choices value => array( 'label' => .., 'img' => file ).
+		 * @param string $default Default value.
+		 */
+		protected function image_radio( $name, $current, $choices, $default = '' ) {
+			$current = ( '' === $current || null === $current ) ? $default : $current;
+			echo '<div class="acfw-radio-group acfw-image-radio" role="radiogroup">';
+			foreach ( $choices as $value => $choice ) {
+				$id     = sanitize_html_class( $name . '-' . $value );
+				$active = (string) $current === (string) $value;
+				printf(
+					'<label class="acfw-image-card%1$s" for="%2$s"><input type="radio" id="%2$s" name="%3$s" value="%4$s" %5$s /><img src="%6$s" alt="" /><span class="acfw-image-label">%7$s</span></label>',
+					$active ? ' is-active' : '',
+					esc_attr( $id ),
+					esc_attr( $name ),
+					esc_attr( $value ),
+					checked( $current, $value, false ),
+					esc_url( ACFW_ASSETS_URL . '/images/controls/' . $choice['img'] ),
+					esc_html( $choice['label'] )
+				);
+			}
+			echo '</div>';
 		}
 
 		/**
@@ -686,63 +851,106 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				<?php endif; ?>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Type', 'account-customizer-for-woocommerce' ); ?></label>
-					<?php
-					$this->buttonset(
-						'banner_type',
-						$banner['type'],
-						array(
-							'widget' => __( 'Widget', 'account-customizer-for-woocommerce' ),
-							'image'  => __( 'Image', 'account-customizer-for-woocommerce' ),
-						),
-						'widget'
-					);
-					?>
-				</div>
-
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Title', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner name', 'account-customizer-for-woocommerce' ); ?></label>
 					<input type="text" name="banner_title" value="<?php echo esc_attr( $banner['title'] ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Content', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner type', 'account-customizer-for-woocommerce' ); ?></label>
+					<?php $this->buttonset( 'banner_type', $banner['type'], array( 'widget' => __( 'Widget', 'account-customizer-for-woocommerce' ), 'image' => __( 'Image', 'account-customizer-for-woocommerce' ) ), 'widget' ); ?>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Banner icon', 'account-customizer-for-woocommerce' ); ?></label>
+					<?php $b_icon_src = ( 'upload' === ( $banner['icon_source'] ?? 'choose' ) || ! empty( $banner['icon_url'] ) ) ? 'upload' : 'choose'; ?>
+					<div class="acfw-icon-source">
+						<label class="acfw-radio-card <?php echo 'choose' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="choose" <?php checked( $b_icon_src, 'choose' ); ?> /><span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'account-customizer-for-woocommerce' ); ?></label>
+						<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'account-customizer-for-woocommerce' ); ?></label>
+					</div>
+					<div class="acfw-icon-choose" <?php echo 'choose' === $b_icon_src ? '' : 'hidden'; ?>>
+						<select name="banner_icon" class="acfw-icon-select">
+							<option value=""><?php esc_html_e( '— Select an icon —', 'account-customizer-for-woocommerce' ); ?></option>
+							<?php foreach ( $this->icon_choices() as $ic => $ic_label ) : ?>
+								<option value="<?php echo esc_attr( $ic ); ?>" <?php selected( $banner['icon'] ?? '', $ic ); ?>><?php echo esc_html( $ic_label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="acfw-icon-upload" <?php echo 'upload' === $b_icon_src ? '' : 'hidden'; ?>>
+						<?php $this->uploader( 'banner_icon_url', $banner['icon_url'] ?? '' ); ?>
+					</div>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Icon width (px)', 'account-customizer-for-woocommerce' ); ?></label>
+					<input type="number" name="banner_icon_width" min="16" max="100" value="<?php echo esc_attr( $banner['icon_width'] ?? 40 ); ?>" />
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Widget width (px)', 'account-customizer-for-woocommerce' ); ?></label>
+					<input type="number" name="banner_widget_width" min="200" max="700" value="<?php echo esc_attr( $banner['widget_width'] ?? 250 ); ?>" />
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Widget text', 'account-customizer-for-woocommerce' ); ?></label>
 					<textarea name="banner_content" rows="3"><?php echo esc_textarea( $banner['content'] ); ?></textarea>
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Image URL', 'account-customizer-for-woocommerce' ); ?></label>
-					<input type="url" name="banner_image_url" value="<?php echo esc_attr( $banner['image_url'] ); ?>" placeholder="https://…" />
+					<label><?php esc_html_e( 'Image', 'account-customizer-for-woocommerce' ); ?></label>
+					<?php $this->uploader( 'banner_image_url', $banner['image_url'] ); ?>
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Link URL', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner colors', 'account-customizer-for-woocommerce' ); ?></label>
+					<div class="acfw-swatch-row">
+						<?php foreach ( ACFW_Banners::color_fields() as $ckey => $clabel ) : ?>
+							<span class="acfw-swatch">
+								<input type="text" name="banner_<?php echo esc_attr( $ckey ); ?>" class="acfw-color" value="<?php echo esc_attr( $banner[ $ckey ] ?? '' ); ?>" />
+								<span class="acfw-swatch-label"><?php echo esc_html( $clabel ); ?></span>
+							</span>
+						<?php endforeach; ?>
+					</div>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Show item-count badge', 'account-customizer-for-woocommerce' ); ?></label>
+					<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="banner_show_count" value="yes" <?php checked( 'yes', $banner['show_count'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Banner link', 'account-customizer-for-woocommerce' ); ?></label>
+					<?php $this->buttonset( 'banner_link_type', $banner['link_type'] ?? 'none', array( 'none' => __( 'None', 'account-customizer-for-woocommerce' ), 'endpoint' => __( 'Endpoint', 'account-customizer-for-woocommerce' ), 'external' => __( 'External URL', 'account-customizer-for-woocommerce' ) ), 'none' ); ?>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Link endpoint', 'account-customizer-for-woocommerce' ); ?></label>
+					<select name="banner_link_endpoint">
+						<option value=""><?php esc_html_e( '— Select —', 'account-customizer-for-woocommerce' ); ?></option>
+						<?php foreach ( ACFW()->items->get_items() as $ep_key => $ep ) : ?>
+							<?php if ( 'endpoint' !== ( $ep['type'] ?? 'endpoint' ) ) { continue; } ?>
+							<option value="<?php echo esc_attr( $ep_key ); ?>" <?php selected( $banner['link_endpoint'] ?? '', $ep_key ); ?>><?php echo esc_html( $ep['label'] ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'External URL', 'account-customizer-for-woocommerce' ); ?></label>
 					<input type="url" name="banner_link" value="<?php echo esc_attr( $banner['link'] ); ?>" placeholder="https://…" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Background', 'account-customizer-for-woocommerce' ); ?></label>
-					<input type="text" name="banner_bg_color" class="acfw-color" value="<?php echo esc_attr( $banner['bg_color'] ); ?>" />
-				</div>
-
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Text color', 'account-customizer-for-woocommerce' ); ?></label>
-					<input type="text" name="banner_text_color" class="acfw-color" value="<?php echo esc_attr( $banner['text_color'] ); ?>" />
-				</div>
-
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'User roles', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Show banner to', 'account-customizer-for-woocommerce' ); ?></label>
 					<select name="banner_roles[]" multiple size="4" class="acfw-roles-select">
 						<?php foreach ( $roles as $role_key => $role_label ) : ?>
 							<option value="<?php echo esc_attr( $role_key ); ?>" <?php selected( in_array( $role_key, $sel_roles, true ) ); ?>><?php echo esc_html( $role_label ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show for everyone.', 'account-customizer-for-woocommerce' ); ?></p>
+					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show to all users.', 'account-customizer-for-woocommerce' ); ?></p>
 				</div>
 
 				<div class="acfw-form-footer">
 					<?php if ( ! $is_new ) : ?>
-						<button type="submit" formaction="" class="button acfw-banner-delete" data-slug="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Delete', 'account-customizer-for-woocommerce' ); ?></button>
+						<button type="submit" class="button acfw-banner-delete" data-slug="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Delete', 'account-customizer-for-woocommerce' ); ?></button>
 					<?php endif; ?>
 					<button type="submit" class="button button-primary"><?php echo $is_new ? esc_html__( 'Create banner', 'account-customizer-for-woocommerce' ) : esc_html__( 'Save banner', 'account-customizer-for-woocommerce' ); ?></button>
 				</div>
@@ -812,44 +1020,48 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					</form>
 				</div>
 
-				<div class="acfw-builder-layout">
+				<form method="post" class="acfw-items-form">
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="save_all" />
+					<input type="hidden" name="acfw_order" class="acfw-order-input" value="" />
 
-					<div class="acfw-card acfw-builder-list">
-						<ol class="acfw-sortable acfw-sortable-root">
-							<?php
-							foreach ( $items as $key => $item ) {
-								$this->render_item_row( $key, $item );
-							}
-							?>
-						</ol>
-						<form method="post" class="acfw-order-form">
-							<?php wp_nonce_field( self::NONCE ); ?>
-							<input type="hidden" name="acfw_action" value="save_order" />
-							<input type="hidden" name="acfw_order" class="acfw-order-input" value="" />
-							<button type="submit" class="button button-primary acfw-save-order">
-								<span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save menu order', 'account-customizer-for-woocommerce' ); ?>
-							</button>
-						</form>
-					</div>
+					<div class="acfw-builder-layout">
 
-					<div class="acfw-card acfw-builder-detail">
-						<div class="acfw-detail-empty">
-							<span class="dashicons dashicons-arrow-left-alt"></span>
-							<p><?php esc_html_e( 'Select a menu item on the left to edit its options.', 'account-customizer-for-woocommerce' ); ?></p>
-						</div>
-						<?php
-						$render_details = function ( $list ) use ( &$render_details ) {
-							foreach ( $list as $k => $it ) {
-								$this->render_item_detail( $k, $it );
-								if ( ! empty( $it['children'] ) ) {
-									$render_details( $it['children'] );
+						<div class="acfw-card acfw-builder-list">
+							<ol class="acfw-sortable acfw-sortable-root">
+								<?php
+								foreach ( $items as $key => $item ) {
+									$this->render_item_row( $key, $item );
 								}
-							}
-						};
-						$render_details( $items );
-						?>
+								?>
+							</ol>
+						</div>
+
+						<div class="acfw-card acfw-builder-detail">
+							<div class="acfw-detail-empty">
+								<span class="dashicons dashicons-arrow-left-alt"></span>
+								<p><?php esc_html_e( 'Select a menu item on the left to edit its options.', 'account-customizer-for-woocommerce' ); ?></p>
+							</div>
+							<?php
+							$render_details = function ( $list ) use ( &$render_details ) {
+								foreach ( $list as $k => $it ) {
+									$this->render_item_detail( $k, $it );
+									if ( ! empty( $it['children'] ) ) {
+										$render_details( $it['children'] );
+									}
+								}
+							};
+							$render_details( $items );
+							?>
+						</div>
 					</div>
-				</div>
+
+					<div class="acfw-form-footer">
+						<button type="submit" class="button button-primary acfw-save-all">
+							<span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save changes', 'account-customizer-for-woocommerce' ); ?>
+						</button>
+					</div>
+				</form>
 
 				<form method="post" class="acfw-delete-form" style="display:none;">
 					<?php wp_nonce_field( self::NONCE ); ?>
@@ -924,12 +1136,9 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'link'     => __( 'Link', 'account-customizer-for-woocommerce' ),
 			);
 			?>
-			<form method="post" class="acfw-detail acfw-item-form" data-key="<?php echo esc_attr( $key ); ?>" hidden>
-				<?php wp_nonce_field( self::NONCE ); ?>
-				<input type="hidden" name="acfw_action" value="save_item" />
-				<input type="hidden" name="item_key" value="<?php echo esc_attr( $key ); ?>" />
-				<input type="hidden" name="item_type" value="<?php echo esc_attr( $type ); ?>" />
-				<input type="hidden" name="active" class="acfw-active-input" value="<?php echo $active ? '1' : '0'; ?>" />
+			<div class="acfw-detail acfw-item-form" data-key="<?php echo esc_attr( $key ); ?>" data-type="<?php echo esc_attr( $type ); ?>" hidden>
+				<input type="hidden" name="items[<?php echo esc_attr( $key ); ?>][type]" value="<?php echo esc_attr( $type ); ?>" />
+				<input type="hidden" name="items[<?php echo esc_attr( $key ); ?>][active]" class="acfw-active-input" value="<?php echo $active ? '1' : '0'; ?>" />
 
 				<div class="acfw-detail-head">
 					<?php echo $this->icon_markup( $item, 'acfw-detail-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -938,46 +1147,48 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Label', 'account-customizer-for-woocommerce' ); ?></label>
-					<input type="text" name="label" value="<?php echo esc_attr( $item['label'] ); ?>" />
+					<label><?php esc_html_e( 'Endpoint label', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'The menu label shown to customers.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<input type="text" name="items[<?php echo esc_attr( $key ); ?>][label]" value="<?php echo esc_attr( $item['label'] ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Icon', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Endpoint icon', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Choose a FontAwesome icon or upload your own image.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 					<div class="acfw-icon-source">
 						<label class="acfw-radio-card <?php echo 'choose' === $icon_source ? 'is-active' : ''; ?>">
-							<input type="radio" name="icon_source" value="choose" <?php checked( $icon_source, 'choose' ); ?> />
+							<input type="radio" name="items[<?php echo esc_attr( $key ); ?>][icon_source]" value="choose" <?php checked( $icon_source, 'choose' ); ?> />
 							<span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'account-customizer-for-woocommerce' ); ?>
 						</label>
 						<label class="acfw-radio-card <?php echo 'upload' === $icon_source ? 'is-active' : ''; ?>">
-							<input type="radio" name="icon_source" value="upload" <?php checked( $icon_source, 'upload' ); ?> />
+							<input type="radio" name="items[<?php echo esc_attr( $key ); ?>][icon_source]" value="upload" <?php checked( $icon_source, 'upload' ); ?> />
 							<span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'account-customizer-for-woocommerce' ); ?>
 						</label>
 					</div>
 
-					<div class="acfw-icon-choose" <?php echo 'choose' === $icon_source ? '' : 'hidden'; ?>>
-						<select name="icon" class="acfw-icon-select">
-							<option value=""><?php esc_html_e( '— Select an icon —', 'account-customizer-for-woocommerce' ); ?></option>
-							<?php foreach ( $this->icon_choices() as $ic => $label ) : ?>
-								<option value="<?php echo esc_attr( $ic ); ?>" <?php selected( $item['icon'] ?? '', $ic ); ?>><?php echo esc_html( $label ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</div>
+				</div>
 
-					<div class="acfw-icon-upload" <?php echo 'upload' === $icon_source ? '' : 'hidden'; ?>>
-						<input type="url" name="icon_url" class="acfw-icon-url" value="<?php echo esc_attr( $item['icon_url'] ?? '' ); ?>" placeholder="https://…" />
-						<button type="button" class="button acfw-icon-media"><?php esc_html_e( 'Select image', 'account-customizer-for-woocommerce' ); ?></button>
-					</div>
+				<div class="acfw-field acfw-icon-choose" <?php echo 'choose' === $icon_source ? '' : 'hidden'; ?>>
+					<label><?php esc_html_e( 'Select an icon', 'account-customizer-for-woocommerce' ); ?></label>
+					<select name="items[<?php echo esc_attr( $key ); ?>][icon]" class="acfw-icon-select">
+						<option value=""><?php esc_html_e( '— Select an icon —', 'account-customizer-for-woocommerce' ); ?></option>
+						<?php foreach ( $this->icon_choices() as $ic => $label ) : ?>
+							<option value="<?php echo esc_attr( $ic ); ?>" <?php selected( $item['icon'] ?? '', $ic ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+
+				<div class="acfw-field acfw-icon-upload" <?php echo 'upload' === $icon_source ? '' : 'hidden'; ?>>
+					<label><?php esc_html_e( 'Upload an image', 'account-customizer-for-woocommerce' ); ?></label>
+					<?php $this->uploader( 'items[' . $key . '][icon_url]', $item['icon_url'] ?? '' ); ?>
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'CSS class', 'account-customizer-for-woocommerce' ); ?></label>
-					<input type="text" name="class" value="<?php echo esc_attr( $item['class'] ?? '' ); ?>" />
+					<label><?php esc_html_e( 'CSS class', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Optional extra CSS class for this menu item.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<input type="text" name="items[<?php echo esc_attr( $key ); ?>][class]" value="<?php echo esc_attr( $item['class'] ?? '' ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'User roles', 'account-customizer-for-woocommerce' ); ?></label>
-					<select name="usr_roles[]" multiple size="4" class="acfw-roles-select">
+					<label><?php esc_html_e( 'User roles', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Show only to selected roles. Empty = everyone.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<select name="items[<?php echo esc_attr( $key ); ?>][usr_roles][]" multiple size="4" class="acfw-roles-select">
 						<?php foreach ( $roles as $role_key => $role_label ) : ?>
 							<option value="<?php echo esc_attr( $role_key ); ?>" <?php selected( in_array( $role_key, $sel_roles, true ) ); ?>><?php echo esc_html( $role_label ); ?></option>
 						<?php endforeach; ?>
@@ -988,24 +1199,31 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				<?php if ( 'link' === $type ) : ?>
 					<div class="acfw-field">
 						<label><?php esc_html_e( 'URL', 'account-customizer-for-woocommerce' ); ?></label>
-						<input type="url" name="url" value="<?php echo esc_attr( $item['url'] ?? '' ); ?>" />
+						<input type="url" name="items[<?php echo esc_attr( $key ); ?>][url]" value="<?php echo esc_attr( $item['url'] ?? '' ); ?>" />
 					</div>
 				<?php elseif ( 'endpoint' === $type ) : ?>
+					<?php $eid = 'acfw_content_' . str_replace( '-', '_', $key ); ?>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Custom content', 'account-customizer-for-woocommerce' ); ?></label>
-						<p class="acfw-smarttags">
-							<select class="acfw-smarttag-select" data-target="acfw-content-<?php echo esc_attr( $key ); ?>">
-								<option value=""><?php esc_html_e( '+ Add smart tag', 'account-customizer-for-woocommerce' ); ?></option>
-								<?php foreach ( acfw_smart_tags() as $tag => $tag_label ) : ?>
-									<option value="<?php echo esc_attr( $tag ); ?>"><?php echo esc_html( $tag_label ); ?></option>
-								<?php endforeach; ?>
-							</select>
-						</p>
-						<textarea name="content" class="acfw-content-editor" id="acfw-content-<?php echo esc_attr( $key ); ?>" rows="6"><?php echo esc_textarea( $item['content'] ?? '' ); ?></textarea>
+						<label><?php esc_html_e( 'Custom content', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Extra content added to this endpoint. Use Add media and smart tags.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<div class="acfw-content-wrap">
+							<?php
+							wp_editor(
+								$item['content'] ?? '',
+								$eid,
+								array(
+									'textarea_name' => 'items[' . $key . '][content]',
+									'textarea_rows' => 6,
+									'media_buttons' => true,
+									'quicktags'     => true,
+									'tinymce'       => array( 'toolbar1' => 'bold,italic,bullist,numlist,link,undo,redo' ),
+								)
+							);
+							?>
+						</div>
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Custom content position', 'account-customizer-for-woocommerce' ); ?></label>
-						<select name="content_position">
+						<label><?php esc_html_e( 'Custom content position', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Where the custom content appears relative to the default content.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<select name="items[<?php echo esc_attr( $key ); ?>][content_position]">
 							<?php $cp = $item['content_position'] ?? 'before'; ?>
 							<option value="before" <?php selected( $cp, 'before' ); ?>><?php esc_html_e( 'Before default content', 'account-customizer-for-woocommerce' ); ?></option>
 							<option value="after" <?php selected( $cp, 'after' ); ?>><?php esc_html_e( 'After default content', 'account-customizer-for-woocommerce' ); ?></option>
@@ -1014,7 +1232,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					</div>
 					<div class="acfw-field">
 						<label><?php esc_html_e( 'Banner', 'account-customizer-for-woocommerce' ); ?></label>
-						<select name="banner_slug">
+						<select name="items[<?php echo esc_attr( $key ); ?>][banner_slug]">
 							<option value=""><?php esc_html_e( '— None —', 'account-customizer-for-woocommerce' ); ?></option>
 							<?php foreach ( ACFW_Banners::all() as $b_slug => $b ) : ?>
 								<option value="<?php echo esc_attr( $b_slug ); ?>" <?php selected( $item['banner_slug'] ?? '', $b_slug ); ?>><?php echo esc_html( $b['title'] ? $b['title'] : $b_slug ); ?></option>
@@ -1037,10 +1255,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					</div>
 				<?php endif; ?>
 
-				<div class="acfw-detail-actions">
-					<button type="submit" class="button button-primary"><?php esc_html_e( 'Save changes', 'account-customizer-for-woocommerce' ); ?></button>
-				</div>
-			</form>
+			</div>
 			<?php
 		}
 
@@ -1052,15 +1267,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * @return string
 		 */
 		protected function icon_markup( $item, $class ) {
-			if ( ! empty( $item['icon_url'] ) ) {
-				return sprintf(
-					'<img class="%s acfw-icon-img" src="%s" alt="" />',
-					esc_attr( $class ),
-					esc_url( $item['icon_url'] )
-				);
+			$icon = ! empty( $item['icon'] ) ? $item['icon'] : '';
+			if ( empty( $item['icon_url'] ) && '' === $icon ) {
+				$icon = 'dashicons-menu-alt';
 			}
-			$icon = ! empty( $item['icon'] ) ? $item['icon'] : 'dashicons-menu-alt';
-			return sprintf( '<span class="%s dashicons %s"></span>', esc_attr( $class ), esc_attr( $icon ) );
+			return acfw_icon_markup( $icon, $item['icon_url'] ?? '', $class );
 		}
 
 		/**
@@ -1069,28 +1280,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * @return array
 		 */
 		protected function icon_choices() {
-			return array(
-				'dashicons-dashboard'      => __( 'Dashboard', 'account-customizer-for-woocommerce' ),
-				'dashicons-cart'           => __( 'Cart', 'account-customizer-for-woocommerce' ),
-				'dashicons-download'       => __( 'Download', 'account-customizer-for-woocommerce' ),
-				'dashicons-location'       => __( 'Location', 'account-customizer-for-woocommerce' ),
-				'dashicons-money-alt'      => __( 'Money', 'account-customizer-for-woocommerce' ),
-				'dashicons-admin-users'    => __( 'User', 'account-customizer-for-woocommerce' ),
-				'dashicons-id'             => __( 'ID card', 'account-customizer-for-woocommerce' ),
-				'dashicons-heart'          => __( 'Heart', 'account-customizer-for-woocommerce' ),
-				'dashicons-star-filled'    => __( 'Star', 'account-customizer-for-woocommerce' ),
-				'dashicons-tickets-alt'    => __( 'Tickets', 'account-customizer-for-woocommerce' ),
-				'dashicons-email'          => __( 'Email', 'account-customizer-for-woocommerce' ),
-				'dashicons-bell'           => __( 'Bell', 'account-customizer-for-woocommerce' ),
-				'dashicons-admin-home'     => __( 'Home', 'account-customizer-for-woocommerce' ),
-				'dashicons-portfolio'      => __( 'Portfolio', 'account-customizer-for-woocommerce' ),
-				'dashicons-products'       => __( 'Products', 'account-customizer-for-woocommerce' ),
-				'dashicons-awards'         => __( 'Awards', 'account-customizer-for-woocommerce' ),
-				'dashicons-tag'            => __( 'Tag', 'account-customizer-for-woocommerce' ),
-				'dashicons-admin-generic'  => __( 'Settings', 'account-customizer-for-woocommerce' ),
-				'dashicons-exit'           => __( 'Log out', 'account-customizer-for-woocommerce' ),
-				'dashicons-calendar-alt'   => __( 'Calendar', 'account-customizer-for-woocommerce' ),
-			);
+			$choices = array();
+			foreach ( acfw_icon_list() as $class ) {
+				// Derive a readable label from the fa-* name.
+				$name              = preg_replace( '/^.*fa-/', '', $class );
+				$choices[ $class ] = ucwords( str_replace( '-', ' ', $name ) );
+			}
+			return $choices;
 		}
 	}
 }
