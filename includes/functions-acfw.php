@@ -132,8 +132,31 @@ function acfw_smart_tags() {
 			'{user_email}'   => __( 'Email address', 'account-customizer-for-woocommerce' ),
 			'{site_title}'   => __( 'Site title', 'account-customizer-for-woocommerce' ),
 			'{order_count}'  => __( 'Order count', 'account-customizer-for-woocommerce' ),
+			'{download_count}' => __( 'Download count', 'account-customizer-for-woocommerce' ),
+			'{last_login}'   => __( 'Last login date', 'account-customizer-for-woocommerce' ),
 		)
 	);
+}
+
+/**
+ * Dynamic item count for a menu key ( orders / downloads ), for badges.
+ *
+ * @param string $key  Endpoint key.
+ * @param int    $uid  User ID ( 0 = current ).
+ * @return int|null Count, or null when not a countable endpoint.
+ */
+function acfw_endpoint_count( $key, $uid = 0 ) {
+	$uid = $uid ? $uid : get_current_user_id();
+	if ( ! $uid ) {
+		return null;
+	}
+	if ( 'orders' === $key && function_exists( 'wc_get_customer_order_count' ) ) {
+		return (int) wc_get_customer_order_count( $uid );
+	}
+	if ( 'downloads' === $key && function_exists( 'wc_get_customer_available_downloads' ) ) {
+		return count( wc_get_customer_available_downloads( $uid ) );
+	}
+	return null;
 }
 
 /**
@@ -155,6 +178,8 @@ function acfw_apply_smart_tags( $content, $user = null ) {
 	if ( ! empty( $user->ID ) && function_exists( 'wc_get_customer_order_count' ) ) {
 		$orders = wc_get_customer_order_count( $user->ID );
 	}
+	$downloads  = ! empty( $user->ID ) ? acfw_endpoint_count( 'downloads', $user->ID ) : null;
+	$last_login = ! empty( $user->ID ) ? get_user_meta( $user->ID, 'acfw_last_login', true ) : '';
 
 	$map = array(
 		'{display_name}' => $user->display_name ?? '',
@@ -164,6 +189,8 @@ function acfw_apply_smart_tags( $content, $user = null ) {
 		'{user_email}'   => $user->user_email ?? '',
 		'{site_title}'   => get_bloginfo( 'name' ),
 		'{order_count}'  => (string) $orders,
+		'{download_count}' => (string) ( null === $downloads ? 0 : $downloads ),
+		'{last_login}'   => $last_login ? date_i18n( get_option( 'date_format' ), (int) $last_login ) : '',
 		// Back-compat token.
 		'%%customer_name%%' => $user->display_name ?? '',
 	);

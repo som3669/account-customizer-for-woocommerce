@@ -503,7 +503,8 @@
 	flex: 1 1 auto;
 }
 
-.acfw-node-remove {
+.acfw-node-remove,
+.acfw-node-duplicate {
 	border: none;
 	background: none;
 	cursor: pointer;
@@ -511,6 +512,11 @@
 	width: 28px;
 	height: 28px;
 	border-radius: 6px;
+}
+
+.acfw-node-duplicate:hover {
+	background: var(--acfw-tint);
+	color: var(--acfw-accent);
 }
 
 .acfw-node-remove:hover {
@@ -909,6 +915,25 @@
 	background: #f0f1f3;
 	padding: 1px 5px;
 	border-radius: 4px;
+}
+
+/* ---- Reset all settings ---- */
+.acfw-reset-form {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 24px;
+	padding-top: 18px;
+	border-top: 1px solid var(--acfw-border);
+}
+
+.acfw-reset-btn {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 5px;
+	color: #b32d2e !important;
+	border-color: #dfc2c2 !important;
+	border-radius: 8px !important;
 }
 
 /* ---- Field info tooltip ---- */

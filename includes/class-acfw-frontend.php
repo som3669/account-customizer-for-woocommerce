@@ -38,6 +38,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			// Avatar block above the navigation.
 			add_action( 'woocommerce_account_navigation', array( $this, 'render_avatar' ), 4 );
+			// Dashboard quick-link tiles.
+			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_tiles' ), 5 );
 			// Replace the default WooCommerce navigation.
 			add_action( 'woocommerce_account_navigation', array( $this, 'render_menu' ), 5 );
 			// Inject per-endpoint custom content.
@@ -99,6 +101,23 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				return false;
 			}
 
+			// Date-range visibility.
+			$now = current_time( 'timestamp' );
+			if ( ! empty( $item['vis_from'] ) && $now < strtotime( $item['vis_from'] . ' 00:00:00' ) ) {
+				return false;
+			}
+			if ( ! empty( $item['vis_to'] ) && $now > strtotime( $item['vis_to'] . ' 23:59:59' ) ) {
+				return false;
+			}
+
+			// Purchased-product visibility.
+			if ( ! empty( $item['vis_product'] ) && function_exists( 'wc_customer_bought_product' ) && ! current_user_can( 'administrator' ) ) {
+				$u = wp_get_current_user();
+				if ( empty( $u->ID ) || ! wc_customer_bought_product( $u->user_email, $u->ID, (int) $item['vis_product'] ) ) {
+					return false;
+				}
+			}
+
 			$visible = true;
 
 			if ( isset( $item['visibility'] ) && 'roles' === $item['visibility'] && ! empty( $item['usr_roles'] ) ) {
@@ -135,6 +154,11 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				ACFW_VERSION
 			);
 			wp_add_inline_style( 'acfw-frontend', $this->dynamic_css() );
+
+			$custom_css = get_option( 'acfw_custom_css', '' );
+			if ( $custom_css ) {
+				wp_add_inline_style( 'acfw-frontend', wp_strip_all_tags( $custom_css ) );
+			}
 
 			wp_enqueue_script(
 				'acfw-frontend',
@@ -175,8 +199,13 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$fweight = $fweight ? $fweight : '500';
 			$tint    = $this->hex_to_rgba( $accent, 0.10 );
 
-			return sprintf(
-				'.acfw-menu,.acfw-avatar-block{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;}',
+			$menu_bg  = sanitize_hex_color( get_option( 'acfw_menu_bg', '' ) );
+			$hover_bg = sanitize_hex_color( get_option( 'acfw_hover_bg', '' ) );
+			$active   = sanitize_hex_color( get_option( 'acfw_active_color', '' ) );
+			$active   = $active ? $active : $accent;
+
+			$vars  = sprintf(
+				'.acfw-menu,.acfw-avatar-block{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;--acfw-active:%10$s;',
 				$accent,
 				$text,
 				$tint,
@@ -185,8 +214,18 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$padding,
 				$avatar ? $avatar : 72,
 				$fsize ? $fsize : 15,
-				$fweight
+				$fweight,
+				$active
 			);
+			if ( $menu_bg ) {
+				$vars .= '--acfw-menu-bg:' . $menu_bg . ';';
+			}
+			if ( $hover_bg ) {
+				$vars .= '--acfw-hover-bg:' . $hover_bg . ';';
+			}
+			$vars .= '}';
+
+			return $vars;
 		}
 
 		/**
@@ -205,6 +244,38 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$g = hexdec( substr( $hex, 2, 2 ) );
 			$b = hexdec( substr( $hex, 4, 2 ) );
 			return "rgba({$r},{$g},{$b},{$alpha})";
+		}
+
+		/**
+		 * Render quick-link tiles on the dashboard endpoint.
+		 */
+		public function render_dashboard_tiles() {
+
+			if ( 'yes' !== get_option( 'acfw_dashboard_tiles', 'no' ) ) {
+				return;
+			}
+
+			$base = wc_get_page_permalink( 'myaccount' );
+			$tiles = '';
+			foreach ( $this->menu_items as $key => $item ) {
+				if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || in_array( $key, array( 'dashboard', 'customer-logout' ), true ) ) {
+					continue;
+				}
+				$url   = wc_get_endpoint_url( $key, '', $base );
+				$count = acfw_endpoint_count( $key );
+				$icon  = acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-tile-icon' );
+				$tiles .= sprintf(
+					'<a class="acfw-tile" href="%s">%s<span class="acfw-tile-label">%s</span>%s</a>',
+					esc_url( $url ),
+					$icon,
+					esc_html( $item['label'] ),
+					null !== $count ? '<span class="acfw-tile-count">' . esc_html( $count ) . '</span>' : ''
+				);
+			}
+
+			if ( $tiles ) {
+				echo '<div class="acfw-tiles">' . $tiles . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			}
 		}
 
 		/**
@@ -296,9 +367,14 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'current'    => acfw_get_current_endpoint(),
 					'position'   => $position,
 					'layout'     => $layout,
+					'preset'     => get_option( 'acfw_menu_preset', 'flat' ),
 					'theme'      => sanitize_html_class( get_template() ),
 					'show_icons' => 'no' !== get_option( 'acfw_show_icons', 'yes' ),
 					'group_open' => 'yes' === get_option( 'acfw_group_open', 'no' ),
+					'search'     => 'yes' === get_option( 'acfw_menu_search', 'no' ),
+					'sticky'     => 'yes' === get_option( 'acfw_sticky_menu', 'no' ),
+					'indicator'  => get_option( 'acfw_active_indicator', 'bar' ),
+					'anim'       => get_option( 'acfw_hover_anim', 'none' ),
 					'frontend'   => $this,
 				)
 			);
@@ -394,6 +470,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$target = '';
 			}
 
+			$count = ( 'no' !== get_option( 'acfw_show_counts', 'yes' ) ) ? acfw_endpoint_count( $key ) : null;
+
 			acfw_get_template(
 				'myaccount-menu-item.php',
 				array(
@@ -401,6 +479,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'item'    => $item,
 					'url'     => $url,
 					'target'  => $target,
+					'count'   => $count,
 					'classes' => implode( ' ', apply_filters( 'acfw_item_classes', $classes, $key, $item ) ),
 				)
 			);

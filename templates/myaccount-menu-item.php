@@ -21,5 +21,8 @@ defined( 'ABSPATH' ) || exit;
 		echo acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper.
 		?>
 		<span class="acfw-label"><?php echo esc_html( $item['label'] ); ?></span>
+		<?php if ( isset( $count ) && null !== $count ) : ?>
+			<span class="acfw-count"><?php echo esc_html( $count ); ?></span>
+		<?php endif; ?>
 	</a>
 </li>

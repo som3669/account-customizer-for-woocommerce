@@ -119,7 +119,29 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'modern'     => __( 'Modern', 'account-customizer-for-woocommerce' ),
 				'no-borders' => __( 'No borders', 'account-customizer-for-woocommerce' ),
 			) );
+			$this->add_buttonset( $wp_customize, 'acfw_menu_preset', 'flat', __( 'Style preset', 'account-customizer-for-woocommerce' ), array(
+				'flat'    => __( 'Flat', 'account-customizer-for-woocommerce' ),
+				'pill'    => __( 'Pill', 'account-customizer-for-woocommerce' ),
+				'boxed'   => __( 'Boxed', 'account-customizer-for-woocommerce' ),
+				'minimal' => __( 'Minimal', 'account-customizer-for-woocommerce' ),
+			) );
 			$this->add_toggle( $wp_customize, 'acfw_show_icons', 'yes', __( 'Show menu icons', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_show_counts', 'yes', __( 'Show item counts', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_dashboard_tiles', 'no', __( 'Dashboard quick-link tiles', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_menu_search', 'no', __( 'Menu search box', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_sticky_menu', 'no', __( 'Sticky menu', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_logout_confirm', 'no', __( 'Confirm before logout', 'account-customizer-for-woocommerce' ) );
+			$this->add_buttonset( $wp_customize, 'acfw_active_indicator', 'bar', __( 'Active indicator', 'account-customizer-for-woocommerce' ), array(
+				'bar'       => __( 'Bar', 'account-customizer-for-woocommerce' ),
+				'underline' => __( 'Underline', 'account-customizer-for-woocommerce' ),
+				'dot'       => __( 'Dot', 'account-customizer-for-woocommerce' ),
+				'none'      => __( 'None', 'account-customizer-for-woocommerce' ),
+			) );
+			$this->add_buttonset( $wp_customize, 'acfw_hover_anim', 'none', __( 'Hover animation', 'account-customizer-for-woocommerce' ), array(
+				'none'  => __( 'None', 'account-customizer-for-woocommerce' ),
+				'slide' => __( 'Slide', 'account-customizer-for-woocommerce' ),
+				'grow'  => __( 'Grow', 'account-customizer-for-woocommerce' ),
+			) );
 			$this->add_toggle( $wp_customize, 'acfw_group_open', 'no', __( 'Expand groups by default', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_ajax_navigation', 'no', __( 'AJAX navigation', 'account-customizer-for-woocommerce' ) );
 
@@ -127,6 +149,9 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$this->section = 'acfw_style';
 			$this->add_color( $wp_customize, 'acfw_accent_color', '#2563eb', __( 'Accent color', 'account-customizer-for-woocommerce' ) );
 			$this->add_color( $wp_customize, 'acfw_text_color', '#383838', __( 'Text color', 'account-customizer-for-woocommerce' ) );
+			$this->add_color( $wp_customize, 'acfw_active_color', '', __( 'Active color', 'account-customizer-for-woocommerce' ) );
+			$this->add_color( $wp_customize, 'acfw_menu_bg', '', __( 'Menu item background', 'account-customizer-for-woocommerce' ) );
+			$this->add_color( $wp_customize, 'acfw_hover_bg', '', __( 'Hover background', 'account-customizer-for-woocommerce' ) );
 			$this->add_slider( $wp_customize, 'acfw_menu_radius', 8, __( 'Corner radius', 'account-customizer-for-woocommerce' ), 0, 24 );
 			$this->add_slider( $wp_customize, 'acfw_menu_gap', 4, __( 'Item spacing', 'account-customizer-for-woocommerce' ), 0, 24 );
 			$this->add_slider( $wp_customize, 'acfw_item_padding', 11, __( 'Item padding', 'account-customizer-for-woocommerce' ), 4, 28 );
@@ -136,6 +161,7 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'500' => __( 'Medium', 'account-customizer-for-woocommerce' ),
 				'600' => __( 'Bold', 'account-customizer-for-woocommerce' ),
 			) );
+			$this->add_css( $wp_customize, 'acfw_custom_css', __( 'Custom CSS', 'account-customizer-for-woocommerce' ) );
 
 			// ---- Avatar ----
 			$this->section = 'acfw_avatar';
@@ -243,6 +269,31 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'label'       => $label,
 				'description' => $description,
 			) ) );
+		}
+
+		/**
+		 * Register a Custom CSS code editor ( falls back to a textarea ).
+		 */
+		protected function add_css( $wp_customize, $id, $label ) {
+			$wp_customize->add_setting( $id, array(
+				'type'              => 'option',
+				'default'           => '',
+				'transport'         => 'refresh',
+				'sanitize_callback' => 'wp_strip_all_tags',
+			) );
+			if ( class_exists( 'WP_Customize_Code_Editor_Control' ) ) {
+				$wp_customize->add_control( new WP_Customize_Code_Editor_Control( $wp_customize, $id, array(
+					'section'   => $this->section,
+					'label'     => $label,
+					'code_type' => 'text/css',
+				) ) );
+			} else {
+				$wp_customize->add_control( $id, array(
+					'section' => $this->section,
+					'label'   => $label,
+					'type'    => 'textarea',
+				) );
+			}
 		}
 
 		/**

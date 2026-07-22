@@ -63,7 +63,7 @@
 		}
 
 		$( document ).on( 'click', '.acfw-node-head', function ( e ) {
-			if ( $( e.target ).closest( '.acfw-drag, .acfw-node-remove, .acfw-switch' ).length ) {
+			if ( $( e.target ).closest( '.acfw-drag, .acfw-node-remove, .acfw-node-duplicate, .acfw-switch' ).length ) {
 				return;
 			}
 			selectItem( $( this ).closest( '.acfw-node' ).data( 'key' ) );
@@ -157,6 +157,12 @@
 			$( this ).removeClass( 'is-dragover' );
 		} );
 
+		/* ---- Duplicate item ---- */
+		$( document ).on( 'click', '.acfw-node-duplicate', function ( e ) {
+			e.stopPropagation();
+			$( '.acfw-duplicate-form' ).find( '.acfw-duplicate-key' ).val( $( this ).data( 'key' ) ).end().trigger( 'submit' );
+		} );
+
 		/* ---- Delete item ---- */
 		$( document ).on( 'click', '.acfw-node-remove', function ( e ) {
 			e.stopPropagation();
@@ -198,6 +204,13 @@
 		$( document ).on( 'click', function ( e ) {
 			if ( ! $( e.target ).closest( '.acfw-smarttag-wrap' ).length ) {
 				$( '.acfw-smarttag-menu' ).attr( 'hidden', 'hidden' );
+			}
+		} );
+
+		/* ---- Reset all settings confirm ---- */
+		$( document ).on( 'click', '.acfw-reset-btn', function ( e ) {
+			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {
+				e.preventDefault();
 			}
 		} );
 

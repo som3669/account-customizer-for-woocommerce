@@ -71,6 +71,19 @@ function acfw_init() {
 add_action( 'plugins_loaded', 'acfw_init', 11 );
 
 /**
+ * Record the user's last login time ( used by the {last_login} smart tag ).
+ *
+ * @param string  $login User login.
+ * @param WP_User $user  User object.
+ */
+function acfw_record_last_login( $login, $user ) {
+	if ( $user instanceof WP_User ) {
+		update_user_meta( $user->ID, 'acfw_last_login', time() );
+	}
+}
+add_action( 'wp_login', 'acfw_record_last_login', 10, 2 );
+
+/**
  * Declare compatibility with WooCommerce features (HPOS + cart/checkout blocks).
  */
 function acfw_declare_wc_compatibility() {

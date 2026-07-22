@@ -19,6 +19,7 @@ $wrap_classes = array(
 	'acfw-menu',
 	'position-' . sanitize_html_class( $position ),
 	'layout-' . sanitize_html_class( $layout ),
+	'acfw-preset-' . sanitize_html_class( ! empty( $preset ) ? $preset : 'flat' ),
 );
 
 if ( ! empty( $theme ) ) {

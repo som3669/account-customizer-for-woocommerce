@@ -147,6 +147,7 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 						? array_merge( $options, $stored )
 						: $options;
 				}
+				$this->restore_default_icons();
 				return;
 			}
 
@@ -187,6 +188,26 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 
 			// Append any WooCommerce defaults not present in the saved order.
 			$this->items = array_merge( $this->items, $defaults );
+
+			$this->restore_default_icons();
+		}
+
+		/**
+		 * Restore a menu item's built-in default icon when its stored icon is empty.
+		 */
+		protected function restore_default_icons() {
+			foreach ( $this->items as $key => $item ) {
+				if ( empty( $item['icon'] ) && empty( $item['icon_url'] ) && ! empty( $this->defaults[ $key ]['icon'] ) ) {
+					$this->items[ $key ]['icon'] = $this->defaults[ $key ]['icon'];
+				}
+				if ( ! empty( $item['children'] ) && is_array( $item['children'] ) ) {
+					foreach ( $item['children'] as $child_key => $child ) {
+						if ( empty( $child['icon'] ) && empty( $child['icon_url'] ) && ! empty( $this->defaults[ $child_key ]['icon'] ) ) {
+							$this->items[ $key ]['children'][ $child_key ]['icon'] = $this->defaults[ $child_key ]['icon'];
+						}
+					}
+				}
+			}
 		}
 
 		/**

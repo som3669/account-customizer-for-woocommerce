@@ -264,6 +264,9 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 								'url'              => isset( $data['url'] ) ? esc_url_raw( $data['url'] ) : '',
 								'banner_slug'      => isset( $data['banner_slug'] ) ? acfw_sanitize_key( $data['banner_slug'] ) : '',
 								'banner_position'  => ( isset( $data['banner_position'] ) && 'bottom' === $data['banner_position'] ) ? 'bottom' : 'top',
+								'vis_from'         => isset( $data['vis_from'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_from'] ) : '',
+								'vis_to'           => isset( $data['vis_to'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_to'] ) : '',
+								'vis_product'      => isset( $data['vis_product'] ) ? absint( $data['vis_product'] ) : 0,
 							),
 							false
 						);
@@ -350,6 +353,61 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					}
 					$result = ACFW_Import_Export::import( (string) $json );
 					set_transient( 'acfw_import_notice', is_wp_error( $result ) ? $result->get_error_message() : 'success', 30 );
+					break;
+
+				case 'reset':
+					global $wpdb;
+					$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'acfw\_%'" ); // phpcs:ignore WordPress.DB
+					wp_cache_flush();
+					$items->build( true );
+					break;
+
+				case 'duplicate_item':
+					$src = isset( $_POST['item_key'] ) ? acfw_sanitize_key( wp_unslash( $_POST['item_key'] ) ) : '';
+					if ( '' !== $src ) {
+						$all    = $items->get_items();
+						$source = $all[ $src ] ?? null;
+						if ( ! $source ) {
+							foreach ( $all as $it ) {
+								if ( ! empty( $it['children'][ $src ] ) ) {
+									$source = $it['children'][ $src ];
+									break;
+								}
+							}
+						}
+						if ( $source ) {
+							$type   = $source['type'] ?? 'endpoint';
+							$newkey = acfw_sanitize_key( $src . '-copy' );
+							$n      = 2;
+							while ( isset( $all[ $newkey ] ) || false !== get_option( 'acfw_item_' . $newkey, false ) ) {
+								$newkey = acfw_sanitize_key( $src . '-copy-' . $n );
+								$n++;
+							}
+							$data          = $source;
+							$data['label'] = ( $source['label'] ?? $src ) . ' (copy)';
+							$data['slug']  = $newkey;
+							unset( $data['children'] );
+							$items->save_item( $newkey, $type, $data, false );
+							$order = json_decode( get_option( 'acfw_items_order', '[]' ), true );
+							$order = is_array( $order ) ? $order : array();
+							if ( empty( $order ) ) {
+								foreach ( $all as $k => $it ) {
+									$order[ $k ] = array( 'type' => $it['type'] ?? 'endpoint' );
+								}
+							}
+							$new_order = array();
+							foreach ( $order as $k => $v ) {
+								$new_order[ $k ] = $v;
+								if ( $k === $src ) {
+									$new_order[ $newkey ] = array( 'type' => $type );
+								}
+							}
+							if ( ! isset( $new_order[ $newkey ] ) ) {
+								$new_order[ $newkey ] = array( 'type' => $type );
+							}
+							$items->save_order( $new_order );
+						}
+					}
 					break;
 			}
 
@@ -666,6 +724,15 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<?php submit_button( __( 'Save changes', 'account-customizer-for-woocommerce' ), 'primary', 'submit', false ); ?>
 				</div>
 			</form>
+
+			<?php if ( 'general' === $tab ) : ?>
+				<form method="post" class="acfw-reset-form">
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="reset" />
+					<button type="submit" class="button acfw-reset-btn"><span class="dashicons dashicons-image-rotate"></span> <?php esc_html_e( 'Reset all settings', 'account-customizer-for-woocommerce' ); ?></button>
+					<span class="acfw-hint"><?php esc_html_e( 'Restore endpoints, design and banners to defaults. Cannot be undone.', 'account-customizer-for-woocommerce' ); ?></span>
+				</form>
+			<?php endif; ?>
 			<?php
 		}
 
@@ -1070,6 +1137,12 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<input type="hidden" name="acfw_action" value="remove_item" />
 					<input type="hidden" name="item_key" class="acfw-delete-key" value="" />
 				</form>
+
+				<form method="post" class="acfw-duplicate-form" style="display:none;">
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="duplicate_item" />
+					<input type="hidden" name="item_key" class="acfw-duplicate-key" value="" />
+				</form>
 			</div>
 			<?php
 		}
@@ -1099,6 +1172,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						<input type="checkbox" class="acfw-active-proxy" data-key="<?php echo esc_attr( $key ); ?>" <?php checked( $active ); ?> />
 						<span class="acfw-switch-slider"></span>
 					</label>
+					<button type="button" class="acfw-node-duplicate dashicons dashicons-admin-page" title="<?php esc_attr_e( 'Duplicate', 'account-customizer-for-woocommerce' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
 					<?php if ( ! $is_default ) : ?>
 						<button type="button" class="acfw-node-remove dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'account-customizer-for-woocommerce' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
 					<?php endif; ?>
@@ -1196,6 +1270,21 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						<?php endforeach; ?>
 					</select>
 					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show for everyone.', 'account-customizer-for-woocommerce' ); ?></p>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Show from', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Only show this item on or after this date.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<input type="date" name="items[<?php echo esc_attr( $key ); ?>][vis_from]" value="<?php echo esc_attr( $item['vis_from'] ?? '' ); ?>" />
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Show until', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Only show this item up to this date.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<input type="date" name="items[<?php echo esc_attr( $key ); ?>][vis_to]" value="<?php echo esc_attr( $item['vis_to'] ?? '' ); ?>" />
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Purchased product', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Only show to customers who bought this product ID.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<input type="number" name="items[<?php echo esc_attr( $key ); ?>][vis_product]" min="0" value="<?php echo esc_attr( $item['vis_product'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Product ID', 'account-customizer-for-woocommerce' ); ?>" />
 				</div>
 
 				<?php if ( 'link' === $type ) : ?>
