@@ -5,8 +5,8 @@
 .acfw-wrap {
 	--acfw-accent: #2563eb;
 	--acfw-accent-dark: #1d4ed8;
-	--acfw-toggle-on: #3858e9;
-	--acfw-toggle-off: #9ca3af;
+	--acfw-toggle-on: #2563eb;
+	--acfw-toggle-off: #cdd0d2;
 	--acfw-surface: #fff;
 	--acfw-border: #e2e4e7;
 	--acfw-muted: #646970;
@@ -277,22 +277,14 @@
 
 /* ---- Larger toggle variant for settings rows ---- */
 .acfw-switch-lg {
-	width: 46px;
-	height: 26px;
-	flex: 0 0 46px;
+	width: 38px;
+	height: 20px;
+	flex: 0 0 38px;
 	vertical-align: middle;
 }
 
-.acfw-switch-lg .acfw-switch-slider::before {
-	width: 20px;
-	height: 20px;
-	left: 3px;
-	top: 3px;
-	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.25);
-}
-
 .acfw-switch-lg input:checked + .acfw-switch-slider::before {
-	transform: translateX(20px);
+	transform: translateX(18px);
 }
 
 .acfw-switch-row {
@@ -302,7 +294,7 @@
 }
 
 .acfw-switch-row .acfw-switch-lg {
-	flex: 0 0 40px;
+	flex: 0 0 38px;
 }
 
 .acfw-control-hint {
@@ -538,9 +530,9 @@
 .acfw-switch {
 	position: relative;
 	display: inline-block;
-	width: 28px;
-	height: 16px;
-	flex: 0 0 28px;
+	width: 38px;
+	height: 20px;
+	flex: 0 0 38px;
 }
 
 .acfw-switch input {
@@ -560,12 +552,13 @@
 .acfw-switch-slider::before {
 	content: "";
 	position: absolute;
-	width: 12px;
-	height: 12px;
+	width: 16px;
+	height: 16px;
 	left: 2px;
 	top: 2px;
 	background: #fff;
 	border-radius: 50%;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.2);
 	transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -574,7 +567,7 @@
 }
 
 .acfw-switch input:checked + .acfw-switch-slider::before {
-	transform: translateX(12px);
+	transform: translateX(18px);
 }
 
 .acfw-order-form {
