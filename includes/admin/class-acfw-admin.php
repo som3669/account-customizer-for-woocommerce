@@ -51,11 +51,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$base = 'admin.php?page=' . self::PAGE;
 			$subs = array(
-				self::PAGE            => __( 'General', 'account-customizer-for-woocommerce' ),
-				$base . '&tab=items'  => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
+				self::PAGE             => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=general' => __( 'Settings', 'account-customizer-for-woocommerce' ),
 				ACFW_Customizer::url() => __( 'Customizer', 'account-customizer-for-woocommerce' ),
 				$base . '&tab=banners' => __( 'Banners', 'account-customizer-for-woocommerce' ),
-				$base . '&tab=tools'  => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=tools'   => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
 			);
 			foreach ( $subs as $slug => $title ) {
 				add_submenu_page(
@@ -185,8 +185,8 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * @return string
 		 */
 		protected function current_tab() {
-			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return in_array( $tab, array( 'general', 'items', 'banners', 'tools' ), true ) ? $tab : 'general';
+			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'items'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return in_array( $tab, array( 'general', 'items', 'banners', 'tools' ), true ) ? $tab : 'items';
 		}
 
 		/**
@@ -372,11 +372,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$tab  = $this->current_tab();
 			$tabs = array(
-				'general' => __( 'General', 'account-customizer-for-woocommerce' ),
-				'items'   => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
+				'items'      => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
+				'general'    => __( 'Settings', 'account-customizer-for-woocommerce' ),
 				'customizer' => __( 'Customizer', 'account-customizer-for-woocommerce' ),
-				'banners' => __( 'Banners', 'account-customizer-for-woocommerce' ),
-				'tools'   => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
+				'banners'    => __( 'Banners', 'account-customizer-for-woocommerce' ),
+				'tools'      => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
 			);
 			?>
 			<div class="wrap acfw-wrap">
@@ -464,12 +464,14 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						<tr>
 							<th scope="row"><?php esc_html_e( 'AJAX navigation', 'account-customizer-for-woocommerce' ); ?></th>
 							<td>
-								<label class="acfw-switch acfw-switch-lg">
-									<input type="checkbox" name="acfw_ajax_navigation" value="yes"
-										<?php checked( 'yes', get_option( 'acfw_ajax_navigation', 'no' ) ); ?> />
-									<span class="acfw-switch-slider"></span>
-								</label>
-								<span class="acfw-control-hint"><?php esc_html_e( 'Load endpoints without a full page reload.', 'account-customizer-for-woocommerce' ); ?></span>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_ajax_navigation" value="yes"
+											<?php checked( 'yes', get_option( 'acfw_ajax_navigation', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Load endpoints without a full page reload.', 'account-customizer-for-woocommerce' ); ?></span>
+								</div>
 							</td>
 						</tr>
 

@@ -24,6 +24,50 @@
 	}
 }
 
+/* =========================================================================
+   Account layout: nav + content side by side, top-aligned
+   ========================================================================= */
+.woocommerce:has( .acfw-menu ) {
+	display: flex;
+	align-items: flex-start;
+	gap: 32px;
+	flex-wrap: wrap;
+}
+
+.woocommerce:has( .acfw-menu.position-vertical-left ) .woocommerce-MyAccount-navigation,
+.woocommerce:has( .acfw-menu.position-vertical-right ) .woocommerce-MyAccount-navigation {
+	flex: 0 0 240px;
+	max-width: 240px;
+}
+
+.woocommerce:has( .acfw-menu ) .woocommerce-MyAccount-content {
+	flex: 1 1 0;
+	min-width: 0;
+	margin: 0;
+}
+
+/* Right position: put content first */
+.woocommerce:has( .acfw-menu.position-vertical-right ) .woocommerce-MyAccount-content {
+	order: -1;
+}
+
+/* Horizontal (top) position: stack menu above content */
+.woocommerce:has( .acfw-menu.position-horizontal ) {
+	flex-direction: column;
+}
+
+.woocommerce:has( .acfw-menu.position-horizontal ) .woocommerce-MyAccount-navigation {
+	flex: 0 0 auto;
+	max-width: none;
+	width: 100%;
+}
+
+@media (max-width: 782px) {
+	.woocommerce:has( .acfw-menu ) {
+		display: block;
+	}
+}
+
 .acfw-menu ul {
 	list-style: none;
 	margin: 0;
@@ -58,7 +102,7 @@
 	gap: 12px;
 	padding: var(--acfw-item-padding, 11px) 14px;
 	border-radius: var(--acfw-radius);
-	color: var(--acfw-text);
+	color: inherit;
 	text-decoration: none;
 	font-weight: var(--acfw-font-weight, 500);
 	line-height: 1.2;
@@ -83,7 +127,7 @@
 	width: 22px;
 	height: 22px;
 	flex: 0 0 22px;
-	color: var(--acfw-muted);
+	color: inherit;
 	font-size: 20px;
 	transition: color 0.18s ease;
 }
@@ -350,6 +394,27 @@
 	.acfw-menu .acfw-group-toggle {
 		padding: 10px 12px;
 	}
+}
+
+/* =========================================================================
+   Colour overrides — beat the theme's link colours on our menu
+   ========================================================================= */
+.woocommerce-MyAccount-navigation.acfw-menu .acfw-menu-item > a,
+.woocommerce-MyAccount-navigation.acfw-menu .acfw-group-toggle {
+	color: inherit;
+	text-decoration: none;
+}
+
+.woocommerce-MyAccount-navigation.acfw-menu .acfw-menu-item > a:hover,
+.woocommerce-MyAccount-navigation.acfw-menu .acfw-group-toggle:hover,
+.woocommerce-MyAccount-navigation.acfw-menu .acfw-menu-item.is-active > a {
+	color: var(--acfw-accent);
+	text-decoration: none;
+}
+
+.woocommerce-MyAccount-navigation.acfw-menu .acfw-menu-item > a:hover .acfw-icon,
+.woocommerce-MyAccount-navigation.acfw-menu .acfw-menu-item.is-active > a .acfw-icon {
+	color: var(--acfw-accent);
 }
 
 /* Uploaded icon image (menu) */

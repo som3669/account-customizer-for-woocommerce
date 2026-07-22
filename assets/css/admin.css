@@ -294,11 +294,19 @@
 	transform: translateX(18px);
 }
 
+.acfw-switch-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.acfw-switch-row .acfw-switch-lg {
+	flex: 0 0 40px;
+}
+
 .acfw-control-hint {
-	margin-left: 10px;
 	color: var(--acfw-muted);
 	font-size: 13px;
-	vertical-align: middle;
 }
 
 /* ---- Range slider (match reference thin track + round handle) ---- */
