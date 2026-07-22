@@ -439,6 +439,229 @@
 }
 
 /* =========================================================================
+   Color scheme (forced light / dark)
+   ========================================================================= */
+.acfw-menu.acfw-scheme-dark,
+.acfw-avatar-block.acfw-scheme-dark {
+	--acfw-surface: #1e2127;
+	--acfw-border: #2f343c;
+	--acfw-muted: #9aa0aa;
+}
+
+.acfw-menu.acfw-scheme-light {
+	--acfw-surface: #fff;
+	--acfw-border: #e1e1e1;
+	--acfw-muted: #8a9099;
+}
+
+/* =========================================================================
+   Print
+   ========================================================================= */
+@media print {
+	.acfw-nav-toggle,
+	.acfw-nav-backdrop,
+	.acfw-menu-search,
+	.acfw-collapse-toggle,
+	.acfw-pin,
+	.acfw-count {
+		display: none !important;
+	}
+	.woocommerce-MyAccount-navigation.acfw-menu {
+		position: static !important;
+		transform: none !important;
+		box-shadow: none !important;
+		border: 0 !important;
+	}
+	.acfw-menu.is-collapsed .acfw-label {
+		display: inline !important;
+	}
+}
+
+/* =========================================================================
+   Pin favorites
+   ========================================================================= */
+.acfw-pin {
+	display: none;
+	position: absolute;
+	top: 50%;
+	right: 8px;
+	transform: translateY( -50% );
+	border: 0;
+	background: none;
+	cursor: pointer;
+	color: var(--acfw-muted, #8a9099);
+	opacity: 0;
+	transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.acfw-menu.acfw-pinnable .acfw-menu-item {
+	position: relative;
+}
+
+.acfw-menu.acfw-pinnable .acfw-pin {
+	display: inline-flex;
+}
+
+.acfw-menu.acfw-pinnable .acfw-menu-item:hover .acfw-pin,
+.acfw-menu.acfw-pinnable .acfw-menu-item.is-pinned .acfw-pin {
+	opacity: 1;
+}
+
+.acfw-menu.acfw-pinnable .acfw-menu-item.is-pinned .acfw-pin {
+	color: var(--acfw-accent, #2563eb);
+}
+
+.acfw-menu.acfw-pinnable .acfw-menu-item > a {
+	padding-right: 34px;
+}
+
+/* =========================================================================
+   Collapsible icon rail
+   ========================================================================= */
+.acfw-collapse-toggle {
+	display: none;
+	margin: 0 0 8px auto;
+	width: 28px;
+	height: 28px;
+	border: 1px solid var(--acfw-border, #e1e1e1);
+	border-radius: 6px;
+	background: #fff;
+	cursor: pointer;
+	color: var(--acfw-text, #383838);
+}
+
+@media (min-width: 783px) {
+	.acfw-menu.acfw-collapsible .acfw-collapse-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.acfw-menu.is-collapsed .acfw-label,
+	.acfw-menu.is-collapsed .acfw-count,
+	.acfw-menu.is-collapsed .acfw-menu-search {
+		display: none;
+	}
+	.acfw-menu.is-collapsed .acfw-menu-item > a,
+	.acfw-menu.is-collapsed .acfw-group-toggle {
+		justify-content: center;
+		padding-left: 0;
+		padding-right: 0;
+	}
+	.acfw-menu.is-collapsed .acfw-collapse-toggle .dashicons {
+		transform: rotate( 180deg );
+	}
+	.woocommerce:has( .acfw-menu.is-collapsed ) .woocommerce-MyAccount-navigation {
+		flex: 0 0 64px;
+		max-width: 64px;
+	}
+}
+
+/* =========================================================================
+   Profile completeness meter
+   ========================================================================= */
+.acfw-profile-meter {
+	margin: 0 0 20px;
+	padding: 14px 16px;
+	border: 1px solid var(--acfw-border, #e1e1e1);
+	border-radius: var(--acfw-radius, 8px);
+}
+
+.acfw-pm-head {
+	display: flex;
+	justify-content: space-between;
+	font-size: 14px;
+	margin-bottom: 8px;
+}
+
+.acfw-pm-bar {
+	height: 8px;
+	border-radius: 999px;
+	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.1));
+	overflow: hidden;
+}
+
+.acfw-pm-bar > span {
+	display: block;
+	height: 100%;
+	background: var(--acfw-accent, #2563eb);
+	transition: width 0.3s ease;
+}
+
+/* ---- Guest message ---- */
+.acfw-guest-message {
+	margin: 0 0 20px;
+	padding: 14px 18px;
+	border-left: 4px solid var(--acfw-accent, #2563eb);
+	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+	border-radius: 6px;
+}
+
+/* =========================================================================
+   Menu search
+   ========================================================================= */
+.acfw-menu-search {
+	width: 100%;
+	margin: 0 0 12px;
+	padding: 9px 12px;
+	border: 1px solid var(--acfw-border, #e1e1e1);
+	border-radius: var(--acfw-radius, 8px);
+	font-size: 14px;
+	box-sizing: border-box;
+}
+
+.acfw-menu-search:focus {
+	outline: none;
+	border-color: var(--acfw-accent);
+	box-shadow: 0 0 0 1px var(--acfw-accent);
+}
+
+/* =========================================================================
+   Sticky menu
+   ========================================================================= */
+@media (min-width: 783px) {
+	.woocommerce-MyAccount-navigation.acfw-menu.acfw-sticky {
+		position: sticky;
+		top: 32px;
+		align-self: flex-start;
+	}
+}
+
+/* =========================================================================
+   Active indicator variants
+   ========================================================================= */
+.acfw-menu.acfw-ind-none .acfw-menu-item.is-active > a {
+	box-shadow: none;
+}
+
+.acfw-menu.acfw-ind-underline .acfw-menu-item.is-active > a {
+	box-shadow: inset 0 -2px 0 var(--acfw-active, var(--acfw-accent));
+}
+
+.acfw-menu.acfw-ind-dot .acfw-menu-item.is-active > a {
+	box-shadow: none;
+}
+
+.acfw-menu.acfw-ind-dot .acfw-menu-item.is-active > a::after {
+	content: "";
+	width: 7px;
+	height: 7px;
+	margin-left: auto;
+	border-radius: 50%;
+	background: var(--acfw-active, var(--acfw-accent));
+}
+
+/* =========================================================================
+   Hover animations
+   ========================================================================= */
+.acfw-menu.acfw-anim-slide .acfw-menu-item > a:hover {
+	transform: translateX(4px);
+}
+
+.acfw-menu.acfw-anim-grow .acfw-menu-item > a:hover {
+	transform: scale( 1.02 );
+}
+
+/* =========================================================================
    Style presets (one-click menu looks)
    ========================================================================= */
 

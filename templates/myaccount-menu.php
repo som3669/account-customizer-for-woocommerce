@@ -29,6 +29,18 @@ if ( ! empty( $theme ) ) {
 if ( empty( $show_icons ) ) {
 	$wrap_classes[] = 'acfw-hide-icons';
 }
+if ( ! empty( $sticky ) ) {
+	$wrap_classes[] = 'acfw-sticky';
+}
+$wrap_classes[] = 'acfw-ind-' . sanitize_html_class( ! empty( $indicator ) ? $indicator : 'bar' );
+$wrap_classes[] = 'acfw-anim-' . sanitize_html_class( ! empty( $anim ) ? $anim : 'none' );
+$wrap_classes[] = 'acfw-scheme-' . sanitize_html_class( ! empty( $scheme ) ? $scheme : 'auto' );
+if ( ! empty( $collapsible ) ) {
+	$wrap_classes[] = 'acfw-collapsible';
+}
+if ( ! empty( $pinnable ) ) {
+	$wrap_classes[] = 'acfw-pinnable';
+}
 
 $acfw_group_open = ! empty( $group_open );
 ?>
@@ -38,6 +50,12 @@ $acfw_group_open = ! empty( $group_open );
 </button>
 <nav class="woocommerce-MyAccount-navigation <?php echo esc_attr( implode( ' ', $wrap_classes ) ); ?>">
 	<span class="acfw-nav-backdrop"></span>
+	<?php if ( ! empty( $collapsible ) ) : ?>
+		<button type="button" class="acfw-collapse-toggle" aria-label="<?php esc_attr_e( 'Collapse menu', 'account-customizer-for-woocommerce' ); ?>"><span class="dashicons dashicons-arrow-left-alt2"></span></button>
+	<?php endif; ?>
+	<?php if ( ! empty( $search ) ) : ?>
+		<input type="search" class="acfw-menu-search" placeholder="<?php esc_attr_e( 'Search…', 'account-customizer-for-woocommerce' ); ?>" aria-label="<?php esc_attr_e( 'Search menu', 'account-customizer-for-woocommerce' ); ?>" />
+	<?php endif; ?>
 	<ul id="acfw-menu-list">
 		<?php
 		foreach ( $items as $key => $item ) :

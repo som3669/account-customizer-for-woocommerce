@@ -92,6 +92,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'acfw_menu_layout'      => 'sanitize_text_field',
 				'acfw_ajax_navigation'  => 'sanitize_text_field',
 				'acfw_default_endpoint' => 'sanitize_text_field',
+				'acfw_login_redirect'   => 'sanitize_text_field',
+				'acfw_logout_redirect'  => 'sanitize_text_field',
+				'acfw_guest_message'    => 'wp_kses_post',
+				'acfw_track_views'      => 'sanitize_text_field',
 				'acfw_accent_color'     => 'sanitize_hex_color',
 				'acfw_text_color'       => 'sanitize_hex_color',
 				'acfw_menu_radius'      => 'absint',
@@ -409,6 +413,42 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						}
 					}
 					break;
+				case 'save_preset':
+					$pname = isset( $_POST['preset_name'] ) ? sanitize_text_field( wp_unslash( $_POST['preset_name'] ) ) : '';
+					if ( '' !== $pname ) {
+						$pslug = acfw_sanitize_key( $pname );
+						$data  = array( '__label' => $pname );
+						foreach ( acfw_design_option_keys() as $ok ) {
+							$data[ $ok ] = get_option( $ok, '' );
+						}
+						$presets           = get_option( 'acfw_presets', array() );
+						$presets           = is_array( $presets ) ? $presets : array();
+						$presets[ $pslug ] = $data;
+						update_option( 'acfw_presets', $presets );
+					}
+					break;
+
+				case 'apply_preset':
+					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['preset_slug'] ) ) : '';
+					$presets = get_option( 'acfw_presets', array() );
+					if ( ! empty( $presets[ $pslug ] ) ) {
+						$keys = acfw_design_option_keys();
+						foreach ( $presets[ $pslug ] as $ok => $ov ) {
+							if ( in_array( $ok, $keys, true ) ) {
+								update_option( $ok, $ov );
+							}
+						}
+					}
+					break;
+
+				case 'delete_preset':
+					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['preset_slug'] ) ) : '';
+					$presets = get_option( 'acfw_presets', array() );
+					if ( is_array( $presets ) ) {
+						unset( $presets[ $pslug ] );
+						update_option( 'acfw_presets', $presets );
+					}
+					break;
 			}
 
 			$redirect = add_query_arg(
@@ -470,6 +510,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							</button>
 						<?php endif; ?>
 						<?php if ( function_exists( 'wc_get_page_permalink' ) ) : ?>
+							<button type="button" class="button acfw-header-btn acfw-preview-btn" data-url="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>">
+								<span class="dashicons dashicons-visibility"></span>
+								<?php esc_html_e( 'Preview', 'account-customizer-for-woocommerce' ); ?>
+							</button>
 							<a href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>" class="button acfw-header-btn" target="_blank" rel="noopener">
 								<span class="dashicons dashicons-external"></span>
 								<?php esc_html_e( 'View My Account', 'account-customizer-for-woocommerce' ); ?>
@@ -552,6 +596,68 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 									}
 									?>
 								</select>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'After-login redirect', 'account-customizer-for-woocommerce' ); ?></th>
+							<td>
+								<select name="acfw_login_redirect">
+									<?php $lr = get_option( 'acfw_login_redirect', '' ); ?>
+									<option value="" <?php selected( $lr, '' ); ?>><?php esc_html_e( 'Default (dashboard)', 'account-customizer-for-woocommerce' ); ?></option>
+									<?php
+									foreach ( ACFW()->items->get_items() as $key => $item ) {
+										if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) ) {
+											continue;
+										}
+										printf( '<option value="%s" %s>%s</option>', esc_attr( $key ), selected( $lr, $key, false ), esc_html( $item['label'] ) );
+									}
+									?>
+								</select>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'After-logout redirect', 'account-customizer-for-woocommerce' ); ?></th>
+							<td>
+								<?php $lo = get_option( 'acfw_logout_redirect', 'default' ); ?>
+								<select name="acfw_logout_redirect">
+									<option value="default" <?php selected( $lo, 'default' ); ?>><?php esc_html_e( 'Default', 'account-customizer-for-woocommerce' ); ?></option>
+									<option value="home" <?php selected( $lo, 'home' ); ?>><?php esc_html_e( 'Home page', 'account-customizer-for-woocommerce' ); ?></option>
+									<option value="login" <?php selected( $lo, 'login' ); ?>><?php esc_html_e( 'My Account (login)', 'account-customizer-for-woocommerce' ); ?></option>
+								</select>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Guest message', 'account-customizer-for-woocommerce' ); ?></th>
+							<td>
+								<textarea name="acfw_guest_message" rows="3" class="large-text"><?php echo esc_textarea( get_option( 'acfw_guest_message', '' ) ); ?></textarea>
+								<p class="acfw-hint"><?php esc_html_e( 'Shown above the login form for logged-out visitors.', 'account-customizer-for-woocommerce' ); ?></p>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Track endpoint views', 'account-customizer-for-woocommerce' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_track_views" value="yes" <?php checked( 'yes', get_option( 'acfw_track_views', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Count how often each endpoint is viewed.', 'account-customizer-for-woocommerce' ); ?></span>
+								</div>
+								<?php
+								$views = get_option( 'acfw_endpoint_views', array() );
+								if ( ! empty( $views ) && is_array( $views ) ) :
+									arsort( $views );
+									?>
+									<ul class="acfw-view-stats">
+										<?php foreach ( $views as $vk => $vc ) : ?>
+											<li><span><?php echo esc_html( $vk ); ?></span> <strong><?php echo esc_html( number_format_i18n( (int) $vc ) ); ?></strong></li>
+										<?php endforeach; ?>
+									</ul>
+								<?php endif; ?>
 							</td>
 						</tr>
 
@@ -726,6 +832,31 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			</form>
 
 			<?php if ( 'general' === $tab ) : ?>
+				<div class="acfw-presets">
+					<h2 class="acfw-section-title"><?php esc_html_e( 'Design presets', 'account-customizer-for-woocommerce' ); ?></h2>
+					<p class="acfw-hint"><?php esc_html_e( 'Save the current design as a named preset, then apply it anytime.', 'account-customizer-for-woocommerce' ); ?></p>
+					<form method="post" class="acfw-preset-save">
+						<?php wp_nonce_field( self::NONCE ); ?>
+						<input type="hidden" name="acfw_action" value="save_preset" />
+						<input type="text" name="preset_name" placeholder="<?php esc_attr_e( 'Preset name', 'account-customizer-for-woocommerce' ); ?>" required />
+						<button type="submit" class="button button-primary"><span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save current design', 'account-customizer-for-woocommerce' ); ?></button>
+					</form>
+					<?php $presets = get_option( 'acfw_presets', array() ); ?>
+					<?php if ( ! empty( $presets ) && is_array( $presets ) ) : ?>
+						<ul class="acfw-preset-list">
+							<?php foreach ( $presets as $pslug => $pdata ) : ?>
+								<li>
+									<span class="acfw-preset-name"><?php echo esc_html( $pdata['__label'] ?? $pslug ); ?></span>
+									<span class="acfw-preset-actions">
+										<form method="post"><?php wp_nonce_field( self::NONCE ); ?><input type="hidden" name="acfw_action" value="apply_preset" /><input type="hidden" name="preset_slug" value="<?php echo esc_attr( $pslug ); ?>" /><button type="submit" class="button"><?php esc_html_e( 'Apply', 'account-customizer-for-woocommerce' ); ?></button></form>
+										<form method="post"><?php wp_nonce_field( self::NONCE ); ?><input type="hidden" name="acfw_action" value="delete_preset" /><input type="hidden" name="preset_slug" value="<?php echo esc_attr( $pslug ); ?>" /><button type="submit" class="button acfw-preset-del"><?php esc_html_e( 'Delete', 'account-customizer-for-woocommerce' ); ?></button></form>
+									</span>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
+				</div>
+
 				<form method="post" class="acfw-reset-form">
 					<?php wp_nonce_field( self::NONCE ); ?>
 					<input type="hidden" name="acfw_action" value="reset" />

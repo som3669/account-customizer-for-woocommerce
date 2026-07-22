@@ -16,7 +16,7 @@
 defined( 'ABSPATH' ) || exit;
 ?>
 <li class="<?php echo esc_attr( $classes ); ?>">
-	<a href="<?php echo esc_url( $url ); ?>"<?php echo $target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static attribute string. ?>>
+	<a href="<?php echo esc_url( $url ); ?>"<?php echo $target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static attribute string. ?><?php echo ( false !== strpos( $classes, 'is-active' ) ) ? ' aria-current="page"' : ''; ?>>
 		<?php
 		echo acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper.
 		?>
@@ -25,4 +25,5 @@ defined( 'ABSPATH' ) || exit;
 			<span class="acfw-count"><?php echo esc_html( $count ); ?></span>
 		<?php endif; ?>
 	</a>
+	<button type="button" class="acfw-pin" data-key="<?php echo esc_attr( $key ); ?>" aria-label="<?php esc_attr_e( 'Pin to top', 'account-customizer-for-woocommerce' ); ?>"><span class="dashicons dashicons-star-empty"></span></button>
 </li>

@@ -9,6 +9,65 @@
 			$( this ).closest( '.acfw-type-group' ).toggleClass( 'is-open' );
 		} );
 
+		// Menu search filter.
+		$( '.acfw-menu' ).on( 'input', '.acfw-menu-search', function () {
+			var q = ( this.value || '' ).toLowerCase().trim();
+			$( this ).closest( '.acfw-menu' ).find( '.acfw-menu-item' ).each( function () {
+				var text = $( this ).find( '.acfw-label, .acfw-group-toggle' ).first().text().toLowerCase();
+				$( this ).toggle( '' === q || text.indexOf( q ) !== -1 );
+			} );
+		} );
+
+		// Pin favorites to top.
+		$( '.acfw-menu.acfw-pinnable' ).each( function () {
+			var pins = [];
+			try { pins = JSON.parse( window.localStorage.getItem( 'acfwPins' ) || '[]' ); } catch ( e ) {}
+			var $list = $( this ).find( '#acfw-menu-list' );
+			pins.slice().reverse().forEach( function ( k ) {
+				var $item = $list.children( '.acfw-menu-item' ).filter( function () {
+					return String( $( this ).find( '.acfw-pin' ).data( 'key' ) ) === String( k );
+				} );
+				if ( $item.length ) {
+					$item.addClass( 'is-pinned' ).prependTo( $list );
+					$item.find( '.acfw-pin .dashicons' ).removeClass( 'dashicons-star-empty' ).addClass( 'dashicons-star-filled' );
+				}
+			} );
+		} );
+		$( document ).on( 'click', '.acfw-pin', function ( e ) {
+			e.preventDefault();
+			var k = String( $( this ).data( 'key' ) );
+			var pins = [];
+			try { pins = JSON.parse( window.localStorage.getItem( 'acfwPins' ) || '[]' ); } catch ( e2 ) {}
+			var i = pins.indexOf( k );
+			if ( -1 === i ) { pins.push( k ); } else { pins.splice( i, 1 ); }
+			try { window.localStorage.setItem( 'acfwPins', JSON.stringify( pins ) ); } catch ( e3 ) {}
+			window.location.reload();
+		} );
+
+		// Collapsible icon rail.
+		$( '.acfw-menu.acfw-collapsible' ).each( function () {
+			try {
+				if ( '1' === window.localStorage.getItem( 'acfwCollapsed' ) ) {
+					$( this ).addClass( 'is-collapsed' );
+				}
+			} catch ( e ) {}
+		} );
+		$( document ).on( 'click', '.acfw-collapse-toggle', function () {
+			var collapsed = $( this ).closest( '.acfw-menu' ).toggleClass( 'is-collapsed' ).hasClass( 'is-collapsed' );
+			try {
+				window.localStorage.setItem( 'acfwCollapsed', collapsed ? '1' : '0' );
+			} catch ( e ) {}
+		} );
+
+		// Confirm before logout.
+		if ( acfw && acfw.logoutConfirm ) {
+			$( '.acfw-menu' ).on( 'click', 'a[href*="customer-logout"]', function ( e ) {
+				if ( ! window.confirm( acfw.logoutMsg ) ) {
+					e.preventDefault();
+				}
+			} );
+		}
+
 		// Mobile nav drawer.
 		var $nav = $( '.woocommerce-MyAccount-navigation.acfw-menu' );
 		function closeDrawer() {

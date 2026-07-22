@@ -917,6 +917,118 @@
 	border-radius: 4px;
 }
 
+/* ---- Preview overlay ---- */
+.acfw-preview-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	background: rgba(16, 24, 40, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+}
+
+.acfw-preview-frame {
+	position: relative;
+	width: 100%;
+	max-width: 1200px;
+	height: 90vh;
+	background: #fff;
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.acfw-preview-frame iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.acfw-preview-close {
+	position: absolute;
+	top: 8px;
+	right: 10px;
+	z-index: 2;
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	color: #333;
+}
+
+/* ---- Design presets ---- */
+.acfw-presets {
+	margin-top: 24px;
+	padding-top: 18px;
+	border-top: 1px solid var(--acfw-border);
+}
+
+.acfw-preset-save {
+	display: flex;
+	gap: 8px;
+	margin: 10px 0;
+}
+
+.acfw-preset-save input[type="text"] {
+	border-radius: 8px;
+	min-height: 34px;
+	flex: 0 1 240px;
+}
+
+.acfw-preset-list {
+	margin: 12px 0 0;
+	max-width: 520px;
+}
+
+.acfw-preset-list li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 8px 12px;
+	border: 1px solid var(--acfw-border);
+	border-radius: 8px;
+	margin-bottom: 6px;
+}
+
+.acfw-preset-name {
+	font-weight: 600;
+}
+
+.acfw-preset-actions {
+	display: flex;
+	gap: 6px;
+}
+
+.acfw-preset-actions form {
+	margin: 0;
+}
+
+.acfw-preset-del {
+	color: #b32d2e !important;
+}
+
+/* ---- Endpoint view stats ---- */
+.acfw-view-stats {
+	margin: 12px 0 0;
+	max-width: 360px;
+}
+
+.acfw-view-stats li {
+	display: flex;
+	justify-content: space-between;
+	padding: 5px 0;
+	border-bottom: 1px solid #f0f1f2;
+	font-size: 13px;
+}
+
 /* ---- Reset all settings ---- */
 .acfw-reset-form {
 	display: flex;

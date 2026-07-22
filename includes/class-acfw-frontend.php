@@ -36,10 +36,17 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			add_action( 'wp', array( $this, 'setup' ), 20 );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ), 15 );
 
+			// Login / logout redirects + guest message.
+			add_filter( 'woocommerce_login_redirect', array( $this, 'login_redirect' ), 20 );
+			add_filter( 'woocommerce_logout_default_redirect_url', array( $this, 'logout_redirect' ), 20 );
+			add_action( 'woocommerce_before_customer_login_form', array( $this, 'guest_message' ) );
+
 			// Avatar block above the navigation.
 			add_action( 'woocommerce_account_navigation', array( $this, 'render_avatar' ), 4 );
 			// Dashboard quick-link tiles.
 			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_tiles' ), 5 );
+			// Profile completeness meter.
+			add_action( 'woocommerce_account_dashboard', array( $this, 'render_profile_meter' ), 4 );
 			// Replace the default WooCommerce navigation.
 			add_action( 'woocommerce_account_navigation', array( $this, 'render_menu' ), 5 );
 			// Inject per-endpoint custom content.
@@ -62,6 +69,15 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			$this->menu_items = $this->filter_visible( ACFW()->items->get_items() );
+
+			// Track endpoint views.
+			if ( is_user_logged_in() && 'yes' === get_option( 'acfw_track_views', 'no' ) ) {
+				$ep    = acfw_get_current_endpoint();
+				$views = get_option( 'acfw_endpoint_views', array() );
+				$views = is_array( $views ) ? $views : array();
+				$views[ $ep ] = ( isset( $views[ $ep ] ) ? (int) $views[ $ep ] : 0 ) + 1;
+				update_option( 'acfw_endpoint_views', $views, false );
+			}
 
 			// Remove the default WooCommerce navigation so ours takes over.
 			$priority = has_action( 'woocommerce_account_navigation', 'woocommerce_account_navigation' );
@@ -137,7 +153,17 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * Enqueue frontend styles/scripts on the account page.
 		 */
 		public function enqueue_assets() {
-			if ( ! $this->is_account ) {
+			if ( $this->is_account ) {
+				$this->enqueue_frontend();
+			}
+		}
+
+		/**
+		 * Enqueue the frontend styles/scripts ( also used by the shortcode/block ).
+		 */
+		public function enqueue_frontend() {
+
+			if ( wp_style_is( 'acfw-frontend', 'enqueued' ) ) {
 				return;
 			}
 
@@ -173,6 +199,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				array(
 					'ajaxNavigation' => 'yes' === get_option( 'acfw_ajax_navigation', 'no' ),
 					'contentSelector' => apply_filters( 'acfw_content_selector', '.woocommerce-MyAccount-content' ),
+					'logoutConfirm'  => 'yes' === get_option( 'acfw_logout_confirm', 'no' ),
+					'logoutMsg'      => __( 'Are you sure you want to log out?', 'account-customizer-for-woocommerce' ),
+					'searchPlaceholder' => __( 'Search…', 'account-customizer-for-woocommerce' ),
 				)
 			);
 		}
@@ -223,7 +252,21 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			if ( $hover_bg ) {
 				$vars .= '--acfw-hover-bg:' . $hover_bg . ';';
 			}
+
+			$fonts = array(
+				'system' => '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
+				'serif'  => 'Georgia,"Times New Roman",serif',
+				'mono'   => 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace',
+			);
+			$ff = get_option( 'acfw_font_family', 'inherit' );
+			if ( isset( $fonts[ $ff ] ) ) {
+				$vars .= '--acfw-font-family:' . $fonts[ $ff ] . ';';
+			}
 			$vars .= '}';
+
+			if ( isset( $fonts[ $ff ] ) ) {
+				$vars .= '.acfw-menu{font-family:var(--acfw-font-family);}';
+			}
 
 			return $vars;
 		}
@@ -353,6 +396,98 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		}
 
 		/**
+		 * Redirect after login to the chosen endpoint.
+		 *
+		 * @param string $redirect Default redirect URL.
+		 * @return string
+		 */
+		public function login_redirect( $redirect ) {
+			$ep = get_option( 'acfw_login_redirect', '' );
+			if ( $ep && function_exists( 'wc_get_account_endpoint_url' ) ) {
+				return ( 'dashboard' === $ep ) ? wc_get_page_permalink( 'myaccount' ) : wc_get_account_endpoint_url( $ep );
+			}
+			return $redirect;
+		}
+
+		/**
+		 * Redirect after logout.
+		 *
+		 * @param string $url Default logout redirect URL.
+		 * @return string
+		 */
+		public function logout_redirect( $url ) {
+			$o = get_option( 'acfw_logout_redirect', 'default' );
+			if ( 'home' === $o ) {
+				return home_url( '/' );
+			}
+			if ( 'login' === $o && function_exists( 'wc_get_page_permalink' ) ) {
+				return wc_get_page_permalink( 'myaccount' );
+			}
+			return $url;
+		}
+
+		/**
+		 * Show a message above the login form for logged-out visitors.
+		 */
+		public function guest_message() {
+			$msg = get_option( 'acfw_guest_message', '' );
+			if ( $msg ) {
+				echo '<div class="acfw-guest-message">' . wp_kses_post( wpautop( $msg ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+		}
+
+		/**
+		 * Render a profile-completeness meter on the dashboard.
+		 */
+		public function render_profile_meter() {
+			if ( 'yes' !== get_option( 'acfw_profile_meter', 'no' ) ) {
+				return;
+			}
+			$uid = get_current_user_id();
+			if ( ! $uid ) {
+				return;
+			}
+			$user   = wp_get_current_user();
+			$checks = array(
+				! empty( $user->first_name ),
+				! empty( $user->last_name ),
+				! empty( $user->user_email ),
+				! empty( get_user_meta( $uid, 'billing_phone', true ) ),
+				! empty( get_user_meta( $uid, 'billing_address_1', true ) ),
+			);
+			$total = count( $checks );
+			$done  = count( array_filter( $checks ) );
+			$pct   = $total ? (int) round( $done / $total * 100 ) : 0;
+			?>
+			<div class="acfw-profile-meter">
+				<div class="acfw-pm-head">
+					<strong><?php esc_html_e( 'Profile completeness', 'account-customizer-for-woocommerce' ); ?></strong>
+					<span><?php echo esc_html( $pct ); ?>%</span>
+				</div>
+				<div class="acfw-pm-bar"><span style="width:<?php echo esc_attr( $pct ); ?>%"></span></div>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Return the account menu markup ( for the shortcode / block ).
+		 *
+		 * @return string
+		 */
+		public function menu_markup() {
+			if ( ! is_user_logged_in() ) {
+				return '';
+			}
+			if ( empty( $this->menu_items ) ) {
+				$this->menu_items = $this->filter_visible( ACFW()->items->get_items() );
+			}
+			$this->enqueue_frontend();
+			ob_start();
+			$this->render_menu();
+			return ob_get_clean();
+		}
+
+		/**
 		 * Render the custom account menu.
 		 */
 		public function render_menu() {
@@ -375,7 +510,10 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'sticky'     => 'yes' === get_option( 'acfw_sticky_menu', 'no' ),
 					'indicator'  => get_option( 'acfw_active_indicator', 'bar' ),
 					'anim'       => get_option( 'acfw_hover_anim', 'none' ),
-					'frontend'   => $this,
+					'scheme'      => get_option( 'acfw_color_scheme', 'auto' ),
+					'collapsible' => 'yes' === get_option( 'acfw_collapsible', 'no' ),
+					'pinnable'    => 'yes' === get_option( 'acfw_pin_enable', 'no' ),
+					'frontend'    => $this,
 				)
 			);
 		}

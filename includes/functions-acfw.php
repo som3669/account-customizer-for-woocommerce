@@ -8,6 +8,26 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Option keys that make up a "design preset".
+ *
+ * @return array
+ */
+function acfw_design_option_keys() {
+	return apply_filters(
+		'acfw_design_option_keys',
+		array(
+			'acfw_menu_position', 'acfw_menu_layout', 'acfw_menu_preset', 'acfw_accent_color',
+			'acfw_text_color', 'acfw_active_color', 'acfw_menu_bg', 'acfw_hover_bg',
+			'acfw_menu_radius', 'acfw_menu_gap', 'acfw_item_padding', 'acfw_font_size',
+			'acfw_font_weight', 'acfw_font_family', 'acfw_color_scheme', 'acfw_active_indicator',
+			'acfw_hover_anim', 'acfw_show_icons', 'acfw_show_counts', 'acfw_group_open',
+			'acfw_avatar_enable', 'acfw_avatar_image', 'acfw_avatar_shape', 'acfw_avatar_align',
+			'acfw_avatar_size', 'acfw_avatar_show_name', 'acfw_avatar_show_role', 'acfw_custom_css',
+		)
+	);
+}
+
+/**
  * Full FontAwesome icon list ( class strings ) used by icon pickers.
  *
  * @return array
@@ -27,6 +47,43 @@ function acfw_icon_list() {
 function acfw_sanitize_icon( $value ) {
 	$value = wp_strip_all_tags( (string) $value );
 	return trim( preg_replace( '/[^a-z0-9 _-]/i', '', $value ) );
+}
+
+/**
+ * Points balance ( WooCommerce Points & Rewards, when active ).
+ *
+ * @param WP_User $user User.
+ * @return string
+ */
+function acfw_points_balance( $user ) {
+	if ( empty( $user->ID ) ) {
+		return '';
+	}
+	if ( function_exists( 'wc_points_rewards_get_users_points' ) ) {
+		return (string) wc_points_rewards_get_users_points( $user->ID );
+	}
+	return '';
+}
+
+/**
+ * Active membership plan name ( WooCommerce Memberships, when active ).
+ *
+ * @param WP_User $user User.
+ * @return string
+ */
+function acfw_membership_plan( $user ) {
+	if ( empty( $user->ID ) || ! function_exists( 'wc_memberships_get_user_active_memberships' ) ) {
+		return '';
+	}
+	$memberships = wc_memberships_get_user_active_memberships( $user->ID );
+	if ( ! empty( $memberships ) ) {
+		$first = reset( $memberships );
+		if ( is_object( $first ) && method_exists( $first, 'get_plan' ) ) {
+			$plan = $first->get_plan();
+			return $plan ? $plan->get_name() : '';
+		}
+	}
+	return '';
 }
 
 /**
@@ -134,6 +191,8 @@ function acfw_smart_tags() {
 			'{order_count}'  => __( 'Order count', 'account-customizer-for-woocommerce' ),
 			'{download_count}' => __( 'Download count', 'account-customizer-for-woocommerce' ),
 			'{last_login}'   => __( 'Last login date', 'account-customizer-for-woocommerce' ),
+			'{points_balance}' => __( 'Points balance', 'account-customizer-for-woocommerce' ),
+			'{membership_plan}' => __( 'Membership plan', 'account-customizer-for-woocommerce' ),
 		)
 	);
 }
@@ -191,6 +250,8 @@ function acfw_apply_smart_tags( $content, $user = null ) {
 		'{order_count}'  => (string) $orders,
 		'{download_count}' => (string) ( null === $downloads ? 0 : $downloads ),
 		'{last_login}'   => $last_login ? date_i18n( get_option( 'date_format' ), (int) $last_login ) : '',
+		'{points_balance}'  => acfw_points_balance( $user ),
+		'{membership_plan}' => acfw_membership_plan( $user ),
 		// Back-compat token.
 		'%%customer_name%%' => $user->display_name ?? '',
 	);

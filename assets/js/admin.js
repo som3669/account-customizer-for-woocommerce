@@ -207,6 +207,22 @@
 			}
 		} );
 
+		/* ---- Preview overlay (live account page in an iframe) ---- */
+		$( document ).on( 'click', '.acfw-preview-btn', function () {
+			var url = $( this ).data( 'url' );
+			if ( ! url ) {
+				return;
+			}
+			var $ov = $( '<div class="acfw-preview-overlay"><div class="acfw-preview-frame"><button type="button" class="acfw-preview-close" aria-label="Close">&times;</button><iframe src="' + url + '"></iframe></div></div>' );
+			$( 'body' ).append( $ov ).addClass( 'acfw-preview-open' );
+		} );
+		$( document ).on( 'click', '.acfw-preview-overlay, .acfw-preview-close', function ( e ) {
+			if ( e.target === this ) {
+				$( '.acfw-preview-overlay' ).remove();
+				$( 'body' ).removeClass( 'acfw-preview-open' );
+			}
+		} );
+
 		/* ---- Reset all settings confirm ---- */
 		$( document ).on( 'click', '.acfw-reset-btn', function ( e ) {
 			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {

@@ -129,6 +129,9 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$this->add_toggle( $wp_customize, 'acfw_show_counts', 'yes', __( 'Show item counts', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_dashboard_tiles', 'no', __( 'Dashboard quick-link tiles', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_menu_search', 'no', __( 'Menu search box', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_collapsible', 'no', __( 'Collapsible icon rail', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_pin_enable', 'no', __( 'Let customers pin favorites', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_profile_meter', 'no', __( 'Profile completeness meter', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_sticky_menu', 'no', __( 'Sticky menu', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_logout_confirm', 'no', __( 'Confirm before logout', 'account-customizer-for-woocommerce' ) );
 			$this->add_buttonset( $wp_customize, 'acfw_active_indicator', 'bar', __( 'Active indicator', 'account-customizer-for-woocommerce' ), array(
@@ -160,6 +163,17 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'400' => __( 'Normal', 'account-customizer-for-woocommerce' ),
 				'500' => __( 'Medium', 'account-customizer-for-woocommerce' ),
 				'600' => __( 'Bold', 'account-customizer-for-woocommerce' ),
+			) );
+			$this->add_buttonset( $wp_customize, 'acfw_font_family', 'inherit', __( 'Font family', 'account-customizer-for-woocommerce' ), array(
+				'inherit' => __( 'Theme', 'account-customizer-for-woocommerce' ),
+				'system'  => __( 'System', 'account-customizer-for-woocommerce' ),
+				'serif'   => __( 'Serif', 'account-customizer-for-woocommerce' ),
+				'mono'    => __( 'Mono', 'account-customizer-for-woocommerce' ),
+			) );
+			$this->add_buttonset( $wp_customize, 'acfw_color_scheme', 'auto', __( 'Color scheme', 'account-customizer-for-woocommerce' ), array(
+				'auto'  => __( 'Auto', 'account-customizer-for-woocommerce' ),
+				'light' => __( 'Light', 'account-customizer-for-woocommerce' ),
+				'dark'  => __( 'Dark', 'account-customizer-for-woocommerce' ),
 			) );
 			$this->add_css( $wp_customize, 'acfw_custom_css', __( 'Custom CSS', 'account-customizer-for-woocommerce' ) );
 
