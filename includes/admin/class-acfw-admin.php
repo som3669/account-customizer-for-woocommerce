@@ -87,28 +87,17 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 */
 		public function register_settings() {
 
+			// Only the options the Settings tab form actually contains. Design
+			// options ( colors, spacing, avatar, etc. ) are managed by the
+			// Customizer — registering them here would let a Settings-tab save
+			// blank them out via the Settings API.
 			$settings = array(
-				'acfw_menu_position'    => 'sanitize_text_field',
-				'acfw_menu_layout'      => 'sanitize_text_field',
 				'acfw_ajax_navigation'  => 'sanitize_text_field',
 				'acfw_default_endpoint' => 'sanitize_text_field',
 				'acfw_login_redirect'   => 'sanitize_text_field',
 				'acfw_logout_redirect'  => 'sanitize_text_field',
 				'acfw_guest_message'    => 'wp_kses_post',
 				'acfw_track_views'      => 'sanitize_text_field',
-				'acfw_accent_color'     => 'sanitize_hex_color',
-				'acfw_text_color'       => 'sanitize_hex_color',
-				'acfw_menu_radius'      => 'absint',
-				'acfw_menu_gap'         => 'absint',
-				'acfw_item_padding'     => 'absint',
-				'acfw_font_size'        => 'absint',
-				'acfw_font_weight'      => 'sanitize_text_field',
-				'acfw_avatar_enable'    => 'sanitize_text_field',
-				'acfw_avatar_shape'     => 'sanitize_text_field',
-				'acfw_avatar_align'     => 'sanitize_text_field',
-				'acfw_avatar_size'      => 'absint',
-				'acfw_avatar_show_name' => 'sanitize_text_field',
-				'acfw_avatar_show_role' => 'sanitize_text_field',
 			);
 
 			foreach ( $settings as $option => $sanitize ) {
