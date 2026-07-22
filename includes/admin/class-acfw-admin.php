@@ -127,7 +127,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'acfw-admin',
 				ACFW_ASSETS_URL . '/css/admin.css',
 				array(),
-				ACFW_VERSION
+				$this->asset_ver( 'css/admin.css' )
 			);
 
 			// Rich content editor + media for the endpoint content field.
@@ -158,7 +158,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'acfw-admin',
 				ACFW_ASSETS_URL . '/js/admin.js',
 				$deps,
-				ACFW_VERSION,
+				$this->asset_ver( 'js/admin.js' ),
 				true
 			);
 			wp_localize_script(
@@ -170,6 +170,17 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					'mediaButton'   => __( 'Use this image', 'account-customizer-for-woocommerce' ),
 				)
 			);
+		}
+
+		/**
+		 * Cache-busting asset version: file mtime when readable, else plugin version.
+		 *
+		 * @param string $rel Path relative to the assets directory.
+		 * @return string
+		 */
+		protected function asset_ver( $rel ) {
+			$file = ACFW_DIR . 'assets/' . ltrim( $rel, '/' );
+			return file_exists( $file ) ? (string) filemtime( $file ) : ACFW_VERSION;
 		}
 
 		/**
@@ -496,6 +507,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							</button>
 							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="link">
 								<span class="dashicons dashicons-admin-links"></span> <?php esc_html_e( 'Add link', 'account-customizer-for-woocommerce' ); ?>
+							</button>
+						<?php endif; ?>
+						<?php if ( 'banners' === $tab ) : ?>
+							<button type="button" class="button acfw-header-btn acfw-add-banner-btn">
+								<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add banner', 'account-customizer-for-woocommerce' ); ?>
 							</button>
 						<?php endif; ?>
 						<?php if ( function_exists( 'wc_get_page_permalink' ) ) : ?>
@@ -1000,20 +1016,51 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$banners = ACFW_Banners::all();
 			?>
-			<div class="acfw-card">
-				<h2 class="acfw-section-title"><?php esc_html_e( 'Add a banner', 'account-customizer-for-woocommerce' ); ?></h2>
-				<p class="acfw-hint"><?php esc_html_e( 'Create reusable widget or image banners, then assign them to an endpoint from the Menu Items tab.', 'account-customizer-for-woocommerce' ); ?></p>
-				<?php $this->render_banner_form( '', ACFW_Banners::defaults(), true ); ?>
-			</div>
+			<div class="acfw-builder">
+				<div class="acfw-builder-layout">
 
-			<?php if ( ! empty( $banners ) ) : ?>
-				<div class="acfw-card">
-					<h2 class="acfw-section-title"><?php esc_html_e( 'Your banners', 'account-customizer-for-woocommerce' ); ?></h2>
-					<?php foreach ( $banners as $slug => $banner ) : ?>
-						<?php $this->render_banner_form( $slug, wp_parse_args( $banner, ACFW_Banners::defaults() ), false ); ?>
-					<?php endforeach; ?>
+					<div class="acfw-card acfw-builder-list">
+						<ul class="acfw-sortable-root acfw-banner-node-list">
+							<?php foreach ( $banners as $slug => $banner ) : ?>
+								<?php $this->render_banner_row( $slug, wp_parse_args( $banner, ACFW_Banners::defaults() ) ); ?>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+
+					<div class="acfw-card acfw-builder-detail">
+						<div class="acfw-detail-empty">
+							<span class="dashicons dashicons-arrow-left-alt"></span>
+							<p><?php esc_html_e( 'Select a banner on the left to edit it, or click "Add banner" above to create one.', 'account-customizer-for-woocommerce' ); ?></p>
+						</div>
+
+						<?php $this->render_banner_form( '', ACFW_Banners::defaults(), true ); ?>
+
+						<?php foreach ( $banners as $slug => $banner ) : ?>
+							<?php $this->render_banner_form( $slug, wp_parse_args( $banner, ACFW_Banners::defaults() ), false ); ?>
+						<?php endforeach; ?>
+					</div>
 				</div>
-			<?php endif; ?>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Render a single banner row in the left list.
+		 *
+		 * @param string $slug   Banner slug.
+		 * @param array  $banner Banner options.
+		 */
+		protected function render_banner_row( $slug, $banner ) {
+			?>
+			<li class="acfw-node" data-key="<?php echo esc_attr( $slug ); ?>">
+				<div class="acfw-node-head">
+					<?php echo $this->icon_markup( $banner, 'acfw-node-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<span class="acfw-node-title"><?php echo esc_html( $banner['title'] ? $banner['title'] : $slug ); ?></span>
+					<span class="acfw-node-badge acfw-badge-<?php echo esc_attr( $banner['type'] ); ?>"><?php echo esc_html( $banner['type'] ); ?></span>
+					<span class="acfw-node-spacer"></span>
+					<button type="button" class="acfw-banner-row-delete dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'account-customizer-for-woocommerce' ); ?>" data-slug="<?php echo esc_attr( $slug ); ?>"></button>
+				</div>
+			</li>
 			<?php
 		}
 
@@ -1027,17 +1074,23 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		protected function render_banner_form( $slug, $banner, $is_new ) {
 			$roles     = wp_roles()->get_names();
 			$sel_roles = (array) ( $banner['roles'] ?? array() );
+			$key       = $is_new ? '__new__' : $slug;
 			?>
+			<div class="acfw-detail" data-key="<?php echo esc_attr( $key ); ?>" hidden>
 			<form method="post" class="acfw-banner-form">
 				<?php wp_nonce_field( self::NONCE ); ?>
 				<input type="hidden" name="acfw_action" value="save_banner" />
 				<?php if ( ! $is_new ) : ?>
 					<input type="hidden" name="banner_key" value="<?php echo esc_attr( $slug ); ?>" />
-					<div class="acfw-banner-form-head">
-						<strong><?php echo esc_html( $banner['title'] ? $banner['title'] : $slug ); ?></strong>
-						<span class="acfw-node-badge acfw-badge-<?php echo esc_attr( $banner['type'] ); ?>"><?php echo esc_html( $banner['type'] ); ?></span>
-					</div>
 				<?php endif; ?>
+
+				<div class="acfw-detail-head">
+					<?php echo $this->icon_markup( $banner, 'acfw-detail-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<h2 class="acfw-detail-title"><?php echo esc_html( $is_new ? __( 'Add a banner', 'account-customizer-for-woocommerce' ) : ( $banner['title'] ? $banner['title'] : $slug ) ); ?></h2>
+					<?php if ( ! $is_new ) : ?>
+						<span class="acfw-node-badge acfw-badge-<?php echo esc_attr( $banner['type'] ); ?>"><?php echo esc_html( $banner['type'] ); ?></span>
+					<?php endif; ?>
+				</div>
 
 				<div class="acfw-field">
 					<label><?php esc_html_e( 'Banner name', 'account-customizer-for-woocommerce' ); ?></label>
@@ -1144,6 +1197,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<button type="submit" class="button button-primary"><?php echo $is_new ? esc_html__( 'Create banner', 'account-customizer-for-woocommerce' ) : esc_html__( 'Save banner', 'account-customizer-for-woocommerce' ); ?></button>
 				</div>
 			</form>
+			</div>
 			<?php
 		}
 
@@ -1293,7 +1347,9 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						<span class="acfw-switch-slider"></span>
 					</label>
 					<button type="button" class="acfw-node-duplicate dashicons dashicons-admin-page" title="<?php esc_attr_e( 'Duplicate', 'account-customizer-for-woocommerce' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
-					<?php if ( ! $is_default ) : ?>
+					<?php if ( $is_default ) : ?>
+						<button type="button" class="acfw-node-remove is-disabled dashicons dashicons-trash" title="<?php esc_attr_e( 'Default items cannot be deleted', 'account-customizer-for-woocommerce' ); ?>" disabled aria-disabled="true"></button>
+					<?php else : ?>
 						<button type="button" class="acfw-node-remove dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'account-customizer-for-woocommerce' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
 					<?php endif; ?>
 				</div>

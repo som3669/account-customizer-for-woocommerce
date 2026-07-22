@@ -42,6 +42,12 @@
 			$addForm.hide();
 		} );
 
+		/* ---- Add banner (banners tab) ---- */
+		$( '.acfw-add-banner-btn' ).on( 'click', function () {
+			selectItem( '__new__' );
+			$( '.acfw-detail[data-key="__new__"]' ).find( 'input[name="banner_title"]' ).focus();
+		} );
+
 		/* ---- Select a row → show its detail form ---- */
 		function selectItem( key ) {
 			$( '.acfw-node' ).removeClass( 'is-selected' );
@@ -63,7 +69,7 @@
 		}
 
 		$( document ).on( 'click', '.acfw-node-head', function ( e ) {
-			if ( $( e.target ).closest( '.acfw-drag, .acfw-node-remove, .acfw-node-duplicate, .acfw-switch' ).length ) {
+			if ( $( e.target ).closest( '.acfw-drag, .acfw-node-remove, .acfw-node-duplicate, .acfw-switch, .acfw-banner-row-delete' ).length ) {
 				return;
 			}
 			selectItem( $( this ).closest( '.acfw-node' ).data( 'key' ) );
@@ -73,6 +79,8 @@
 		var $firstNode = $( '.acfw-sortable-root > .acfw-node' ).first();
 		if ( $firstNode.length ) {
 			selectItem( $firstNode.data( 'key' ) );
+		} else if ( $( '.acfw-detail[data-key="__new__"]' ).length ) {
+			selectItem( '__new__' );
 		}
 
 		/* ---- Active on/off toggle (saved with the single Save button) ---- */
@@ -237,6 +245,18 @@
 				return;
 			}
 			$( this ).closest( 'form' ).find( 'input[name="acfw_action"]' ).val( 'remove_banner' );
+		} );
+
+		/* ---- Delete banner from the left list row ---- */
+		$( document ).on( 'click', '.acfw-banner-row-delete', function ( e ) {
+			e.stopPropagation();
+			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {
+				return;
+			}
+			var slug = $( this ).data( 'slug' );
+			$( '.acfw-detail[data-key="' + slug + '"] form.acfw-banner-form' )
+				.find( 'input[name="acfw_action"]' ).val( 'remove_banner' ).end()
+				.trigger( 'submit' );
 		} );
 
 		/* ---- Push TinyMCE content back to textareas before save ---- */

@@ -164,6 +164,10 @@
 	min-height: 34px;
 }
 
+.wp-core-ui select {
+	line-height: 2 !important;
+}
+
 .acfw-range-val {
 	display: inline-block;
 	margin-left: 10px;
@@ -517,6 +521,16 @@
 	color: #b32d2e;
 }
 
+.acfw-node-remove.is-disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.acfw-node-remove.is-disabled:hover {
+	background: none;
+	color: #b5bcc4;
+}
+
 .acfw-node-placeholder {
 	border: 2px dashed var(--acfw-accent);
 	border-radius: 10px;
@@ -676,26 +690,26 @@
 .select2-container--default .select2-selection--multiple {
 	border: 1px solid var(--acfw-border, #e2e4e7) !important;
 	border-radius: 8px !important;
-	min-height: 40px;
-	padding: 3px 6px;
-	line-height: 1.6;
+	min-height: 36px;
+	padding: 2px 6px;
+	line-height: 1.5;
 }
 
 /* Single select ( icon picker ): match input height + show glyph and label */
 .select2-container--default .select2-selection--single {
-	height: 38px !important;
+	height: 36px !important;
 	border: 1px solid var(--acfw-border, #e2e4e7) !important;
 	border-radius: 8px !important;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
-	line-height: 36px !important;
+	line-height: 34px !important;
 	padding-left: 12px;
 	color: var(--acfw-text, #383838);
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow {
-	height: 36px !important;
+	height: 34px !important;
 }
 
 .acfw-icon-opt i {
@@ -808,6 +822,10 @@
 	grid-column: 1;
 }
 
+.acfw-field > label.acfw-switch {
+	padding-top: 0;
+}
+
 /* Any control(s) after the label stack in the second column, full width. */
 .acfw-field > :not(label) {
 	grid-column: 2;
@@ -816,6 +834,8 @@
 
 .acfw-field input[type="text"],
 .acfw-field input[type="url"],
+.acfw-field input[type="date"],
+.acfw-field input[type="number"],
 .acfw-field select,
 .acfw-field textarea,
 .acfw-field .acfw-icon-select {
@@ -824,6 +844,17 @@
 	border-radius: 8px;
 	border: 1px solid var(--acfw-border);
 	min-height: 36px;
+	padding: 4px 10px;
+	box-sizing: border-box;
+}
+
+.acfw-field input[type="date"]:focus,
+.acfw-field input[type="number"]:focus,
+.acfw-field input[type="text"]:focus,
+.acfw-field input[type="url"]:focus {
+	border-color: var(--acfw-accent);
+	box-shadow: 0 0 0 1px var(--acfw-accent);
+	outline: none;
 }
 
 .acfw-hint {
