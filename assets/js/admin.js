@@ -238,9 +238,21 @@
 			applyBannerType( $( this ).closest( '.acfw-detail' ) );
 		} );
 
+		/* ---- Banner link: show endpoint / external URL per link type ---- */
+		function applyBannerLink( $form ) {
+			var type = $form.find( 'input[name="banner_link_type"]:checked' ).val() || 'none';
+			$form.find( '.acfw-blink-endpoint' ).attr( 'hidden', 'endpoint' === type ? null : 'hidden' );
+			$form.find( '.acfw-blink-external' ).attr( 'hidden', 'external' === type ? null : 'hidden' );
+		}
+
+		$( document ).on( 'change', 'input[name="banner_link_type"]', function () {
+			applyBannerLink( $( this ).closest( '.acfw-detail' ) );
+		} );
+
 		// Initial state for every banner form on the page.
 		$( '.acfw-detail:has(input[name="banner_type"])' ).each( function () {
 			applyBannerType( $( this ) );
+			applyBannerLink( $( this ) );
 		} );
 
 		/* ---- Icon source toggle ---- */

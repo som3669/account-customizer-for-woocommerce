@@ -1166,7 +1166,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<?php $this->uploader( 'banner_image_url', $banner['image_url'] ); ?>
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Banner colors', 'account-customizer-for-woocommerce' ); ?></label>
 					<div class="acfw-swatch-row">
 						<?php foreach ( ACFW_Banners::color_fields() as $ckey => $clabel ) : ?>
@@ -1175,7 +1175,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					</div>
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Show item-count badge', 'account-customizer-for-woocommerce' ); ?></label>
 					<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="banner_show_count" value="yes" <?php checked( 'yes', $banner['show_count'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
 				</div>
@@ -1185,7 +1185,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<?php $this->buttonset( 'banner_link_type', $banner['link_type'] ?? 'none', array( 'none' => __( 'None', 'account-customizer-for-woocommerce' ), 'endpoint' => __( 'Endpoint', 'account-customizer-for-woocommerce' ), 'external' => __( 'External URL', 'account-customizer-for-woocommerce' ) ), 'none' ); ?>
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-blink acfw-blink-endpoint">
 					<label><?php esc_html_e( 'Link endpoint', 'account-customizer-for-woocommerce' ); ?></label>
 					<select name="banner_link_endpoint">
 						<option value=""><?php esc_html_e( '— Select —', 'account-customizer-for-woocommerce' ); ?></option>
@@ -1196,7 +1196,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					</select>
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-blink acfw-blink-external">
 					<label><?php esc_html_e( 'External URL', 'account-customizer-for-woocommerce' ); ?></label>
 					<input type="url" name="banner_link" value="<?php echo esc_attr( $banner['link'] ); ?>" placeholder="https://…" />
 				</div>
