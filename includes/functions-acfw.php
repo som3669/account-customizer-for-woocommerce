@@ -129,6 +129,38 @@ function acfw_sanitize_key( $value ) {
 }
 
 /**
+ * Sanitize a colour value: 3/6-digit hex or rgb()/rgba() ( alpha supported ).
+ * Returns '' for anything else.
+ *
+ * @param string $value Raw colour string.
+ * @return string
+ */
+function acfw_sanitize_color( $value ) {
+	$value = trim( (string) $value );
+	if ( '' === $value ) {
+		return '';
+	}
+	// Hex ( #rgb / #rrggbb ).
+	$hex = sanitize_hex_color( $value );
+	if ( $hex ) {
+		return $hex;
+	}
+	// rgb() / rgba().
+	if ( preg_match( '/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(0|1|0?\.\d+)\s*)?\)$/i', $value, $m ) ) {
+		$r = min( 255, (int) $m[1] );
+		$g = min( 255, (int) $m[2] );
+		$b = min( 255, (int) $m[3] );
+		if ( isset( $m[4] ) && '' !== $m[4] ) {
+			$a = (float) $m[4];
+			$a = max( 0, min( 1, $a ) );
+			return sprintf( 'rgba(%d, %d, %d, %s)', $r, $g, $b, rtrim( rtrim( sprintf( '%.2f', $a ), '0' ), '.' ) );
+		}
+		return sprintf( 'rgb(%d, %d, %d)', $r, $g, $b );
+	}
+	return '';
+}
+
+/**
  * Get the currently requested My Account endpoint key.
  *
  * Falls back to 'dashboard' when no endpoint query var is present.

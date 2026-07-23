@@ -306,15 +306,16 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					break;
 
 				case 'save_banner':
-					$roles = isset( $_POST['banner_roles'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['banner_roles'] ) ) : array();
+					$roles       = isset( $_POST['banner_roles'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['banner_roles'] ) ) : array();
+					$icon_source = isset( $_POST['banner_icon_source'] ) ? sanitize_key( wp_unslash( $_POST['banner_icon_source'] ) ) : 'choose';
 					$bdata = array(
 						'type'          => isset( $_POST['banner_type'] ) ? sanitize_key( wp_unslash( $_POST['banner_type'] ) ) : 'widget',
 						'title'         => isset( $_POST['banner_title'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_title'] ) ) : '',
 						'content'       => isset( $_POST['banner_content'] ) ? wp_kses_post( wp_unslash( $_POST['banner_content'] ) ) : '',
 						'image_url'     => isset( $_POST['banner_image_url'] ) ? esc_url_raw( wp_unslash( $_POST['banner_image_url'] ) ) : '',
-						'icon'          => isset( $_POST['banner_icon'] ) ? acfw_sanitize_icon( wp_unslash( $_POST['banner_icon'] ) ) : '',
-						'icon_source'   => isset( $_POST['banner_icon_source'] ) ? sanitize_key( wp_unslash( $_POST['banner_icon_source'] ) ) : 'choose',
-						'icon_url'      => isset( $_POST['banner_icon_url'] ) ? esc_url_raw( wp_unslash( $_POST['banner_icon_url'] ) ) : '',
+						'icon'          => ( 'upload' !== $icon_source && isset( $_POST['banner_icon'] ) ) ? acfw_sanitize_icon( wp_unslash( $_POST['banner_icon'] ) ) : '',
+						'icon_source'   => 'upload' === $icon_source ? 'upload' : 'choose',
+						'icon_url'      => ( 'upload' === $icon_source && isset( $_POST['banner_icon_url'] ) ) ? esc_url_raw( wp_unslash( $_POST['banner_icon_url'] ) ) : '',
 						'icon_width'    => isset( $_POST['banner_icon_width'] ) ? absint( wp_unslash( $_POST['banner_icon_width'] ) ) : 40,
 						'widget_width'  => isset( $_POST['banner_widget_width'] ) ? absint( wp_unslash( $_POST['banner_widget_width'] ) ) : 250,
 						'show_count'    => ! empty( $_POST['banner_show_count'] ) ? 'yes' : 'no',
@@ -324,7 +325,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						'roles'         => $roles,
 					);
 					foreach ( array_keys( ACFW_Banners::color_fields() ) as $ckey ) {
-						$bdata[ $ckey ] = isset( $_POST[ 'banner_' . $ckey ] ) ? sanitize_hex_color( wp_unslash( $_POST[ 'banner_' . $ckey ] ) ) : '';
+						$bdata[ $ckey ] = isset( $_POST[ 'banner_' . $ckey ] ) ? acfw_sanitize_color( wp_unslash( $_POST[ 'banner_' . $ckey ] ) ) : '';
 					}
 					ACFW_Banners::save(
 						isset( $_POST['banner_key'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_key'] ) ) : '',
@@ -931,6 +932,31 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		}
 
 		/**
+		 * Round swatch color control with popover picker + alpha + hex input.
+		 * Vanilla port of the reference plugin's banner colour control.
+		 *
+		 * @param string $name  Field name.
+		 * @param string $value Current colour ( hex or rgba ).
+		 * @param string $label Swatch caption.
+		 */
+		protected function color_control( $name, $value, $label = '' ) {
+			$value = trim( (string) $value );
+			?>
+			<span class="acfw-swatch">
+				<span class="acfw-bcp-root">
+					<button type="button" class="acfw-bcp-control" aria-label="<?php echo esc_attr( $label ? $label : __( 'Select colour', 'account-customizer-for-woocommerce' ) ); ?>">
+						<span class="acfw-bcp-swatch" style="--acfw-bcp-color: <?php echo esc_attr( $value ? $value : 'transparent' ); ?>;"></span>
+					</button>
+					<input type="hidden" name="<?php echo esc_attr( $name ); ?>" class="acfw-bcp-input" value="<?php echo esc_attr( $value ); ?>" />
+				</span>
+				<?php if ( $label ) : ?>
+					<span class="acfw-swatch-label"><?php echo esc_html( $label ); ?></span>
+				<?php endif; ?>
+			</span>
+			<?php
+		}
+
+		/**
 		 * Add an "Add smart tags" button beside the editor's Add Media button.
 		 * Fires on the core `media_buttons` hook; only for our editors.
 		 *
@@ -994,12 +1020,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			$current = ( '' === $current || null === $current ) ? $default : $current;
 			echo '<div class="acfw-radio-group" role="radiogroup">';
 			foreach ( $choices as $value => $label ) {
-				$id     = sanitize_html_class( $name . '-' . $value );
 				$active = (string) $current === (string) $value;
 				printf(
-					'<label class="acfw-radio-box%1$s" for="%2$s"><input type="radio" id="%2$s" name="%3$s" value="%4$s" %5$s /><span class="acfw-radio-dot"></span><span class="acfw-radio-text">%6$s</span></label>',
+					'<label class="acfw-radio-box%1$s"><input type="radio" name="%2$s" value="%3$s" %4$s /><span class="acfw-radio-dot"></span><span class="acfw-radio-text">%5$s</span></label>',
 					$active ? ' is-active' : '',
-					esc_attr( $id ),
 					esc_attr( $name ),
 					esc_attr( $value ),
 					checked( $current, $value, false ),
@@ -1102,7 +1126,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<?php $this->buttonset( 'banner_type', $banner['type'], array( 'widget' => __( 'Widget', 'account-customizer-for-woocommerce' ), 'image' => __( 'Image', 'account-customizer-for-woocommerce' ) ), 'widget' ); ?>
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Banner icon', 'account-customizer-for-woocommerce' ); ?></label>
 					<?php $b_icon_src = ( 'upload' === ( $banner['icon_source'] ?? 'choose' ) || ! empty( $banner['icon_url'] ) ) ? 'upload' : 'choose'; ?>
 					<div class="acfw-icon-source">
@@ -1122,22 +1146,22 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					</div>
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Icon width (px)', 'account-customizer-for-woocommerce' ); ?></label>
 					<input type="number" name="banner_icon_width" min="16" max="100" value="<?php echo esc_attr( $banner['icon_width'] ?? 40 ); ?>" />
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Widget width (px)', 'account-customizer-for-woocommerce' ); ?></label>
 					<input type="number" name="banner_widget_width" min="200" max="700" value="<?php echo esc_attr( $banner['widget_width'] ?? 250 ); ?>" />
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Widget text', 'account-customizer-for-woocommerce' ); ?></label>
 					<textarea name="banner_content" rows="3"><?php echo esc_textarea( $banner['content'] ); ?></textarea>
 				</div>
 
-				<div class="acfw-field">
+				<div class="acfw-field acfw-btype acfw-btype-image">
 					<label><?php esc_html_e( 'Image', 'account-customizer-for-woocommerce' ); ?></label>
 					<?php $this->uploader( 'banner_image_url', $banner['image_url'] ); ?>
 				</div>
@@ -1146,10 +1170,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<label><?php esc_html_e( 'Banner colors', 'account-customizer-for-woocommerce' ); ?></label>
 					<div class="acfw-swatch-row">
 						<?php foreach ( ACFW_Banners::color_fields() as $ckey => $clabel ) : ?>
-							<span class="acfw-swatch">
-								<input type="text" name="banner_<?php echo esc_attr( $ckey ); ?>" class="acfw-color" value="<?php echo esc_attr( $banner[ $ckey ] ?? '' ); ?>" />
-								<span class="acfw-swatch-label"><?php echo esc_html( $clabel ); ?></span>
-							</span>
+							<?php $this->color_control( 'banner_' . $ckey, $banner[ $ckey ] ?? '', $clabel ); ?>
 						<?php endforeach; ?>
 					</div>
 				</div>
@@ -1534,11 +1555,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * @return string
 		 */
 		protected function icon_markup( $item, $class ) {
-			$icon = ! empty( $item['icon'] ) ? $item['icon'] : '';
-			if ( empty( $item['icon_url'] ) && '' === $icon ) {
+			$icon_url = $item['icon_url'] ?? '';
+			$upload   = 'upload' === ( $item['icon_source'] ?? 'choose' );
+			$icon     = ( ! $upload && ! empty( $item['icon'] ) ) ? $item['icon'] : '';
+			if ( empty( $icon_url ) && '' === $icon ) {
 				$icon = 'dashicons-menu-alt';
 			}
-			return acfw_icon_markup( $icon, $item['icon_url'] ?? '', $class );
+			return acfw_icon_markup( $icon, $icon_url, $class );
 		}
 
 		/**

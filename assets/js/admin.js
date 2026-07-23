@@ -4,10 +4,137 @@
 
 	$( function () {
 
-		/* ---- Color pickers ---- */
+		/* ---- Color pickers ( legacy iris, if any .acfw-color remain ) ---- */
 		if ( $.fn.wpColorPicker ) {
 			$( '.acfw-color' ).wpColorPicker();
 		}
+
+		/* ---- Round swatch colour control ( popover + alpha + hex ) ---- */
+		var $bcpPop = null;
+		var $bcpRoot = null;
+
+		function bcpParse( val ) {
+			val = ( val || '' ).trim();
+			var m = val.match( /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([0-9.]+)\s*)?\)$/i );
+			if ( m ) {
+				return {
+					hex: bcpRgbToHex( +m[1], +m[2], +m[3] ),
+					alpha: ( undefined !== m[4] && '' !== m[4] ) ? parseFloat( m[4] ) : 1
+				};
+			}
+			if ( /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test( val ) ) {
+				return { hex: bcpNormHex( val ), alpha: 1 };
+			}
+			return { hex: '#000000', alpha: 1 };
+		}
+
+		function bcpNormHex( h ) {
+			h = h.replace( '#', '' );
+			if ( 3 === h.length ) {
+				h = h[ 0 ] + h[ 0 ] + h[ 1 ] + h[ 1 ] + h[ 2 ] + h[ 2 ];
+			}
+			return '#' + h.toLowerCase();
+		}
+
+		function bcpRgbToHex( r, g, b ) {
+			function h( n ) {
+				n = Math.max( 0, Math.min( 255, n ) ).toString( 16 );
+				return 1 === n.length ? '0' + n : n;
+			}
+			return '#' + h( r ) + h( g ) + h( b );
+		}
+
+		function bcpToValue( hex, alpha ) {
+			if ( alpha >= 1 ) {
+				return hex;
+			}
+			var h = hex.replace( '#', '' );
+			var r = parseInt( h.substr( 0, 2 ), 16 );
+			var g = parseInt( h.substr( 2, 2 ), 16 );
+			var b = parseInt( h.substr( 4, 2 ), 16 );
+			return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + ( Math.round( alpha * 100 ) / 100 ) + ')';
+		}
+
+		function bcpClose() {
+			if ( $bcpPop ) {
+				$bcpPop.remove();
+				$bcpPop = null;
+				$bcpRoot = null;
+			}
+		}
+
+		$( document ).on( 'click', '.acfw-bcp-control', function ( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			var $root = $( this ).closest( '.acfw-bcp-root' );
+			if ( $bcpRoot && $bcpRoot[ 0 ] === $root[ 0 ] ) {
+				bcpClose();
+				return;
+			}
+			bcpClose();
+			$bcpRoot = $root;
+
+			var $input = $root.find( '.acfw-bcp-input' );
+			var parsed = bcpParse( $input.val() );
+
+			$bcpPop = $(
+				'<div class="acfw-bcp-popover">' +
+					'<input type="color" class="acfw-bcp-color" value="' + parsed.hex + '" />' +
+					'<input type="range" class="acfw-bcp-alpha" min="0" max="100" value="' + Math.round( parsed.alpha * 100 ) + '" />' +
+					'<div class="acfw-bcp-alpha-label"><span>Opacity</span><span class="acfw-bcp-alpha-val">' + Math.round( parsed.alpha * 100 ) + '%</span></div>' +
+					'<div class="acfw-bcp-fields">' +
+						'<input type="text" class="acfw-bcp-hex" value="' + $input.val() + '" placeholder="#rrggbb" />' +
+						'<button type="button" class="acfw-bcp-clear">Clear</button>' +
+					'</div>' +
+				'</div>'
+			);
+			$( 'body' ).append( $bcpPop );
+
+			var off = $( this ).offset();
+			$bcpPop.css( {
+				top: off.top + $( this ).outerHeight() + 6,
+				left: off.left
+			} );
+
+			function apply( hex, alpha ) {
+				var val = bcpToValue( hex, alpha );
+				$input.val( val );
+				$root.find( '.acfw-bcp-swatch' ).css( '--acfw-bcp-color', val );
+				$bcpPop.find( '.acfw-bcp-hex' ).val( val );
+			}
+
+			$bcpPop.on( 'input', '.acfw-bcp-color', function () {
+				apply( this.value, $bcpPop.find( '.acfw-bcp-alpha' ).val() / 100 );
+			} );
+			$bcpPop.on( 'input', '.acfw-bcp-alpha', function () {
+				$bcpPop.find( '.acfw-bcp-alpha-val' ).text( this.value + '%' );
+				apply( $bcpPop.find( '.acfw-bcp-color' ).val(), this.value / 100 );
+			} );
+			$bcpPop.on( 'change', '.acfw-bcp-hex', function () {
+				var p = bcpParse( this.value );
+				$bcpPop.find( '.acfw-bcp-color' ).val( p.hex );
+				$bcpPop.find( '.acfw-bcp-alpha' ).val( Math.round( p.alpha * 100 ) );
+				$bcpPop.find( '.acfw-bcp-alpha-val' ).text( Math.round( p.alpha * 100 ) + '%' );
+				apply( p.hex, p.alpha );
+			} );
+			$bcpPop.on( 'click', '.acfw-bcp-clear', function () {
+				$input.val( '' );
+				$root.find( '.acfw-bcp-swatch' ).css( '--acfw-bcp-color', 'transparent' );
+				bcpClose();
+			} );
+			$bcpPop.on( 'click', function ( ev ) {
+				ev.stopPropagation();
+			} );
+		} );
+
+		$( document ).on( 'click', function () {
+			bcpClose();
+		} );
+		$( document ).on( 'keydown', function ( ev ) {
+			if ( 27 === ev.keyCode ) {
+				bcpClose();
+			}
+		} );
 
 		/* ---- Role chips + searchable icon picker with glyphs (bundled select2) ---- */
 		if ( $.fn.select2 ) {
@@ -95,6 +222,25 @@
 		$( document ).on( 'change', '.acfw-radio-group input[type="radio"]', function () {
 			$( this ).closest( '.acfw-radio-group' ).find( '.acfw-radio-box, .acfw-image-card' ).removeClass( 'is-active' );
 			$( this ).closest( '.acfw-radio-box, .acfw-image-card' ).addClass( 'is-active' );
+		} );
+
+		/* ---- Banner type: show only the relevant controls (widget vs image) ---- */
+		function applyBannerType( $form ) {
+			var type = $form.find( 'input[name="banner_type"]:checked' ).val() || 'widget';
+			$form.find( '.acfw-btype-widget' ).attr( 'hidden', 'image' === type ? 'hidden' : null );
+			$form.find( '.acfw-btype-image' ).attr( 'hidden', 'widget' === type ? 'hidden' : null );
+			$form.find( '.acfw-detail-head .acfw-node-badge' )
+				.attr( 'class', 'acfw-node-badge acfw-badge-' + type )
+				.text( type );
+		}
+
+		$( document ).on( 'change', 'input[name="banner_type"]', function () {
+			applyBannerType( $( this ).closest( '.acfw-detail' ) );
+		} );
+
+		// Initial state for every banner form on the page.
+		$( '.acfw-detail:has(input[name="banner_type"])' ).each( function () {
+			applyBannerType( $( this ) );
 		} );
 
 		/* ---- Icon source toggle ---- */
