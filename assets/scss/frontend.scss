@@ -1135,3 +1135,64 @@
 	border-radius: 3px;
 	flex: 0 0 12px;
 }
+
+/* =========================================================================
+   Layout: theme style – strip plugin styling, inherit the theme's look
+   ========================================================================= */
+.acfw-menu.layout-theme {
+	padding: 0;
+	border: 0;
+}
+
+.acfw-menu.layout-theme .acfw-menu-item > a,
+.acfw-menu.layout-theme .acfw-group-toggle {
+	background: none;
+	border: 0;
+	box-shadow: none;
+	border-radius: 0;
+	padding: 8px 0;
+	color: inherit;
+	font-weight: inherit;
+}
+
+.acfw-menu.layout-theme .acfw-menu-item > a:hover,
+.acfw-menu.layout-theme .acfw-group-toggle:hover {
+	background: none;
+	color: inherit;
+	transform: none;
+}
+
+.acfw-menu.layout-theme .acfw-menu-item.is-active > a {
+	background: none;
+	box-shadow: none;
+	color: inherit;
+	font-weight: 700;
+}
+
+.acfw-menu.layout-theme .acfw-icon {
+	color: inherit;
+	width: auto;
+	font-size: inherit;
+}
+
+/* =========================================================================
+   Dashboard column template ( left / center / right )
+   ========================================================================= */
+body.acfw-dash-tpl-center .woocommerce-MyAccount-content,
+body.acfw-dash-tpl-left .woocommerce-MyAccount-content,
+body.acfw-dash-tpl-right .woocommerce-MyAccount-content {
+	max-width: 760px;
+}
+
+body.acfw-dash-tpl-center .woocommerce-MyAccount-content {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+body.acfw-dash-tpl-left .woocommerce-MyAccount-content {
+	margin-right: auto;
+}
+
+body.acfw-dash-tpl-right .woocommerce-MyAccount-content {
+	margin-left: auto;
+}

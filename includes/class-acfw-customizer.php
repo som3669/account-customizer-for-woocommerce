@@ -116,6 +116,7 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'horizontal'     => array( 'name' => __( 'Top', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'top-horizontal.svg' ) ),
 			) );
 			$this->add_buttonset( $wp_customize, 'acfw_menu_layout', 'simple', __( 'Menu layout', 'account-customizer-for-woocommerce' ), array(
+				'theme'      => __( 'Theme style', 'account-customizer-for-woocommerce' ),
 				'simple'     => __( 'Simple', 'account-customizer-for-woocommerce' ),
 				'classic'    => __( 'Classic', 'account-customizer-for-woocommerce' ),
 				'modern'     => __( 'Modern', 'account-customizer-for-woocommerce' ),

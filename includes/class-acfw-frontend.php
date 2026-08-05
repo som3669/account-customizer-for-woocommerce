@@ -58,6 +58,24 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			// Endpoint banners (top / bottom).
 			add_action( 'woocommerce_account_content', array( $this, 'render_banner_top' ), 2 );
 			add_action( 'woocommerce_account_content', array( $this, 'render_banner_bottom' ), 20 );
+
+			// Dashboard column template ( left / center / right ) via body class.
+			add_filter( 'body_class', array( $this, 'body_class' ) );
+		}
+
+		/**
+		 * Add a body class for the dashboard column template on the dashboard endpoint.
+		 *
+		 * @param array $classes Body classes.
+		 * @return array
+		 */
+		public function body_class( $classes ) {
+			if ( $this->is_account && 'dashboard' === acfw_get_current_endpoint() ) {
+				$tpl = get_option( 'acfw_dashboard_align', 'left' );
+				$tpl = in_array( $tpl, array( 'left', 'center', 'right' ), true ) ? $tpl : 'left';
+				$classes[] = 'acfw-dash-tpl-' . $tpl;
+			}
+			return $classes;
 		}
 
 		/**

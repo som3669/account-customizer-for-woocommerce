@@ -28,6 +28,99 @@ function acfw_design_option_keys() {
 }
 
 /**
+ * Curated, shipped design templates users can apply with one click.
+ * Each template maps design option keys to values ( keys from acfw_design_option_keys ).
+ *
+ * @return array slug => array{ label, description, accent, options }
+ */
+function acfw_prebuilt_templates() {
+	$templates = array(
+		'classic-sidebar' => array(
+			'label'       => __( 'Classic Sidebar', 'account-customizer-for-woocommerce' ),
+			'description' => __( 'Left menu with a subtle active bar. The safe default.', 'account-customizer-for-woocommerce' ),
+			'accent'      => '#2563eb',
+			'options'     => array(
+				'acfw_menu_position'    => 'vertical-left',
+				'acfw_menu_layout'      => 'simple',
+				'acfw_menu_preset'      => 'flat',
+				'acfw_accent_color'     => '#2563eb',
+				'acfw_active_indicator' => 'bar',
+				'acfw_menu_radius'      => 8,
+				'acfw_show_icons'       => 'yes',
+			),
+		),
+		'modern-cards'    => array(
+			'label'       => __( 'Modern Cards', 'account-customizer-for-woocommerce' ),
+			'description' => __( 'Raised cards with icon chips and rounded corners.', 'account-customizer-for-woocommerce' ),
+			'accent'      => '#7c3aed',
+			'options'     => array(
+				'acfw_menu_position'    => 'vertical-left',
+				'acfw_menu_layout'      => 'modern',
+				'acfw_menu_preset'      => 'boxed',
+				'acfw_accent_color'     => '#7c3aed',
+				'acfw_active_indicator' => 'none',
+				'acfw_hover_anim'       => 'grow',
+				'acfw_menu_radius'      => 12,
+				'acfw_show_icons'       => 'yes',
+			),
+		),
+		'rounded-pills'   => array(
+			'label'       => __( 'Rounded Pills', 'account-customizer-for-woocommerce' ),
+			'description' => __( 'Soft pill items with a coloured active state.', 'account-customizer-for-woocommerce' ),
+			'accent'      => '#0ea5e9',
+			'options'     => array(
+				'acfw_menu_position'    => 'vertical-left',
+				'acfw_menu_layout'      => 'simple',
+				'acfw_menu_preset'      => 'pill',
+				'acfw_accent_color'     => '#0ea5e9',
+				'acfw_active_indicator' => 'none',
+				'acfw_menu_radius'      => 24,
+				'acfw_show_icons'       => 'yes',
+			),
+		),
+		'tabbed-top'      => array(
+			'label'       => __( 'Tabbed Top', 'account-customizer-for-woocommerce' ),
+			'description' => __( 'Horizontal tab bar above the content.', 'account-customizer-for-woocommerce' ),
+			'accent'      => '#16a34a',
+			'options'     => array(
+				'acfw_menu_position'    => 'horizontal',
+				'acfw_menu_layout'      => 'tabs',
+				'acfw_menu_preset'      => 'flat',
+				'acfw_accent_color'     => '#16a34a',
+				'acfw_active_indicator' => 'underline',
+				'acfw_show_icons'       => 'yes',
+			),
+		),
+		'minimal'         => array(
+			'label'       => __( 'Minimal', 'account-customizer-for-woocommerce' ),
+			'description' => __( 'Flat, borderless list. Quiet and compact.', 'account-customizer-for-woocommerce' ),
+			'accent'      => '#111827',
+			'options'     => array(
+				'acfw_menu_position'    => 'vertical-left',
+				'acfw_menu_layout'      => 'no-borders',
+				'acfw_menu_preset'      => 'minimal',
+				'acfw_accent_color'     => '#111827',
+				'acfw_active_indicator' => 'none',
+				'acfw_menu_radius'      => 4,
+				'acfw_show_icons'       => 'no',
+			),
+		),
+		'theme-native'    => array(
+			'label'       => __( 'Theme Native', 'account-customizer-for-woocommerce' ),
+			'description' => __( 'Drops plugin styling and inherits your theme.', 'account-customizer-for-woocommerce' ),
+			'accent'      => '#64748b',
+			'options'     => array(
+				'acfw_menu_position' => 'vertical-left',
+				'acfw_menu_layout'   => 'theme',
+				'acfw_show_icons'    => 'yes',
+			),
+		),
+	);
+
+	return apply_filters( 'acfw_prebuilt_templates', $templates );
+}
+
+/**
  * Full FontAwesome icon list ( class strings ) used by icon pickers.
  *
  * @return array

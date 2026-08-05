@@ -446,6 +446,19 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					}
 					break;
 
+				case 'apply_template':
+					$tslug     = isset( $_POST['template_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['template_slug'] ) ) : '';
+					$templates = acfw_prebuilt_templates();
+					if ( ! empty( $templates[ $tslug ]['options'] ) ) {
+						$keys = acfw_design_option_keys();
+						foreach ( $templates[ $tslug ]['options'] as $ok => $ov ) {
+							if ( in_array( $ok, $keys, true ) ) {
+								update_option( $ok, is_string( $ov ) ? sanitize_text_field( $ov ) : $ov );
+							}
+						}
+					}
+					break;
+
 				case 'delete_preset':
 					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['preset_slug'] ) ) : '';
 					$presets = get_option( 'acfw_presets', array() );
@@ -845,6 +858,33 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			</form>
 
 			<?php if ( 'general' === $tab ) : ?>
+				<div class="acfw-templates">
+					<h2 class="acfw-section-title"><?php esc_html_e( 'Starter templates', 'account-customizer-for-woocommerce' ); ?></h2>
+					<p class="acfw-hint"><?php esc_html_e( 'One-click ready-made designs. Applying a template overwrites the related design settings.', 'account-customizer-for-woocommerce' ); ?></p>
+					<div class="acfw-template-grid">
+						<?php foreach ( acfw_prebuilt_templates() as $tslug => $tpl ) : ?>
+							<div class="acfw-template-card" style="--acfw-tpl-accent: <?php echo esc_attr( $tpl['accent'] ); ?>;">
+								<div class="acfw-template-preview acfw-tpl-<?php echo esc_attr( $tslug ); ?>">
+									<span class="acfw-tpl-bar"></span>
+									<span class="acfw-tpl-bar is-active"></span>
+									<span class="acfw-tpl-bar"></span>
+									<span class="acfw-tpl-bar"></span>
+								</div>
+								<div class="acfw-template-body">
+									<strong class="acfw-template-name"><?php echo esc_html( $tpl['label'] ); ?></strong>
+									<span class="acfw-template-desc"><?php echo esc_html( $tpl['description'] ); ?></span>
+								</div>
+								<form method="post" class="acfw-template-apply">
+									<?php wp_nonce_field( self::NONCE ); ?>
+									<input type="hidden" name="acfw_action" value="apply_template" />
+									<input type="hidden" name="template_slug" value="<?php echo esc_attr( $tslug ); ?>" />
+									<button type="submit" class="button button-primary"><?php esc_html_e( 'Apply template', 'account-customizer-for-woocommerce' ); ?></button>
+								</form>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+
 				<div class="acfw-presets">
 					<h2 class="acfw-section-title"><?php esc_html_e( 'Design presets', 'account-customizer-for-woocommerce' ); ?></h2>
 					<p class="acfw-hint"><?php esc_html_e( 'Save the current design as a named preset, then apply it anytime.', 'account-customizer-for-woocommerce' ); ?></p>
