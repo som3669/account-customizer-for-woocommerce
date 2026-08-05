@@ -18,7 +18,7 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 	 */
 	class ACFW_Items {
 
-		const ITEM_TYPES = array( 'endpoint', 'group', 'link' );
+		const ITEM_TYPES = array( 'endpoint', 'group', 'link', 'page' );
 
 		/**
 		 * Resolved items (order option merged with per-item options + defaults).

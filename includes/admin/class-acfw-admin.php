@@ -268,6 +268,8 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 								'usr_roles'        => $roles,
 								'visibility'       => empty( $roles ) ? 'all' : 'roles',
 								'url'              => isset( $data['url'] ) ? esc_url_raw( $data['url'] ) : '',
+								'page_id'          => isset( $data['page_id'] ) ? absint( $data['page_id'] ) : 0,
+								'target_blank'     => ! empty( $data['target_blank'] ),
 								'banner_slug'      => isset( $data['banner_slug'] ) ? acfw_sanitize_key( $data['banner_slug'] ) : '',
 								'banner_position'  => ( isset( $data['banner_position'] ) && 'bottom' === $data['banner_position'] ) ? 'bottom' : 'top',
 								'vis_from'         => isset( $data['vis_from'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_from'] ) : '',
@@ -511,6 +513,9 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="link">
 								<span class="dashicons dashicons-admin-links"></span> <?php esc_html_e( 'Add link', 'account-customizer-for-woocommerce' ); ?>
 							</button>
+							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="page">
+								<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Add page', 'account-customizer-for-woocommerce' ); ?>
+							</button>
 						<?php endif; ?>
 						<?php if ( 'banners' === $tab ) : ?>
 							<button type="button" class="button acfw-header-btn acfw-add-banner-btn">
@@ -518,13 +523,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							</button>
 						<?php endif; ?>
 						<?php if ( function_exists( 'wc_get_page_permalink' ) ) : ?>
-							<button type="button" class="button acfw-header-btn acfw-preview-btn" data-url="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>">
+							<button type="button" class="button acfw-header-btn acfw-icon-only acfw-preview-btn" data-url="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>" title="<?php esc_attr_e( 'Preview', 'account-customizer-for-woocommerce' ); ?>" aria-label="<?php esc_attr_e( 'Preview', 'account-customizer-for-woocommerce' ); ?>">
 								<span class="dashicons dashicons-visibility"></span>
-								<?php esc_html_e( 'Preview', 'account-customizer-for-woocommerce' ); ?>
+								<span class="acfw-btn-text"><?php esc_html_e( 'Preview', 'account-customizer-for-woocommerce' ); ?></span>
 							</button>
-							<a href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>" class="button acfw-header-btn" target="_blank" rel="noopener">
+							<a href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>" class="button acfw-header-btn acfw-icon-only" target="_blank" rel="noopener" title="<?php esc_attr_e( 'View My Account', 'account-customizer-for-woocommerce' ); ?>" aria-label="<?php esc_attr_e( 'View My Account', 'account-customizer-for-woocommerce' ); ?>">
 								<span class="dashicons dashicons-external"></span>
-								<?php esc_html_e( 'View My Account', 'account-customizer-for-woocommerce' ); ?>
+								<span class="acfw-btn-text"><?php esc_html_e( 'View My Account', 'account-customizer-for-woocommerce' ); ?></span>
 							</a>
 						<?php endif; ?>
 					</div>
@@ -1414,6 +1419,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'endpoint' => __( 'Endpoint', 'account-customizer-for-woocommerce' ),
 				'group'    => __( 'Group', 'account-customizer-for-woocommerce' ),
 				'link'     => __( 'Link', 'account-customizer-for-woocommerce' ),
+				'page'     => __( 'Page', 'account-customizer-for-woocommerce' ),
 			);
 			?>
 			<div class="acfw-detail acfw-item-form" data-key="<?php echo esc_attr( $key ); ?>" data-type="<?php echo esc_attr( $type ); ?>" hidden>
@@ -1495,6 +1501,28 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<div class="acfw-field">
 						<label><?php esc_html_e( 'URL', 'account-customizer-for-woocommerce' ); ?></label>
 						<input type="url" name="items[<?php echo esc_attr( $key ); ?>][url]" value="<?php echo esc_attr( $item['url'] ?? '' ); ?>" />
+					</div>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Open in new tab', 'account-customizer-for-woocommerce' ); ?></label>
+						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="items[<?php echo esc_attr( $key ); ?>][target_blank]" value="1" <?php checked( ! empty( $item['target_blank'] ) ); ?> /><span class="acfw-switch-slider"></span></label>
+					</div>
+				<?php elseif ( 'page' === $type ) : ?>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Page', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Link this menu item to an existing WordPress page.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'items[' . esc_attr( $key ) . '][page_id]',
+								'selected'          => (int) ( $item['page_id'] ?? 0 ),
+								'show_option_none'  => __( '— Select a page —', 'account-customizer-for-woocommerce' ),
+								'option_none_value' => 0,
+							)
+						);
+						?>
+					</div>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Open in new tab', 'account-customizer-for-woocommerce' ); ?></label>
+						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="items[<?php echo esc_attr( $key ); ?>][target_blank]" value="1" <?php checked( ! empty( $item['target_blank'] ) ); ?> /><span class="acfw-switch-slider"></span></label>
 					</div>
 				<?php elseif ( 'endpoint' === $type ) : ?>
 					<?php $eid = 'acfw_content_' . str_replace( '-', '_', $key ); ?>
