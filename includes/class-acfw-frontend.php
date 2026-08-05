@@ -775,6 +775,11 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			$count = ( 'no' !== get_option( 'acfw_show_counts', 'yes' ) ) ? acfw_endpoint_count( $key ) : null;
 
+			// Fall back to a type-based default icon ( group = folder, page = file ).
+			if ( empty( $item['icon'] ) && empty( $item['icon_url'] ) ) {
+				$item['icon'] = acfw_default_type_icon( $type );
+			}
+
 			acfw_get_template(
 				'myaccount-menu-item.php',
 				array(

@@ -508,13 +508,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 								<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add endpoint', 'account-customizer-for-woocommerce' ); ?>
 							</button>
 							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="group">
-								<span class="dashicons dashicons-category"></span> <?php esc_html_e( 'Add group', 'account-customizer-for-woocommerce' ); ?>
+								<span class="dashicons dashicons-portfolio"></span> <?php esc_html_e( 'Add group', 'account-customizer-for-woocommerce' ); ?>
 							</button>
 							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="link">
 								<span class="dashicons dashicons-admin-links"></span> <?php esc_html_e( 'Add link', 'account-customizer-for-woocommerce' ); ?>
 							</button>
 							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="page">
-								<span class="dashicons dashicons-admin-page"></span> <?php esc_html_e( 'Add page', 'account-customizer-for-woocommerce' ); ?>
+								<span class="dashicons dashicons-media-document"></span> <?php esc_html_e( 'Add page', 'account-customizer-for-woocommerce' ); ?>
 							</button>
 						<?php endif; ?>
 						<?php if ( 'banners' === $tab ) : ?>
@@ -1594,7 +1594,8 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			$upload   = 'upload' === ( $item['icon_source'] ?? 'choose' );
 			$icon     = ( ! $upload && ! empty( $item['icon'] ) ) ? $item['icon'] : '';
 			if ( empty( $icon_url ) && '' === $icon ) {
-				$icon = 'dashicons-menu-alt';
+				$type = $item['type'] ?? 'endpoint';
+				$icon = acfw_default_type_icon( $type );
 			}
 			return acfw_icon_markup( $icon, $icon_url, $class );
 		}
