@@ -265,6 +265,54 @@
 }
 
 /* =========================================================================
+   Layout: tabs – horizontal tab bar with active underline
+   ========================================================================= */
+.acfw-menu.layout-tabs {
+  padding: 0;
+  border: 0;
+}
+
+.acfw-menu.layout-tabs ul {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--acfw-border);
+}
+
+.acfw-menu.layout-tabs .acfw-menu-item > a,
+.acfw-menu.layout-tabs .acfw-group-toggle {
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 18px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
+
+.acfw-menu.layout-tabs .acfw-menu-item > a:hover {
+  background: transparent;
+  color: var(--acfw-active, var(--acfw-accent));
+}
+
+.acfw-menu.layout-tabs .acfw-menu-item.is-active > a {
+  background: transparent;
+  box-shadow: none;
+  border-bottom-color: var(--acfw-active, var(--acfw-accent));
+  color: var(--acfw-active, var(--acfw-accent));
+}
+
+/* Tabs stack the menu above the content (full width). */
+.woocommerce:has(.acfw-menu.layout-tabs) {
+  flex-direction: column;
+}
+
+.woocommerce:has(.acfw-menu.layout-tabs) .woocommerce-MyAccount-navigation {
+  flex: 0 0 auto;
+  max-width: none;
+  width: 100%;
+}
+
+/* =========================================================================
    Groups
    ========================================================================= */
 .acfw-menu .acfw-type-group .acfw-group-toggle {
@@ -946,4 +994,134 @@
 
 .acfw-menu.layout-classic .acfw-menu-item.is-active > a {
   box-shadow: inset 3px 0 0 var(--acfw-accent);
+}
+
+/* =========================================================================
+   Dashboard: custom title, stat widgets, pie chart
+   ========================================================================= */
+.acfw-dashboard-title {
+  margin: 0 0 16px;
+  font-size: 1.4em;
+  font-weight: 700;
+}
+
+.acfw-dashboard-stats.acfw-align-center {
+  text-align: center;
+}
+
+.acfw-dashboard-stats.acfw-align-center .acfw-stats {
+  justify-content: center;
+}
+
+.acfw-dashboard-stats.acfw-align-right {
+  text-align: right;
+}
+
+.acfw-dashboard-stats.acfw-align-right .acfw-stats {
+  justify-content: flex-end;
+}
+
+.acfw-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 18px;
+}
+
+.acfw-stat {
+  flex: 1 1 140px;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--acfw-border, #e1e1e1);
+  border-radius: var(--acfw-radius, 4px);
+  background: var(--acfw-surface, #fff);
+  text-align: left;
+}
+
+.acfw-stat-icon {
+  color: var(--acfw-accent, #2563eb);
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+.acfw-stat-value {
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.acfw-stat-label {
+  font-size: 0.85em;
+  color: var(--acfw-muted, #8a9099);
+}
+
+.acfw-stat-latest {
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  border: 1px solid var(--acfw-border, #e1e1e1);
+  border-radius: var(--acfw-radius, 4px);
+}
+
+.acfw-stat-latest .acfw-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+  color: var(--acfw-accent, #2563eb);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.acfw-pie {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 0 0 18px;
+  padding: 16px;
+  border: 1px solid var(--acfw-border, #e1e1e1);
+  border-radius: var(--acfw-radius, 4px);
+}
+
+.acfw-dashboard-stats.acfw-align-center .acfw-pie {
+  text-align: left;
+}
+
+.acfw-pie-svg {
+  width: 160px;
+  height: 160px;
+  flex: 0 0 160px;
+}
+
+.acfw-pie-total {
+  font-size: 26px;
+  font-weight: 700;
+  fill: var(--acfw-text, #383838);
+}
+
+.acfw-pie-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acfw-pie-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+}
+
+.acfw-pie-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: 0 0 12px;
 }

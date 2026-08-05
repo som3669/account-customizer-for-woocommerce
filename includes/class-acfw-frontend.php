@@ -43,6 +43,10 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			// Avatar block above the navigation.
 			add_action( 'woocommerce_account_navigation', array( $this, 'render_avatar' ), 4 );
+			// Dashboard custom title.
+			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_title' ), 1 );
+			// Dashboard stat widgets ( orders, spent, downloads, pie chart… ).
+			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_stats' ), 3 );
 			// Dashboard quick-link tiles.
 			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_tiles' ), 5 );
 			// Profile completeness meter.
@@ -289,6 +293,162 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$g = hexdec( substr( $hex, 2, 2 ) );
 			$b = hexdec( substr( $hex, 4, 2 ) );
 			return "rgba({$r},{$g},{$b},{$alpha})";
+		}
+
+		/**
+		 * Render a custom dashboard heading.
+		 */
+		public function render_dashboard_title() {
+			$title = trim( (string) get_option( 'acfw_dashboard_title', '' ) );
+			if ( '' === $title ) {
+				return;
+			}
+			$title = acfw_apply_smart_tags( $title );
+			echo '<h2 class="acfw-dashboard-title">' . wp_kses_post( $title ) . '</h2>';
+		}
+
+		/**
+		 * Render dashboard stat widgets ( orders, spent, downloads, points,
+		 * latest order and an orders-by-status pie chart ).
+		 */
+		public function render_dashboard_stats() {
+
+			if ( 'yes' !== get_option( 'acfw_dashboard_stats', 'no' ) ) {
+				return;
+			}
+
+			$user_id = get_current_user_id();
+			if ( ! $user_id || ! function_exists( 'wc_get_orders' ) ) {
+				return;
+			}
+
+			$align = get_option( 'acfw_dashboard_align', 'left' );
+			$cards = array();
+
+			// Gather orders once for counts / statuses.
+			$orders = wc_get_orders(
+				array(
+					'customer_id' => $user_id,
+					'limit'       => -1,
+					'return'      => 'objects',
+				)
+			);
+			$by_status = array();
+			foreach ( $orders as $o ) {
+				$st               = $o->get_status();
+				$by_status[ $st ] = ( $by_status[ $st ] ?? 0 ) + 1;
+			}
+
+			if ( 'yes' === get_option( 'acfw_stat_orders', 'yes' ) ) {
+				$cards[] = $this->stat_card( 'cart', __( 'Total orders', 'account-customizer-for-woocommerce' ), count( $orders ) );
+			}
+			if ( 'yes' === get_option( 'acfw_stat_pending', 'yes' ) ) {
+				$pending = ( $by_status['pending'] ?? 0 ) + ( $by_status['processing'] ?? 0 ) + ( $by_status['on-hold'] ?? 0 );
+				$cards[] = $this->stat_card( 'clock', __( 'Pending orders', 'account-customizer-for-woocommerce' ), $pending );
+			}
+			if ( 'yes' === get_option( 'acfw_stat_spent', 'yes' ) && function_exists( 'wc_get_customer_total_spent' ) ) {
+				$cards[] = $this->stat_card( 'money', __( 'Total spent', 'account-customizer-for-woocommerce' ), wc_price( wc_get_customer_total_spent( $user_id ) ) );
+			}
+			if ( 'yes' === get_option( 'acfw_stat_refunds', 'no' ) ) {
+				$cards[] = $this->stat_card( 'undo', __( 'Refunds', 'account-customizer-for-woocommerce' ), $by_status['refunded'] ?? 0 );
+			}
+			if ( 'yes' === get_option( 'acfw_stat_downloads', 'yes' ) && function_exists( 'wc_get_customer_available_downloads' ) ) {
+				$cards[] = $this->stat_card( 'download', __( 'Downloads', 'account-customizer-for-woocommerce' ), count( wc_get_customer_available_downloads( $user_id ) ) );
+			}
+			if ( 'yes' === get_option( 'acfw_stat_points', 'no' ) ) {
+				$cards[] = $this->stat_card( 'star-filled', __( 'Reward points', 'account-customizer-for-woocommerce' ), acfw_points_balance( $user_id ) );
+			}
+
+			$html = '';
+			if ( $cards ) {
+				$html .= '<div class="acfw-stats">' . implode( '', $cards ) . '</div>';
+			}
+
+			// Latest order block.
+			if ( 'yes' === get_option( 'acfw_stat_latest', 'no' ) && ! empty( $orders ) ) {
+				$latest = $orders[0];
+				$html  .= sprintf(
+					'<div class="acfw-stat-latest"><span class="acfw-stat-latest-label">%s</span> <a href="%s">#%s</a> — %s <span class="acfw-badge">%s</span></div>',
+					esc_html__( 'Latest order', 'account-customizer-for-woocommerce' ),
+					esc_url( $latest->get_view_order_url() ),
+					esc_html( $latest->get_order_number() ),
+					wp_kses_post( $latest->get_formatted_order_total() ),
+					esc_html( wc_get_order_status_name( $latest->get_status() ) )
+				);
+			}
+
+			// Orders-by-status pie ( donut ) chart.
+			if ( 'yes' === get_option( 'acfw_stat_piechart', 'no' ) && array_sum( $by_status ) > 0 ) {
+				$html .= $this->orders_pie_chart( $by_status );
+			}
+
+			if ( $html ) {
+				printf( '<div class="acfw-dashboard-stats acfw-align-%s">%s</div>', esc_attr( $align ), $html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			}
+		}
+
+		/**
+		 * Build one stat card.
+		 *
+		 * @param string $icon  Dashicon slug ( without prefix ).
+		 * @param string $label Card label.
+		 * @param mixed  $value Display value ( pre-escaped/price markup allowed ).
+		 * @return string
+		 */
+		protected function stat_card( $icon, $label, $value ) {
+			return sprintf(
+				'<div class="acfw-stat"><span class="acfw-stat-icon dashicons dashicons-%s"></span><span class="acfw-stat-value">%s</span><span class="acfw-stat-label">%s</span></div>',
+				esc_attr( $icon ),
+				wp_kses_post( (string) $value ),
+				esc_html( $label )
+			);
+		}
+
+		/**
+		 * Inline SVG donut chart of orders grouped by status.
+		 *
+		 * @param array $by_status status => count.
+		 * @return string
+		 */
+		protected function orders_pie_chart( $by_status ) {
+			$palette = array( '#2563eb', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#64748b' );
+			$total   = array_sum( $by_status );
+			$radius  = 60;
+			$circ    = 2 * M_PI * $radius;
+			$offset  = 0;
+			$segs    = '';
+			$legend  = '';
+			$i       = 0;
+
+			foreach ( $by_status as $status => $count ) {
+				$frac  = $count / $total;
+				$color = $palette[ $i % count( $palette ) ];
+				$dash  = $frac * $circ;
+				$segs .= sprintf(
+					'<circle r="%1$d" cx="80" cy="80" fill="transparent" stroke="%2$s" stroke-width="28" stroke-dasharray="%3$F %4$F" stroke-dashoffset="%5$F"></circle>',
+					$radius,
+					esc_attr( $color ),
+					$dash,
+					$circ - $dash,
+					- $offset
+				);
+				$offset += $dash;
+				$legend .= sprintf(
+					'<li><span class="acfw-pie-dot" style="background:%s"></span>%s <strong>%d</strong></li>',
+					esc_attr( $color ),
+					esc_html( wc_get_order_status_name( $status ) ),
+					(int) $count
+				);
+				$i++;
+			}
+
+			return sprintf(
+				'<div class="acfw-pie"><svg viewBox="0 0 160 160" class="acfw-pie-svg" role="img" aria-label="%s"><g transform="rotate(-90 80 80)">%s</g><text x="80" y="86" text-anchor="middle" class="acfw-pie-total">%d</text></svg><ul class="acfw-pie-legend">%s</ul></div>',
+				esc_attr__( 'Orders by status', 'account-customizer-for-woocommerce' ),
+				$segs,
+				(int) $total,
+				$legend
+			);
 		}
 
 		/**
@@ -604,6 +764,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			if ( 'link' === $type ) {
 				$url    = esc_url( $item['url'] );
 				$target = ! empty( $item['target_blank'] ) ? ' target="_blank" rel="noopener"' : '';
+			} elseif ( 'page' === $type ) {
+				$url    = ! empty( $item['page_id'] ) ? esc_url( get_permalink( (int) $item['page_id'] ) ) : '#';
+				$target = ! empty( $item['target_blank'] ) ? ' target="_blank" rel="noopener"' : '';
 			} else {
 				$base = wc_get_page_permalink( 'myaccount' );
 				$url  = ( 'dashboard' === $key ) ? $base : wc_get_endpoint_url( $key, '', $base );
@@ -611,6 +774,11 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			$count = ( 'no' !== get_option( 'acfw_show_counts', 'yes' ) ) ? acfw_endpoint_count( $key ) : null;
+
+			// Fall back to a type-based default icon ( group = folder, page = file ).
+			if ( empty( $item['icon'] ) && empty( $item['icon_url'] ) ) {
+				$item['icon'] = acfw_default_type_icon( $type );
+			}
 
 			acfw_get_template(
 				'myaccount-menu-item.php',

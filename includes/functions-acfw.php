@@ -129,6 +129,22 @@ function acfw_sanitize_key( $value ) {
 }
 
 /**
+ * Default icon class for an item type ( used when no icon is set ).
+ *
+ * @param string $type Item type.
+ * @return string
+ */
+function acfw_default_type_icon( $type ) {
+	$map = array(
+		'group' => 'fas fa-folder',
+		'page'  => 'fas fa-file-alt',
+		'link'  => 'fas fa-link',
+	);
+	$icon = $map[ $type ] ?? 'dashicons-menu-alt';
+	return apply_filters( 'acfw_default_type_icon', $icon, $type );
+}
+
+/**
  * Resolve an asset to its minified build ( unless SCRIPT_DEBUG ) with a
  * file-mtime cache-busting version.
  *

@@ -120,6 +120,7 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'classic'    => __( 'Classic', 'account-customizer-for-woocommerce' ),
 				'modern'     => __( 'Modern', 'account-customizer-for-woocommerce' ),
 				'no-borders' => __( 'No borders', 'account-customizer-for-woocommerce' ),
+				'tabs'       => __( 'Tabs', 'account-customizer-for-woocommerce' ),
 			) );
 			$this->add_buttonset( $wp_customize, 'acfw_menu_preset', 'flat', __( 'Style preset', 'account-customizer-for-woocommerce' ), array(
 				'flat'    => __( 'Flat', 'account-customizer-for-woocommerce' ),
@@ -130,6 +131,21 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$this->add_toggle( $wp_customize, 'acfw_show_icons', 'yes', __( 'Show menu icons', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_show_counts', 'yes', __( 'Show item counts', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_dashboard_tiles', 'no', __( 'Dashboard quick-link tiles', 'account-customizer-for-woocommerce' ) );
+			$this->add_text( $wp_customize, 'acfw_dashboard_title', '', __( 'Dashboard title', 'account-customizer-for-woocommerce' ) );
+			$this->add_buttonset( $wp_customize, 'acfw_dashboard_align', 'left', __( 'Dashboard content position', 'account-customizer-for-woocommerce' ), array(
+				'left'   => __( 'Left', 'account-customizer-for-woocommerce' ),
+				'center' => __( 'Middle', 'account-customizer-for-woocommerce' ),
+				'right'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+			) );
+			$this->add_toggle( $wp_customize, 'acfw_dashboard_stats', 'no', __( 'Dashboard stat widgets', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_orders', 'yes', __( '• Total orders', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_pending', 'yes', __( '• Pending orders', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_spent', 'yes', __( '• Total spent', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_downloads', 'yes', __( '• Downloads', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_refunds', 'no', __( '• Refunds', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_points', 'no', __( '• Reward points', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_latest', 'no', __( '• Latest order', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_piechart', 'no', __( '• Orders pie chart', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_menu_search', 'no', __( 'Menu search box', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_collapsible', 'no', __( 'Collapsible icon rail', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_pin_enable', 'no', __( 'Let customers pin favorites', 'account-customizer-for-woocommerce' ) );
@@ -199,6 +215,23 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 
 		/**
 		 * Register a yes/no toggle.
+		 */
+		protected function add_text( $wp_customize, $id, $default, $label ) {
+			$wp_customize->add_setting( $id, array(
+				'type'              => 'option',
+				'default'           => $default,
+				'transport'         => 'refresh',
+				'sanitize_callback' => 'sanitize_text_field',
+			) );
+			$wp_customize->add_control( $id, array(
+				'type'    => 'text',
+				'section' => $this->section,
+				'label'   => $label,
+			) );
+		}
+
+		/**
+		 * Register a yes/no toggle control.
 		 */
 		protected function add_toggle( $wp_customize, $id, $default, $label ) {
 			$wp_customize->add_setting( $id, array(
