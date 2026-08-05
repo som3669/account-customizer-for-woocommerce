@@ -173,11 +173,12 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				array(),
 				ACFW_VERSION
 			);
+			list( $fe_css_url, $fe_css_ver ) = acfw_asset_src( 'css/frontend.css' );
 			wp_enqueue_style(
 				'acfw-frontend',
-				ACFW_ASSETS_URL . '/css/frontend.css',
+				$fe_css_url,
 				array( 'acfw-fontawesome' ),
-				ACFW_VERSION
+				$fe_css_ver
 			);
 			wp_add_inline_style( 'acfw-frontend', $this->dynamic_css() );
 
@@ -186,11 +187,12 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				wp_add_inline_style( 'acfw-frontend', wp_strip_all_tags( $custom_css ) );
 			}
 
+			list( $fe_js_url, $fe_js_ver ) = acfw_asset_src( 'js/frontend.js' );
 			wp_enqueue_script(
 				'acfw-frontend',
-				ACFW_ASSETS_URL . '/js/frontend.js',
+				$fe_js_url,
 				array( 'jquery' ),
-				ACFW_VERSION,
+				$fe_js_ver,
 				true
 			);
 			wp_localize_script(

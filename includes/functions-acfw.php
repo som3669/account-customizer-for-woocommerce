@@ -129,6 +129,29 @@ function acfw_sanitize_key( $value ) {
 }
 
 /**
+ * Resolve an asset to its minified build ( unless SCRIPT_DEBUG ) with a
+ * file-mtime cache-busting version.
+ *
+ * @param string $rel Path relative to the assets dir, e.g. 'css/admin.css'.
+ * @return array { string $url, string|false $ver }
+ */
+function acfw_asset_src( $rel ) {
+	$rel = ltrim( $rel, '/' );
+
+	if ( ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ) {
+		$min = preg_replace( '/\.(css|js)$/', '.min.$1', $rel );
+		if ( $min !== $rel && file_exists( ACFW_DIR . 'assets/' . $min ) ) {
+			$rel = $min;
+		}
+	}
+
+	$file = ACFW_DIR . 'assets/' . $rel;
+	$ver  = file_exists( $file ) ? (string) filemtime( $file ) : ( defined( 'ACFW_VERSION' ) ? ACFW_VERSION : false );
+
+	return array( ACFW_ASSETS_URL . '/' . $rel, $ver );
+}
+
+/**
  * Sanitize a colour value: 3/6-digit hex or rgb()/rgba() ( alpha supported ).
  * Returns '' for anything else.
  *

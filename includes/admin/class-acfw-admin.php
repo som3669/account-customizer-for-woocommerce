@@ -123,11 +123,12 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				array(),
 				ACFW_VERSION
 			);
+			list( $admin_css_url, $admin_css_ver ) = acfw_asset_src( 'css/admin.css' );
 			wp_enqueue_style(
 				'acfw-admin',
-				ACFW_ASSETS_URL . '/css/admin.css',
+				$admin_css_url,
 				array(),
-				$this->asset_ver( 'css/admin.css' )
+				$admin_css_ver
 			);
 
 			// Rich content editor + media for the endpoint content field.
@@ -154,11 +155,12 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			);
 			$deps = array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker', 'editor', 'acfw-select2' );
 
+			list( $admin_js_url, $admin_js_ver ) = acfw_asset_src( 'js/admin.js' );
 			wp_enqueue_script(
 				'acfw-admin',
-				ACFW_ASSETS_URL . '/js/admin.js',
+				$admin_js_url,
 				$deps,
-				$this->asset_ver( 'js/admin.js' ),
+				$admin_js_ver,
 				true
 			);
 			wp_localize_script(

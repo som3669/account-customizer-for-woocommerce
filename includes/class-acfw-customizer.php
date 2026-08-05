@@ -52,8 +52,10 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 		 * Enqueue the custom control scripts + styles.
 		 */
 		public function enqueue_controls() {
-			wp_enqueue_style( 'acfw-customize-controls', ACFW_ASSETS_URL . '/css/customize-controls.css', array(), ACFW_VERSION );
-			wp_enqueue_script( 'acfw-customize-controls', ACFW_ASSETS_URL . '/js/customize-controls.js', array( 'jquery', 'customize-controls' ), ACFW_VERSION, true );
+			list( $cc_css_url, $cc_css_ver ) = acfw_asset_src( 'css/customize-controls.css' );
+			list( $cc_js_url, $cc_js_ver )   = acfw_asset_src( 'js/customize-controls.js' );
+			wp_enqueue_style( 'acfw-customize-controls', $cc_css_url, array(), $cc_css_ver );
+			wp_enqueue_script( 'acfw-customize-controls', $cc_js_url, array( 'jquery', 'customize-controls' ), $cc_js_ver, true );
 		}
 
 		/**
