@@ -102,13 +102,13 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 			}
 
 			$icons = array(
-				'dashboard'       => 'dashicons-dashboard',
-				'orders'          => 'dashicons-cart',
-				'downloads'       => 'dashicons-download',
-				'edit-address'    => 'dashicons-location',
-				'payment-methods' => 'dashicons-money-alt',
-				'edit-account'    => 'dashicons-admin-users',
-				'customer-logout' => 'dashicons-exit',
+				'dashboard'       => 'fas fa-tachometer-alt',
+				'orders'          => 'fas fa-shopping-cart',
+				'downloads'       => 'fas fa-download',
+				'edit-address'    => 'fas fa-map-marker-alt',
+				'payment-methods' => 'fas fa-credit-card',
+				'edit-account'    => 'fas fa-user',
+				'customer-logout' => 'fas fa-sign-out-alt',
 			);
 
 			foreach ( $labels as $key => $label ) {
