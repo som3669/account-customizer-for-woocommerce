@@ -129,6 +129,90 @@ function acfw_sanitize_key( $value ) {
 }
 
 /**
+ * Block patterns ( core + theme + user ) for the standalone endpoint block editor.
+ *
+ * @return array
+ */
+function acfw_get_block_editor_patterns() {
+	if ( ! class_exists( 'WP_Block_Patterns_Registry' ) ) {
+		return array();
+	}
+	if ( function_exists( '_load_remote_block_patterns' ) ) {
+		_load_remote_block_patterns();
+	}
+	if ( function_exists( '_load_remote_featured_patterns' ) ) {
+		_load_remote_featured_patterns();
+	}
+	if ( function_exists( '_register_remote_theme_patterns' ) ) {
+		_register_remote_theme_patterns();
+	}
+
+	$patterns = array_values( WP_Block_Patterns_Registry::get_instance()->get_all_registered() );
+
+	$user_posts = get_posts(
+		array(
+			'post_type'      => 'wp_block',
+			'post_status'    => 'publish',
+			'posts_per_page' => 100,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
+	foreach ( $user_posts as $post ) {
+		$patterns[] = array(
+			'name'       => 'core/block/' . $post->ID,
+			'id'         => $post->ID,
+			'type'       => 'user',
+			'title'      => $post->post_title,
+			'content'    => $post->post_content,
+			'inserter'   => true,
+			'syncStatus' => get_post_meta( $post->ID, 'wp_pattern_sync_status', true ) ?: '',
+		);
+	}
+
+	return $patterns;
+}
+
+/**
+ * Registered block pattern categories for the endpoint block editor.
+ *
+ * @return array
+ */
+function acfw_get_block_editor_pattern_categories() {
+	if ( ! class_exists( 'WP_Block_Pattern_Categories_Registry' ) ) {
+		return array();
+	}
+	return array_values( WP_Block_Pattern_Categories_Registry::get_instance()->get_all_registered() );
+}
+
+/**
+ * User-defined pattern categories ( taxonomy ) for the endpoint block editor.
+ *
+ * @return array
+ */
+function acfw_get_block_editor_user_pattern_categories() {
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'wp_pattern_category',
+			'hide_empty' => false,
+		)
+	);
+	if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		return array();
+	}
+	return array_map(
+		static function ( $term ) {
+			return array(
+				'id'    => $term->term_id,
+				'slug'  => $term->slug,
+				'label' => $term->name,
+			);
+		},
+		$terms
+	);
+}
+
+/**
  * Default icon class for an item type ( used when no icon is set ).
  *
  * @param string $type Item type.
@@ -348,6 +432,7 @@ function acfw_default_endpoint_options( $key = '' ) {
 		'icon_source'      => 'choose',
 		'active'           => true,
 		'content'          => '',
+		'editor_type'      => 'classic', // classic | block.
 		'content_position' => 'before', // before | after | override.
 		'visibility'       => 'all',    // all | roles.
 		'usr_roles'        => array(),
