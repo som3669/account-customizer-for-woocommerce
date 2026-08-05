@@ -1045,12 +1045,17 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			<div class="acfw-builder">
 				<div class="acfw-builder-layout">
 
-					<div class="acfw-card acfw-builder-list">
-						<ul class="acfw-sortable-root acfw-banner-node-list">
-							<?php foreach ( $banners as $slug => $banner ) : ?>
-								<?php $this->render_banner_row( $slug, wp_parse_args( $banner, ACFW_Banners::defaults() ) ); ?>
-							<?php endforeach; ?>
-						</ul>
+					<div class="acfw-builder-list-col">
+						<div class="acfw-card acfw-builder-list">
+							<ul class="acfw-sortable-root acfw-banner-node-list">
+								<?php foreach ( $banners as $slug => $banner ) : ?>
+									<?php $this->render_banner_row( $slug, wp_parse_args( $banner, ACFW_Banners::defaults() ) ); ?>
+								<?php endforeach; ?>
+							</ul>
+						</div>
+						<button type="button" class="button acfw-add-banner-btn acfw-add-banner-below">
+							<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add banner', 'account-customizer-for-woocommerce' ); ?>
+						</button>
 					</div>
 
 					<div class="acfw-card acfw-builder-detail">
