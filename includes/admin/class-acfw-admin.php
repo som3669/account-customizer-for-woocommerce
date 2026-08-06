@@ -719,8 +719,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		protected function template_preview_mock( $tpl ) {
 			$o        = $tpl['options'];
 			$position = $o['acfw_menu_position'] ?? 'vertical-left';
-			$layout   = $o['acfw_menu_layout'] ?? 'simple';
-			$preset   = $o['acfw_menu_preset'] ?? 'flat';
+			list( $layout, $preset ) = acfw_menu_style_resolve( $o['acfw_menu_style'] ?? 'simple' );
 			$indicator = $o['acfw_active_indicator'] ?? 'bar';
 			$show_icons = ( 'no' !== ( $o['acfw_show_icons'] ?? 'yes' ) );
 

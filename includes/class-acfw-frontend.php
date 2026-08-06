@@ -738,7 +738,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		public function render_menu() {
 
 			$position = get_option( 'acfw_menu_position', 'vertical-left' );
-			$layout   = get_option( 'acfw_menu_layout', 'simple' );
+			list( $layout, $preset ) = acfw_menu_style_resolve( get_option( 'acfw_menu_style', 'simple' ) );
 
 			ob_start();
 			$this->render_avatar();
@@ -752,7 +752,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'current'    => acfw_get_current_endpoint(),
 					'position'   => $position,
 					'layout'     => $layout,
-					'preset'     => get_option( 'acfw_menu_preset', 'flat' ),
+					'preset'     => $preset,
 					'theme'      => sanitize_html_class( get_template() ),
 					'show_icons' => 'no' !== get_option( 'acfw_show_icons', 'yes' ),
 					'group_open' => 'yes' === get_option( 'acfw_group_open', 'no' ),

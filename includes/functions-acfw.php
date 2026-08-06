@@ -8,6 +8,45 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * The single "Menu style" choices ( merges the old layout + preset controls ).
+ *
+ * @return array slug => label
+ */
+function acfw_menu_styles() {
+	return apply_filters(
+		'acfw_menu_styles',
+		array(
+			'theme'   => __( 'Theme style', 'account-customizer-for-woocommerce' ),
+			'simple'  => __( 'Simple', 'account-customizer-for-woocommerce' ),
+			'classic' => __( 'Classic', 'account-customizer-for-woocommerce' ),
+			'modern'  => __( 'Modern cards', 'account-customizer-for-woocommerce' ),
+			'minimal' => __( 'Minimal', 'account-customizer-for-woocommerce' ),
+			'pill'    => __( 'Pills', 'account-customizer-for-woocommerce' ),
+			'tabs'    => __( 'Tabs', 'account-customizer-for-woocommerce' ),
+		)
+	);
+}
+
+/**
+ * Resolve a "Menu style" slug to its underlying [ layout, preset ] classes.
+ *
+ * @param string $style Style slug.
+ * @return array { string $layout, string $preset }
+ */
+function acfw_menu_style_resolve( $style ) {
+	$map = array(
+		'theme'   => array( 'theme', 'flat' ),
+		'simple'  => array( 'simple', 'flat' ),
+		'classic' => array( 'classic', 'boxed' ),
+		'modern'  => array( 'modern', 'flat' ),
+		'minimal' => array( 'no-borders', 'minimal' ),
+		'pill'    => array( 'simple', 'pill' ),
+		'tabs'    => array( 'tabs', 'flat' ),
+	);
+	return isset( $map[ $style ] ) ? $map[ $style ] : $map['simple'];
+}
+
+/**
  * Option keys that make up a "design preset".
  *
  * @return array
@@ -16,7 +55,7 @@ function acfw_design_option_keys() {
 	return apply_filters(
 		'acfw_design_option_keys',
 		array(
-			'acfw_menu_position', 'acfw_menu_layout', 'acfw_menu_preset', 'acfw_accent_color',
+			'acfw_menu_position', 'acfw_menu_style', 'acfw_accent_color',
 			'acfw_text_color', 'acfw_active_color', 'acfw_menu_bg', 'acfw_hover_bg',
 			'acfw_menu_radius', 'acfw_menu_gap', 'acfw_item_padding', 'acfw_font_size',
 			'acfw_font_weight', 'acfw_font_family', 'acfw_color_scheme', 'acfw_active_indicator',
@@ -41,8 +80,7 @@ function acfw_prebuilt_templates() {
 			'accent'      => '#2563eb',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
-				'acfw_menu_layout'      => 'simple',
-				'acfw_menu_preset'      => 'flat',
+				'acfw_menu_style'       => 'simple',
 				'acfw_accent_color'     => '#2563eb',
 				'acfw_active_indicator' => 'bar',
 				'acfw_menu_radius'      => 8,
@@ -55,8 +93,7 @@ function acfw_prebuilt_templates() {
 			'accent'      => '#7c3aed',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
-				'acfw_menu_layout'      => 'modern',
-				'acfw_menu_preset'      => 'flat',
+				'acfw_menu_style'       => 'modern',
 				'acfw_accent_color'     => '#7c3aed',
 				'acfw_active_indicator' => 'none',
 				'acfw_hover_anim'       => 'grow',
@@ -71,8 +108,7 @@ function acfw_prebuilt_templates() {
 			'accent'      => '#0ea5e9',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
-				'acfw_menu_layout'      => 'simple',
-				'acfw_menu_preset'      => 'pill',
+				'acfw_menu_style'       => 'pill',
 				'acfw_accent_color'     => '#0ea5e9',
 				'acfw_active_indicator' => 'none',
 				'acfw_menu_radius'      => 24,
@@ -85,8 +121,7 @@ function acfw_prebuilt_templates() {
 			'accent'      => '#16a34a',
 			'options'     => array(
 				'acfw_menu_position'    => 'horizontal',
-				'acfw_menu_layout'      => 'tabs',
-				'acfw_menu_preset'      => 'flat',
+				'acfw_menu_style'       => 'tabs',
 				'acfw_accent_color'     => '#16a34a',
 				'acfw_active_indicator' => 'underline',
 				'acfw_show_icons'       => 'yes',
@@ -98,8 +133,7 @@ function acfw_prebuilt_templates() {
 			'accent'      => '#111827',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
-				'acfw_menu_layout'      => 'no-borders',
-				'acfw_menu_preset'      => 'minimal',
+				'acfw_menu_style'       => 'minimal',
 				'acfw_accent_color'     => '#111827',
 				'acfw_active_indicator' => 'none',
 				'acfw_menu_radius'      => 4,
@@ -112,7 +146,7 @@ function acfw_prebuilt_templates() {
 			'accent'      => '#64748b',
 			'options'     => array(
 				'acfw_menu_position' => 'vertical-left',
-				'acfw_menu_layout'   => 'theme',
+				'acfw_menu_style'    => 'theme',
 				'acfw_show_icons'    => 'yes',
 			),
 		),
@@ -132,8 +166,7 @@ function acfw_design_option_defaults() {
 		'acfw_design_option_defaults',
 		array(
 			'acfw_menu_position'   => 'vertical-left',
-			'acfw_menu_layout'     => 'simple',
-			'acfw_menu_preset'     => 'flat',
+			'acfw_menu_style'      => 'simple',
 			'acfw_accent_color'    => '#2563eb',
 			'acfw_text_color'      => '#383838',
 			'acfw_active_color'    => '',

@@ -115,20 +115,7 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'vertical-right' => array( 'name' => __( 'Right', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'vertical-right.svg' ) ),
 				'horizontal'     => array( 'name' => __( 'Top', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'top-horizontal.svg' ) ),
 			) );
-			$this->add_buttonset( $wp_customize, 'acfw_menu_layout', 'simple', __( 'Menu layout', 'account-customizer-for-woocommerce' ), array(
-				'theme'      => __( 'Theme style', 'account-customizer-for-woocommerce' ),
-				'simple'     => __( 'Simple', 'account-customizer-for-woocommerce' ),
-				'classic'    => __( 'Classic', 'account-customizer-for-woocommerce' ),
-				'modern'     => __( 'Modern', 'account-customizer-for-woocommerce' ),
-				'no-borders' => __( 'No borders', 'account-customizer-for-woocommerce' ),
-				'tabs'       => __( 'Tabs', 'account-customizer-for-woocommerce' ),
-			) );
-			$this->add_buttonset( $wp_customize, 'acfw_menu_preset', 'flat', __( 'Style preset', 'account-customizer-for-woocommerce' ), array(
-				'flat'    => __( 'Flat', 'account-customizer-for-woocommerce' ),
-				'pill'    => __( 'Pill', 'account-customizer-for-woocommerce' ),
-				'boxed'   => __( 'Boxed', 'account-customizer-for-woocommerce' ),
-				'minimal' => __( 'Minimal', 'account-customizer-for-woocommerce' ),
-			) );
+			$this->add_buttonset( $wp_customize, 'acfw_menu_style', 'simple', __( 'Menu style', 'account-customizer-for-woocommerce' ), acfw_menu_styles() );
 			$this->add_toggle( $wp_customize, 'acfw_show_icons', 'yes', __( 'Show menu icons', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_show_counts', 'yes', __( 'Show item counts', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_dashboard_tiles', 'no', __( 'Dashboard quick-link tiles', 'account-customizer-for-woocommerce' ) );

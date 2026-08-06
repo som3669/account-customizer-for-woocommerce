@@ -621,6 +621,12 @@
 	padding-right: 34px;
 }
 
+/* Keep the count badge clear of the pin star ( works regardless of the
+   layout/preset padding on the anchor ). */
+.acfw-menu.acfw-pinnable .acfw-count {
+	margin-right: 22px;
+}
+
 /* =========================================================================
    Collapsible icon rail
    ========================================================================= */
@@ -736,15 +742,15 @@
    Active indicator variants
    ========================================================================= */
 .acfw-menu.acfw-ind-none .acfw-menu-item.is-active > a {
-	box-shadow: none;
+	box-shadow: none !important;
 }
 
 .acfw-menu.acfw-ind-underline .acfw-menu-item.is-active > a {
-	box-shadow: inset 0 -2px 0 var(--acfw-active, var(--acfw-accent));
+	box-shadow: inset 0 -2px 0 var(--acfw-active, var(--acfw-accent)) !important;
 }
 
 .acfw-menu.acfw-ind-dot .acfw-menu-item.is-active > a {
-	box-shadow: none;
+	box-shadow: none !important;
 }
 
 .acfw-menu.acfw-ind-dot .acfw-menu-item.is-active > a::after {
