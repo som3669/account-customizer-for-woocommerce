@@ -50,6 +50,11 @@ $acfw_group_open = ! empty( $group_open );
 </button>
 <nav class="woocommerce-MyAccount-navigation <?php echo esc_attr( implode( ' ', $wrap_classes ) ); ?>">
 	<span class="acfw-nav-backdrop"></span>
+	<?php
+	if ( ! empty( $avatar_html ) ) {
+		echo $avatar_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts in the avatar template.
+	}
+	?>
 	<?php if ( ! empty( $collapsible ) ) : ?>
 		<button type="button" class="acfw-collapse-toggle" aria-label="<?php esc_attr_e( 'Collapse menu', 'account-customizer-for-woocommerce' ); ?>"><span class="dashicons dashicons-arrow-left-alt2"></span></button>
 	<?php endif; ?>

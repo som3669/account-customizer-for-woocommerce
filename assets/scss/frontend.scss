@@ -15,8 +15,17 @@
 	line-height: 1.4;
 }
 
+/* Dark mode is opt-in via the "Colour scheme" option ( .acfw-scheme-auto/dark ),
+   not forced by the OS — otherwise a light theme's page shows through the menu. */
+.acfw-menu.acfw-scheme-auto {
+	--acfw-surface: #fff;
+	--acfw-border: #e1e1e1;
+	--acfw-text: #383838;
+	--acfw-muted: #8a9099;
+}
+
 @media (prefers-color-scheme: dark) {
-	.woocommerce-MyAccount-navigation.acfw-menu {
+	.acfw-menu.acfw-scheme-auto {
 		--acfw-surface: #1e2127;
 		--acfw-border: #2f343c;
 		--acfw-text: #e4e6eb;
@@ -108,6 +117,21 @@
 	font-weight: var(--acfw-font-weight, 500);
 	line-height: 1.2;
 	transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
+}
+
+.acfw-menu .acfw-menu-item > a:focus,
+.acfw-menu .acfw-menu-item > a:focus-visible,
+.acfw-menu .acfw-group-toggle:focus,
+.acfw-menu .acfw-group-toggle:focus-visible {
+	outline: none;
+	border: none;
+}
+
+.acfw-menu .acfw-menu-item:not(.is-active) > a:focus,
+.acfw-menu .acfw-menu-item:not(.is-active) > a:focus-visible,
+.acfw-menu .acfw-group-toggle:focus,
+.acfw-menu .acfw-group-toggle:focus-visible {
+	box-shadow: none;
 }
 
 .acfw-menu .acfw-menu-item > a:hover,
@@ -222,7 +246,8 @@
 }
 
 .acfw-menu.layout-modern .acfw-menu-item.is-active > a {
-	box-shadow: 0 6px 16px -6px var(--acfw-accent);
+	border-color: var(--acfw-active, var(--acfw-accent));
+	box-shadow: 0 0 0 1px var(--acfw-active, var(--acfw-accent));
 }
 
 .acfw-menu.layout-modern .acfw-menu-item > a:hover {
@@ -279,6 +304,13 @@
 	flex-wrap: wrap;
 	gap: 0;
 	border-bottom: 1px solid var(--acfw-border);
+	overflow: visible; /* let group dropdowns overlay instead of a scrollbar */
+}
+
+/* Tabs override the horizontal-position scroll bar ( it clips dropdowns ). */
+.acfw-menu.layout-tabs.position-horizontal ul {
+	overflow: visible;
+	flex-wrap: wrap;
 }
 
 .acfw-menu.layout-tabs .acfw-menu-item > a,
@@ -289,6 +321,14 @@
 	border-bottom: 2px solid transparent;
 	margin-bottom: -1px;
 	white-space: nowrap;
+}
+
+.acfw-menu.layout-tabs .acfw-menu-item > a:focus,
+.acfw-menu.layout-tabs .acfw-menu-item > a:focus-visible,
+.acfw-menu.layout-tabs .acfw-group-toggle:focus,
+.acfw-menu.layout-tabs .acfw-group-toggle:focus-visible {
+	outline: none;
+	box-shadow: none;
 }
 
 .acfw-menu.layout-tabs .acfw-menu-item > a:hover {
@@ -340,7 +380,7 @@
 }
 
 .acfw-menu .acfw-submenu {
-	margin: 4px 0 4px 12px !important;
+	margin: 4px 0 0 12px !important;
 	padding-left: 12px !important;
 	overflow: hidden;
 	max-height: 1000px;
@@ -353,9 +393,9 @@
 }
 
 .acfw-menu .acfw-menu-item.acfw-type-group.is-open .acfw-submenu {
-	padding-top: 4px !important;
-	padding-bottom: 4px !important;
-	gap: 4px !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	gap: var(--acfw-gap, 4px) !important;
 }
 
 .acfw-menu .acfw-submenu .acfw-menu-item > a {
@@ -363,9 +403,10 @@
 	font-weight: 400;
 }
 
-.acfw-menu .acfw-menu-item.acfw-type-endpoint {
-	padding-top: 0;
-	padding-bottom: 0;
+.acfw-menu .acfw-menu-item.acfw-type-endpoint,
+.acfw-menu .acfw-menu-item.acfw-type-group,
+.acfw-menu .acfw-menu-item.acfw-type-page {
+	padding: 0;
 }
 
 /* =========================================================================
@@ -558,6 +599,13 @@
 
 .acfw-menu.acfw-pinnable .acfw-pin {
 	display: inline-flex;
+}
+
+.acfw-menu.acfw-pinnable .acfw-pin:focus,
+.acfw-menu.acfw-pinnable .acfw-pin:focus-visible {
+	border: none;
+	outline: none;
+	box-shadow: none;
 }
 
 .acfw-menu.acfw-pinnable .acfw-menu-item:hover .acfw-pin,
@@ -936,10 +984,17 @@
 .acfw-avatar-block {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	margin: 0 0 18px;
-	padding-bottom: 18px;
-	border-bottom: 1px solid var(--acfw-border, #e1e1e1);
+	gap: 8px;
+	margin: 0 0 16px;
+	padding: 20px 16px;
+	background: var(--acfw-surface, #fff);
+	border: 0 solid var(--acfw-border, #e1e1e1);
+	border-radius: var(--acfw-radius, 4px);
+}
+
+.acfw-avatar-block .acfw-avatar-img img {
+	border: 1px solid var(--acfw-border, #e1e1e1);
+	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
 }
 
 .acfw-avatar-block.align-left {
@@ -1039,7 +1094,8 @@
 }
 
 .acfw-stat {
-	flex: 1 1 140px;
+	flex: 0 0 140px;
+	width: 140px;
 	min-width: 140px;
 	display: flex;
 	flex-direction: column;
@@ -1134,4 +1190,128 @@
 	height: 12px;
 	border-radius: 3px;
 	flex: 0 0 12px;
+}
+
+/* =========================================================================
+   Layout: theme style – strip plugin styling, inherit the theme's look
+   ========================================================================= */
+.acfw-menu.layout-theme {
+	padding: 0;
+	border: 0;
+}
+
+.acfw-menu.layout-theme .acfw-menu-item > a,
+.acfw-menu.layout-theme .acfw-group-toggle {
+	background: none;
+	border: 0;
+	box-shadow: none;
+	border-radius: 0;
+	padding: 8px 0;
+	color: inherit;
+	font-weight: inherit;
+}
+
+.acfw-menu.layout-theme .acfw-menu-item > a:hover,
+.acfw-menu.layout-theme .acfw-group-toggle:hover {
+	background: none;
+	color: inherit;
+	transform: none;
+}
+
+.acfw-menu.layout-theme .acfw-menu-item.is-active > a {
+	background: none;
+	box-shadow: none;
+	color: inherit;
+	font-weight: 700;
+}
+
+.acfw-menu.layout-theme .acfw-icon {
+	color: inherit;
+	width: auto;
+	font-size: inherit;
+}
+
+/* =========================================================================
+   Dashboard column template ( left / center / right )
+   ========================================================================= */
+body.acfw-dash-tpl-center .woocommerce-MyAccount-content,
+body.acfw-dash-tpl-left .woocommerce-MyAccount-content,
+body.acfw-dash-tpl-right .woocommerce-MyAccount-content {
+	max-width: 760px;
+}
+
+body.acfw-dash-tpl-center .woocommerce-MyAccount-content {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+body.acfw-dash-tpl-left .woocommerce-MyAccount-content {
+	margin-right: auto;
+}
+
+body.acfw-dash-tpl-right .woocommerce-MyAccount-content {
+	margin-left: auto;
+}
+
+/* =========================================================================
+   Tabs layout: group submenus become dropdowns ( not vertical rails )
+   ========================================================================= */
+.acfw-menu.layout-tabs .acfw-type-group {
+	position: relative;
+	padding: 0;
+}
+
+.acfw-menu.layout-tabs .acfw-submenu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 30;
+	min-width: 190px;
+	flex-direction: column;
+	gap: 2px;
+	margin: 4px 0 0 0 !important;
+	padding: 6px !important;
+	background: var(--acfw-surface, #fff);
+	border: 1px solid var(--acfw-border);
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(16, 24, 40, 0.14);
+}
+
+.acfw-menu.layout-tabs .acfw-type-group:not(.is-open) .acfw-submenu {
+	max-height: 0;
+	padding: 0 !important;
+	margin: 0 !important;
+	border-width: 0;
+	opacity: 0;
+	pointer-events: none;
+	box-shadow: none;
+	overflow: hidden;
+}
+
+.acfw-menu.layout-tabs .acfw-type-group.is-open .acfw-submenu {
+	max-height: 1000px;
+	padding: 6px !important;
+	margin: 4px 0 0 0 !important;
+	border-width: 1px;
+	opacity: 1;
+	pointer-events: auto;
+	box-shadow: 0 8px 24px rgba(16, 24, 40, 0.14);
+}
+
+.acfw-menu.layout-tabs .acfw-submenu .acfw-menu-item > a {
+	padding: 8px 12px;
+	border: 0;
+	margin: 0;
+	border-radius: 6px;
+	white-space: nowrap;
+}
+
+.acfw-menu.layout-tabs .acfw-submenu .acfw-menu-item > a:hover {
+	background: var(--acfw-hover-bg, var(--acfw-accent-tint));
+}
+
+.acfw-menu.layout-tabs .acfw-submenu .acfw-menu-item.is-active > a {
+	border-bottom: 0;
+	background: var(--acfw-hover-bg, var(--acfw-accent-tint));
+	color: var(--acfw-active, var(--acfw-accent));
 }

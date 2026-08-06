@@ -4,6 +4,23 @@
 
 	$( function () {
 
+		/* ---- Toast notifications ( auto-dismiss + click to close ) ---- */
+		function acfwDismissToast( $toast ) {
+			$toast.addClass( 'is-leaving' );
+			window.setTimeout( function () {
+				$toast.remove();
+			}, 250 );
+		}
+		$( '.acfw-toast' ).each( function () {
+			var $toast = $( this );
+			window.setTimeout( function () {
+				acfwDismissToast( $toast );
+			}, 3500 );
+		} );
+		$( document ).on( 'click', '.acfw-toast-close', function () {
+			acfwDismissToast( $( this ).closest( '.acfw-toast' ) );
+		} );
+
 		/* ---- Color pickers ( legacy iris, if any .acfw-color remain ) ---- */
 		if ( $.fn.wpColorPicker ) {
 			$( '.acfw-color' ).wpColorPicker();
