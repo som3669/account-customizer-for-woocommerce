@@ -191,6 +191,12 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				wp_add_inline_style( 'acfw-frontend', wp_strip_all_tags( $custom_css ) );
 			}
 
+			// Core block styles for endpoints rendered with the Block editor.
+			// With separate-core-assets on, wp-block-library is only common.css,
+			// so per-block sheets ( video/columns/buttons/… ) must be enqueued
+			// or block content renders unstyled.
+			$this->enqueue_block_styles();
+
 			list( $fe_js_url, $fe_js_ver ) = acfw_asset_src( 'js/frontend.js' );
 			wp_enqueue_script(
 				'acfw-frontend',
@@ -293,6 +299,65 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$g = hexdec( substr( $hex, 2, 2 ) );
 			$b = hexdec( substr( $hex, 4, 2 ) );
 			return "rgba({$r},{$g},{$b},{$alpha})";
+		}
+
+		/**
+		 * Enqueue core block styles when any endpoint uses the Block editor.
+		 */
+		protected function enqueue_block_styles() {
+			$has_block = false;
+			foreach ( (array) $this->menu_items as $it ) {
+				if ( 'block' === ( $it['editor_type'] ?? 'classic' ) && ! empty( $it['content'] ) ) {
+					$has_block = true;
+					break;
+				}
+			}
+			if ( ! $has_block ) {
+				return;
+			}
+
+			wp_enqueue_style( 'wp-block-library' );
+			wp_enqueue_style( 'wp-block-library-theme' );
+
+			foreach ( array(
+				'wp-block-video',
+				'wp-block-audio',
+				'wp-block-embed',
+				'wp-block-image',
+				'wp-block-gallery',
+				'wp-block-media-text',
+				'wp-block-cover',
+				'wp-block-file',
+				'wp-block-columns',
+				'wp-block-column',
+				'wp-block-group',
+				'wp-block-search',
+				'wp-block-latest-posts',
+				'wp-block-latest-comments',
+				'wp-block-query',
+				'wp-block-post-template',
+				'wp-block-post-title',
+				'wp-block-accordion',
+				'wp-block-buttons',
+				'wp-block-button',
+				'wp-block-separator',
+				'wp-block-spacer',
+				'wp-block-list',
+				'wp-block-code',
+				'wp-block-preformatted',
+				'wp-block-shortcode',
+				'wp-block-social-links',
+				'wp-block-navigation',
+				'wp-block-paragraph',
+				'wp-block-heading',
+				'wp-block-table',
+				'wp-block-quote',
+				'wp-block-pullquote',
+			) as $handle ) {
+				if ( wp_style_is( $handle, 'registered' ) ) {
+					wp_enqueue_style( $handle );
+				}
+			}
 		}
 
 		/**
@@ -736,10 +801,25 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			$user    = wp_get_current_user();
 			$content = acfw_apply_smart_tags( $item['content'], $user );
-			$content = wpautop( $content );
+
+			if ( 'block' === ( $item['editor_type'] ?? 'classic' ) ) {
+				// Serialized Gutenberg block markup → rendered HTML.
+				$content = do_blocks( $content );
+				global $wp_embed;
+				if ( isset( $wp_embed ) && is_object( $wp_embed ) ) {
+					$content = $wp_embed->autoembed( $content );
+				}
+				if ( function_exists( 'wp_filter_content_tags' ) ) {
+					$content = wp_filter_content_tags( $content );
+				}
+				$content = do_shortcode( $content );
+			} else {
+				$content = do_shortcode( wpautop( $content ) );
+			}
+
 			$content = apply_filters( 'acfw_endpoint_content', $content, $item, $user );
 
-			echo do_shortcode( $content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- rendered post-style content.
+			echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- rendered post-style content.
 		}
 
 		/**

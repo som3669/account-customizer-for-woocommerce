@@ -26,6 +26,9 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			add_action( 'admin_init', array( $this, 'handle_actions' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 			add_action( 'media_buttons', array( $this, 'render_smart_tag_button' ), 20 );
+			// Let registered blocks' editor scripts/styles load on our settings page
+			// ( same pattern as WP_Customize_Widgets ).
+			add_filter( 'should_load_block_editor_scripts_and_styles', array( $this, 'should_load_block_editor_scripts_and_styles' ) );
 			add_filter(
 				'plugin_action_links_' . plugin_basename( ACFW_FILE ),
 				array( $this, 'action_links' )
@@ -172,6 +175,108 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					'mediaButton'   => __( 'Use this image', 'account-customizer-for-woocommerce' ),
 				)
 			);
+
+			// Standalone Block Editor for endpoint custom content ( optional ).
+			$this->enqueue_block_editor();
+		}
+
+		/**
+		 * Load registered block editor scripts/styles on our settings page.
+		 *
+		 * @param bool $is_block_editor_screen Current core decision.
+		 * @return bool
+		 */
+		public function should_load_block_editor_scripts_and_styles( $is_block_editor_screen ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( is_admin() && isset( $_GET['page'] ) && self::PAGE === $_GET['page'] ) {
+				return true;
+			}
+			return $is_block_editor_screen;
+		}
+
+		/**
+		 * Enqueue the standalone Block Editor assets for endpoint custom content.
+		 * Silently no-ops when the bundle has not been built ( Classic keeps working ).
+		 */
+		public function enqueue_block_editor() {
+			$asset_file = ACFW_DIR . 'assets/build/index.asset.php';
+			if ( ! file_exists( $asset_file ) ) {
+				return;
+			}
+			$asset = require $asset_file;
+
+			// Editor UI + core block styles.
+			wp_enqueue_style( 'wp-block-editor' );
+			wp_enqueue_style( 'wp-edit-blocks' );
+			wp_enqueue_style( 'wp-editor' );
+			wp_enqueue_style( 'wp-block-library' );
+			wp_enqueue_style( 'wp-block-library-theme' );
+			wp_enqueue_style( 'wp-components' );
+			wp_enqueue_style( 'wp-format-library' );
+
+			wp_enqueue_media();
+			wp_enqueue_script( 'wp-media-utils' );
+
+			// Classic block ( core/freeform ) needs TinyMCE + wp.oldEditor.
+			if ( function_exists( 'wp_tinymce_inline_scripts' ) ) {
+				wp_tinymce_inline_scripts();
+			}
+			if ( function_exists( 'wp_enqueue_editor' ) ) {
+				wp_enqueue_editor();
+			}
+			wp_enqueue_script( 'wp-format-library' );
+
+			// Same hook as the post/widgets editor so registered blocks load.
+			do_action( 'enqueue_block_editor_assets' );
+
+			$dependencies = array_merge(
+				(array) $asset['dependencies'],
+				array( 'wp-format-library', 'wp-media-utils', 'media-editor', 'wp-api-fetch', 'editor', 'wp-tinymce' )
+			);
+
+			wp_enqueue_script(
+				'acfw-block-editor',
+				ACFW_ASSETS_URL . '/build/index.js',
+				$dependencies,
+				$asset['version'],
+				true
+			);
+
+			wp_localize_script(
+				'acfw-block-editor',
+				'acfwBlockEditorData',
+				array(
+					'canUploadMedia'           => current_user_can( 'upload_files' ),
+					'canUserUseUnfilteredHTML' => current_user_can( 'unfiltered_html' ),
+				)
+			);
+
+			if ( class_exists( '\WP_Block_Editor_Context' ) && function_exists( 'get_block_editor_settings' ) ) {
+				$editor_context  = new \WP_Block_Editor_Context( array( 'name' => 'core/edit-post' ) );
+				$editor_settings = get_block_editor_settings( array(), $editor_context );
+
+				$editor_settings['__experimentalBlockPatterns']          = acfw_get_block_editor_patterns();
+				$editor_settings['__experimentalBlockPatternCategories'] = acfw_get_block_editor_pattern_categories();
+				$editor_settings['__experimentalUserPatternCategories']  = acfw_get_block_editor_user_pattern_categories();
+
+				unset( $editor_settings['__unstableResolvedAssets'] );
+
+				wp_add_inline_script(
+					'acfw-block-editor',
+					'window.acfwBlockEditorSettings = ' . wp_json_encode( $editor_settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) . ';',
+					'before'
+				);
+			}
+
+			$style_file = ACFW_DIR . 'assets/build/style-index.css';
+			if ( file_exists( $style_file ) ) {
+				wp_enqueue_style(
+					'acfw-block-editor',
+					ACFW_ASSETS_URL . '/build/style-index.css',
+					array( 'wp-block-editor', 'wp-edit-blocks', 'wp-editor' ),
+					$asset['version']
+				);
+			}
 		}
 
 		/**
@@ -252,6 +357,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						$type        = isset( $data['type'] ) ? sanitize_key( $data['type'] ) : 'endpoint';
 						$roles       = isset( $data['usr_roles'] ) ? array_map( 'sanitize_key', (array) $data['usr_roles'] ) : array();
 						$icon_source = isset( $data['icon_source'] ) ? sanitize_key( $data['icon_source'] ) : 'choose';
+						$editor_type = ( isset( $data['editor_type'] ) && 'block' === $data['editor_type'] ) ? 'block' : 'classic';
+						// Block markup keeps its `<!-- wp: -->` delimiters ( wp_kses_post would strip them ).
+						$raw_content = isset( $data['content'] ) ? (string) $data['content'] : '';
+						$content     = ( 'block' === $editor_type && current_user_can( 'unfiltered_html' ) ) ? $raw_content : wp_kses_post( $raw_content );
 
 						$items->save_item(
 							$key,
@@ -263,7 +372,8 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 								'icon_url'         => ( 'upload' === $icon_source && isset( $data['icon_url'] ) ) ? esc_url_raw( $data['icon_url'] ) : '',
 								'class'            => isset( $data['class'] ) ? sanitize_html_class( $data['class'] ) : '',
 								'active'           => ! empty( $data['active'] ),
-								'content'          => isset( $data['content'] ) ? wp_kses_post( $data['content'] ) : '',
+								'content'          => $content,
+								'editor_type'      => $editor_type,
 								'content_position' => isset( $data['content_position'] ) ? sanitize_key( $data['content_position'] ) : 'before',
 								'usr_roles'        => $roles,
 								'visibility'       => empty( $roles ) ? 'all' : 'roles',
@@ -1525,23 +1635,47 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="items[<?php echo esc_attr( $key ); ?>][target_blank]" value="1" <?php checked( ! empty( $item['target_blank'] ) ); ?> /><span class="acfw-switch-slider"></span></label>
 					</div>
 				<?php elseif ( 'endpoint' === $type ) : ?>
-					<?php $eid = 'acfw_content_' . str_replace( '-', '_', $key ); ?>
+					<?php
+					$ukey        = str_replace( '-', '_', $key );
+					$eid         = 'acfw_content_' . $ukey;
+					$editor_type = ( isset( $item['editor_type'] ) && 'block' === $item['editor_type'] ) ? 'block' : 'classic';
+					$is_block    = 'block' === $editor_type;
+					?>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Content editor', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Edit custom content with the Classic editor or the Block ( Gutenberg ) editor.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<div class="acfw-radio-group acfw-editor-type-group" role="radiogroup">
+							<label class="acfw-radio-box acfw_choose_icon_type_inner_wrapper <?php echo ! $is_block ? 'is-active active' : ''; ?>">
+								<input type="radio" class="acfw_editor_type_radio" name="items[<?php echo esc_attr( $key ); ?>][editor_type]" value="classic" data-endpoint="<?php echo esc_attr( $ukey ); ?>" <?php checked( $editor_type, 'classic' ); ?> />
+								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Classic', 'account-customizer-for-woocommerce' ); ?></span>
+							</label>
+							<label class="acfw-radio-box acfw_choose_icon_type_inner_wrapper <?php echo $is_block ? 'is-active active' : ''; ?>">
+								<input type="radio" class="acfw_editor_type_radio" name="items[<?php echo esc_attr( $key ); ?>][editor_type]" value="block" data-endpoint="<?php echo esc_attr( $ukey ); ?>" <?php checked( $editor_type, 'block' ); ?> />
+								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Block', 'account-customizer-for-woocommerce' ); ?></span>
+							</label>
+						</div>
+					</div>
 					<div class="acfw-field">
 						<label><?php esc_html_e( 'Custom content', 'account-customizer-for-woocommerce' ); ?><?php echo $this->tip( __( 'Extra content added to this endpoint. Use Add media and smart tags.', 'account-customizer-for-woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 						<div class="acfw-content-wrap">
-							<?php
-							wp_editor(
-								$item['content'] ?? '',
-								$eid,
-								array(
-									'textarea_name' => 'items[' . $key . '][content]',
-									'textarea_rows' => 6,
-									'media_buttons' => true,
-									'quicktags'     => true,
-									'tinymce'       => array( 'toolbar1' => 'bold,italic,bullist,numlist,link,undo,redo' ),
-								)
-							);
-							?>
+							<div class="acfw_classic_editor_wrapper <?php echo $is_block ? 'acfw_hidden' : ''; ?>" data-endpoint="<?php echo esc_attr( $ukey ); ?>">
+								<?php
+								wp_editor(
+									$item['content'] ?? '',
+									$eid,
+									array(
+										'textarea_name' => 'items[' . $key . '][content]',
+										'textarea_rows' => 6,
+										'media_buttons' => true,
+										'quicktags'     => true,
+										'tinymce'       => array( 'toolbar1' => 'bold,italic,bullist,numlist,link,undo,redo' ),
+									)
+								);
+								?>
+							</div>
+							<div class="acfw_block_editor_wrapper <?php echo $is_block ? '' : 'acfw_hidden'; ?>" data-endpoint="<?php echo esc_attr( $ukey ); ?>">
+								<textarea id="acfw_block_content_<?php echo esc_attr( $ukey ); ?>" name="items[<?php echo esc_attr( $key ); ?>][content]" class="acfw_block_editor_input" style="display:none;" <?php disabled( $is_block, false ); ?>><?php echo esc_textarea( $item['content'] ?? '' ); ?></textarea>
+								<div class="acfw_block_editor" data-endpoint="<?php echo esc_attr( $ukey ); ?>" data-textarea="acfw_block_content_<?php echo esc_attr( $ukey ); ?>" data-autoinit="<?php echo $is_block ? '1' : '0'; ?>"></div>
+							</div>
 						</div>
 					</div>
 					<div class="acfw-field">

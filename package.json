@@ -4,14 +4,18 @@
   "description": "Build tooling for the Account Customizer for WooCommerce plugin.",
   "private": true,
   "scripts": {
-    "build": "gulp build",
+    "build": "gulp build && npm run build:blocks",
     "styles": "gulp styles",
     "scripts": "gulp scripts",
+    "build:blocks": "wp-scripts build assets/src/block-editor/index.js --output-path=assets/build",
+    "start:blocks": "wp-scripts start assets/src/block-editor/index.js --output-path=assets/build",
     "watch": "gulp watch",
-    "zip": "gulp zip",
-    "release": "gulp build && gulp zip"
+    "zip": "gulp build && npm run build:blocks && gulp zip",
+    "release": "gulp build && npm run build:blocks && gulp zip"
   },
   "devDependencies": {
+    "@wordpress/icons": "^15.3.0",
+    "@wordpress/scripts": "^30.20.0",
     "del": "^7.1.0",
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^8.0.0",
