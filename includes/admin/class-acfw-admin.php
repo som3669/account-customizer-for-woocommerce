@@ -51,11 +51,12 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$base = 'admin.php?page=' . self::PAGE;
 			$subs = array(
-				self::PAGE             => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
-				$base . '&tab=general' => __( 'Settings', 'account-customizer-for-woocommerce' ),
-				ACFW_Customizer::url() => __( 'Customizer', 'account-customizer-for-woocommerce' ),
-				$base . '&tab=banners' => __( 'Banners', 'account-customizer-for-woocommerce' ),
-				$base . '&tab=tools'   => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
+				self::PAGE               => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=templates' => __( 'Templates', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=general'   => __( 'Settings', 'account-customizer-for-woocommerce' ),
+				ACFW_Customizer::url()   => __( 'Customizer', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=banners'   => __( 'Banners', 'account-customizer-for-woocommerce' ),
+				$base . '&tab=tools'     => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
 			);
 			foreach ( $subs as $slug => $title ) {
 				add_submenu_page(
@@ -192,7 +193,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 */
 		protected function current_tab() {
 			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'items'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return in_array( $tab, array( 'general', 'items', 'banners', 'tools' ), true ) ? $tab : 'items';
+			return in_array( $tab, array( 'general', 'items', 'banners', 'tools', 'templates' ), true ) ? $tab : 'items';
 		}
 
 		/**
@@ -450,12 +451,20 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					$tslug     = isset( $_POST['template_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['template_slug'] ) ) : '';
 					$templates = acfw_prebuilt_templates();
 					if ( ! empty( $templates[ $tslug ]['options'] ) ) {
+						// Reset the whole design to defaults first so the result is
+						// deterministic and matches the template preview exactly,
+						// with no leftover values from a previous template.
+						foreach ( acfw_design_option_defaults() as $dk => $dv ) {
+							update_option( $dk, $dv );
+						}
+						// Overlay the template's own values.
 						$keys = acfw_design_option_keys();
 						foreach ( $templates[ $tslug ]['options'] as $ok => $ov ) {
 							if ( in_array( $ok, $keys, true ) ) {
 								update_option( $ok, is_string( $ov ) ? sanitize_text_field( $ov ) : $ov );
 							}
 						}
+						update_option( 'acfw_active_template', $tslug );
 					}
 					break;
 
@@ -489,6 +498,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			$tab  = $this->current_tab();
 			$tabs = array(
 				'items'      => __( 'Menu Items', 'account-customizer-for-woocommerce' ),
+				'templates'  => __( 'Templates', 'account-customizer-for-woocommerce' ),
 				'general'    => __( 'Settings', 'account-customizer-for-woocommerce' ),
 				'customizer' => __( 'Customizer', 'account-customizer-for-woocommerce' ),
 				'banners'    => __( 'Banners', 'account-customizer-for-woocommerce' ),
@@ -549,18 +559,30 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				</div>
 				<hr class="wp-header-end" />
 
-				<?php if ( isset( $_GET['updated'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
-					<div class="notice notice-success is-dismissible acfw-notice"><p><?php esc_html_e( 'Changes saved.', 'account-customizer-for-woocommerce' ); ?></p></div>
-				<?php endif; ?>
-
 				<?php
+				$acfw_toasts        = array();
+				if ( isset( $_GET['updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$acfw_toasts[] = array( 'type' => 'success', 'msg' => __( 'Changes saved.', 'account-customizer-for-woocommerce' ) );
+				}
 				$acfw_import_notice = get_transient( 'acfw_import_notice' );
-				if ( $acfw_import_notice ) :
+				if ( $acfw_import_notice ) {
 					delete_transient( 'acfw_import_notice' );
-					$acfw_ok = 'success' === $acfw_import_notice;
+					$acfw_ok       = 'success' === $acfw_import_notice;
+					$acfw_toasts[] = array(
+						'type' => $acfw_ok ? 'success' : 'error',
+						'msg'  => $acfw_ok ? __( 'Configuration imported.', 'account-customizer-for-woocommerce' ) : $acfw_import_notice,
+					);
+				}
+				if ( $acfw_toasts ) :
 					?>
-					<div class="notice <?php echo $acfw_ok ? 'notice-success' : 'notice-error'; ?> is-dismissible acfw-notice">
-						<p><?php echo esc_html( $acfw_ok ? __( 'Configuration imported.', 'account-customizer-for-woocommerce' ) : $acfw_import_notice ); ?></p>
+					<div class="acfw-toast-wrap" aria-live="polite">
+						<?php foreach ( $acfw_toasts as $t ) : ?>
+							<div class="acfw-toast acfw-toast-<?php echo esc_attr( $t['type'] ); ?>">
+								<span class="dashicons dashicons-<?php echo 'success' === $t['type'] ? 'yes-alt' : 'warning'; ?>"></span>
+								<span class="acfw-toast-msg"><?php echo esc_html( $t['msg'] ); ?></span>
+								<button type="button" class="acfw-toast-close" aria-label="<?php esc_attr_e( 'Dismiss', 'account-customizer-for-woocommerce' ); ?>">&times;</button>
+							</div>
+						<?php endforeach; ?>
 					</div>
 				<?php endif; ?>
 
@@ -570,9 +592,111 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<?php $this->render_banners_tab(); ?>
 				<?php elseif ( 'tools' === $tab ) : ?>
 					<?php $this->render_tools_tab(); ?>
+				<?php elseif ( 'templates' === $tab ) : ?>
+					<?php $this->render_templates_tab(); ?>
 				<?php else : ?>
 					<div class="acfw-card"><?php $this->render_settings_tab( $tab ); ?></div>
 				<?php endif; ?>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Render a miniature live mock of a template using the default endpoints.
+		 *
+		 * @param array $tpl Template definition ( label, accent, options ).
+		 */
+		protected function template_preview_mock( $tpl ) {
+			$o        = $tpl['options'];
+			$position = $o['acfw_menu_position'] ?? 'vertical-left';
+			$layout   = $o['acfw_menu_layout'] ?? 'simple';
+			$preset   = $o['acfw_menu_preset'] ?? 'flat';
+			$indicator = $o['acfw_active_indicator'] ?? 'bar';
+			$show_icons = ( 'no' !== ( $o['acfw_show_icons'] ?? 'yes' ) );
+
+			// Top row layout for tabs / horizontal, else a sidebar.
+			$is_top = ( 'tabs' === $layout || 'horizontal' === $position );
+			$pos    = $is_top ? 'top' : ( 'vertical-right' === $position ? 'right' : 'left' );
+
+			$classes = array(
+				'acfw-mock',
+				'pos-' . $pos,
+				'lay-' . sanitize_html_class( $layout ),
+				'pre-' . sanitize_html_class( $preset ),
+				'ind-' . sanitize_html_class( $indicator ),
+			);
+
+			// A few default endpoints for the mock ( first is active ).
+			$items = array();
+			foreach ( ACFW()->items->get_defaults() as $key => $def ) {
+				if ( 'customer-logout' === $key ) {
+					continue;
+				}
+				$items[] = array(
+					'label' => $def['label'],
+					'icon'  => $def['icon'] ?? '',
+				);
+				if ( count( $items ) >= 5 ) {
+					break;
+				}
+			}
+			?>
+			<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
+				<ul class="acfw-mock-nav">
+					<?php foreach ( $items as $i => $it ) : ?>
+						<li class="acfw-mock-item <?php echo 0 === $i ? 'is-active' : ''; ?>">
+							<?php if ( $show_icons && $it['icon'] ) : ?>
+								<i class="acfw-mock-icon <?php echo esc_attr( $it['icon'] ); ?>"></i>
+							<?php endif; ?>
+							<span class="acfw-mock-label"><?php echo esc_html( $it['label'] ); ?></span>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+				<div class="acfw-mock-content">
+					<span class="acfw-mock-line w1"></span>
+					<span class="acfw-mock-line w2"></span>
+					<span class="acfw-mock-line w3"></span>
+				</div>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Render the Starter Templates tab: a gallery of one-click designs.
+		 */
+		protected function render_templates_tab() {
+			?>
+			<?php $active_tpl = get_option( 'acfw_active_template', '' ); ?>
+			<div class="acfw-card acfw-templates">
+				<h2 class="acfw-section-title"><?php esc_html_e( 'Starter templates', 'account-customizer-for-woocommerce' ); ?></h2>
+				<p class="acfw-hint"><?php esc_html_e( 'One-click ready-made designs. Applying a template overwrites the related design settings.', 'account-customizer-for-woocommerce' ); ?></p>
+				<div class="acfw-template-grid">
+					<?php foreach ( acfw_prebuilt_templates() as $tslug => $tpl ) : ?>
+						<?php $is_applied = ( $tslug === $active_tpl ); ?>
+						<div class="acfw-template-card <?php echo $is_applied ? 'is-applied' : ''; ?>" style="--acfw-tpl-accent: <?php echo esc_attr( $tpl['accent'] ); ?>;">
+							<?php if ( $is_applied ) : ?>
+								<span class="acfw-template-badge"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Applied', 'account-customizer-for-woocommerce' ); ?></span>
+							<?php endif; ?>
+							<div class="acfw-template-preview acfw-tpl-<?php echo esc_attr( $tslug ); ?>">
+								<?php $this->template_preview_mock( $tpl ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
+							</div>
+							<div class="acfw-template-body">
+								<strong class="acfw-template-name"><?php echo esc_html( $tpl['label'] ); ?></strong>
+								<span class="acfw-template-desc"><?php echo esc_html( $tpl['description'] ); ?></span>
+							</div>
+							<form method="post" class="acfw-template-apply">
+								<?php wp_nonce_field( self::NONCE ); ?>
+								<input type="hidden" name="acfw_action" value="apply_template" />
+								<input type="hidden" name="template_slug" value="<?php echo esc_attr( $tslug ); ?>" />
+								<?php if ( $is_applied ) : ?>
+									<button type="button" class="button acfw-tpl-applied" disabled><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Applied', 'account-customizer-for-woocommerce' ); ?></button>
+								<?php else : ?>
+									<button type="submit" class="button button-primary"><?php esc_html_e( 'Apply template', 'account-customizer-for-woocommerce' ); ?></button>
+								<?php endif; ?>
+							</form>
+						</div>
+					<?php endforeach; ?>
+				</div>
 			</div>
 			<?php
 		}
@@ -858,33 +982,6 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			</form>
 
 			<?php if ( 'general' === $tab ) : ?>
-				<div class="acfw-templates">
-					<h2 class="acfw-section-title"><?php esc_html_e( 'Starter templates', 'account-customizer-for-woocommerce' ); ?></h2>
-					<p class="acfw-hint"><?php esc_html_e( 'One-click ready-made designs. Applying a template overwrites the related design settings.', 'account-customizer-for-woocommerce' ); ?></p>
-					<div class="acfw-template-grid">
-						<?php foreach ( acfw_prebuilt_templates() as $tslug => $tpl ) : ?>
-							<div class="acfw-template-card" style="--acfw-tpl-accent: <?php echo esc_attr( $tpl['accent'] ); ?>;">
-								<div class="acfw-template-preview acfw-tpl-<?php echo esc_attr( $tslug ); ?>">
-									<span class="acfw-tpl-bar"></span>
-									<span class="acfw-tpl-bar is-active"></span>
-									<span class="acfw-tpl-bar"></span>
-									<span class="acfw-tpl-bar"></span>
-								</div>
-								<div class="acfw-template-body">
-									<strong class="acfw-template-name"><?php echo esc_html( $tpl['label'] ); ?></strong>
-									<span class="acfw-template-desc"><?php echo esc_html( $tpl['description'] ); ?></span>
-								</div>
-								<form method="post" class="acfw-template-apply">
-									<?php wp_nonce_field( self::NONCE ); ?>
-									<input type="hidden" name="acfw_action" value="apply_template" />
-									<input type="hidden" name="template_slug" value="<?php echo esc_attr( $tslug ); ?>" />
-									<button type="submit" class="button button-primary"><?php esc_html_e( 'Apply template', 'account-customizer-for-woocommerce' ); ?></button>
-								</form>
-							</div>
-						<?php endforeach; ?>
-					</div>
-				</div>
-
 				<div class="acfw-presets">
 					<h2 class="acfw-section-title"><?php esc_html_e( 'Design presets', 'account-customizer-for-woocommerce' ); ?></h2>
 					<p class="acfw-hint"><?php esc_html_e( 'Save the current design as a named preset, then apply it anytime.', 'account-customizer-for-woocommerce' ); ?></p>

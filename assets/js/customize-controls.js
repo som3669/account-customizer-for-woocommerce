@@ -32,4 +32,26 @@
 		}
 	} );
 
+	// Show avatar sub-options only while "Show avatar" is on ( live in the panel ).
+	api( 'acfw_avatar_enable', function ( setting ) {
+		var deps = [
+			'acfw_avatar_image',
+			'acfw_avatar_shape',
+			'acfw_avatar_align',
+			'acfw_avatar_size',
+			'acfw_avatar_show_name',
+			'acfw_avatar_show_role'
+		];
+		function apply( value ) {
+			var on = 'yes' === value;
+			deps.forEach( function ( id ) {
+				api.control( id, function ( control ) {
+					control.active.set( on );
+				} );
+			} );
+		}
+		apply( setting.get() );
+		setting.bind( apply );
+	} );
+
 } )( jQuery, wp.customize );

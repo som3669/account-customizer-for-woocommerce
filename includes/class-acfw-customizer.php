@@ -189,8 +189,8 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'serif'   => __( 'Serif', 'account-customizer-for-woocommerce' ),
 				'mono'    => __( 'Mono', 'account-customizer-for-woocommerce' ),
 			) );
-			$this->add_buttonset( $wp_customize, 'acfw_color_scheme', 'auto', __( 'Color scheme', 'account-customizer-for-woocommerce' ), array(
-				'auto'  => __( 'Auto', 'account-customizer-for-woocommerce' ),
+			$this->add_buttonset( $wp_customize, 'acfw_color_scheme', 'light', __( 'Color scheme', 'account-customizer-for-woocommerce' ), array(
+				'auto'  => __( 'Auto ( follow visitor OS )', 'account-customizer-for-woocommerce' ),
 				'light' => __( 'Light', 'account-customizer-for-woocommerce' ),
 				'dark'  => __( 'Dark', 'account-customizer-for-woocommerce' ),
 			) );
@@ -212,6 +212,24 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$this->add_slider( $wp_customize, 'acfw_avatar_size', 72, __( 'Avatar size', 'account-customizer-for-woocommerce' ), 32, 160 );
 			$this->add_toggle( $wp_customize, 'acfw_avatar_show_name', 'yes', __( 'Show display name', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_avatar_show_role', 'no', __( 'Show user role', 'account-customizer-for-woocommerce' ) );
+
+			// Show avatar sub-options only when the avatar is enabled.
+			$avatar_deps = array(
+				'acfw_avatar_image',
+				'acfw_avatar_shape',
+				'acfw_avatar_align',
+				'acfw_avatar_size',
+				'acfw_avatar_show_name',
+				'acfw_avatar_show_role',
+			);
+			foreach ( $avatar_deps as $dep ) {
+				$ctrl = $wp_customize->get_control( $dep );
+				if ( $ctrl ) {
+					$ctrl->active_callback = function () {
+						return 'yes' === get_option( 'acfw_avatar_enable', 'no' );
+					};
+				}
+			}
 		}
 
 		/**

@@ -41,8 +41,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			add_filter( 'woocommerce_logout_default_redirect_url', array( $this, 'logout_redirect' ), 20 );
 			add_action( 'woocommerce_before_customer_login_form', array( $this, 'guest_message' ) );
 
-			// Avatar block above the navigation.
-			add_action( 'woocommerce_account_navigation', array( $this, 'render_avatar' ), 4 );
+			// Avatar block is rendered inside the nav ( see render_menu ), so it
+			// stacks above the menu in the same column instead of beside it.
 			// Dashboard custom title.
 			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_title' ), 1 );
 			// Dashboard stat widgets ( orders, spent, downloads, pie chart… ).
@@ -675,9 +675,14 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$position = get_option( 'acfw_menu_position', 'vertical-left' );
 			$layout   = get_option( 'acfw_menu_layout', 'simple' );
 
+			ob_start();
+			$this->render_avatar();
+			$avatar_html = ob_get_clean();
+
 			acfw_get_template(
 				'myaccount-menu.php',
 				array(
+					'avatar_html' => $avatar_html,
 					'items'      => $this->menu_items,
 					'current'    => acfw_get_current_endpoint(),
 					'position'   => $position,
@@ -690,7 +695,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'sticky'     => 'yes' === get_option( 'acfw_sticky_menu', 'no' ),
 					'indicator'  => get_option( 'acfw_active_indicator', 'bar' ),
 					'anim'       => get_option( 'acfw_hover_anim', 'none' ),
-					'scheme'      => get_option( 'acfw_color_scheme', 'auto' ),
+					'scheme'      => get_option( 'acfw_color_scheme', 'light' ),
 					'collapsible' => 'yes' === get_option( 'acfw_collapsible', 'no' ),
 					'pinnable'    => 'yes' === get_option( 'acfw_pin_enable', 'no' ),
 					'frontend'    => $this,

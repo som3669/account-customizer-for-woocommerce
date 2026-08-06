@@ -1491,69 +1491,212 @@
 }
 
 .acfw-template-preview {
+	height: 132px;
+	padding: 10px;
+	background: #f6f7f9;
+	border-bottom: 1px solid var(--acfw-border);
+	overflow: hidden;
+}
+
+/* ---- Miniature live menu mock ---- */
+.acfw-mock {
+	--m-accent: var(--acfw-tpl-accent, var(--acfw-accent));
+	display: flex;
+	gap: 8px;
+	width: 100%;
+	height: 100%;
+	background: #fff;
+	border-radius: 6px;
+	padding: 8px;
+	box-sizing: border-box;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+	font-size: 7px;
+	line-height: 1;
+	overflow: hidden;
+}
+
+.acfw-mock.pos-right {
+	flex-direction: row-reverse;
+}
+
+.acfw-mock.pos-top {
+	flex-direction: column;
+}
+
+.acfw-mock-nav {
+	list-style: none;
+	margin: 0;
+	padding: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	padding: 16px;
-	height: 96px;
-	background: linear-gradient(135deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.06));
-	border-bottom: 1px solid var(--acfw-border);
+	gap: 3px;
+	flex: 0 0 44%;
+	min-width: 0;
 }
 
-.acfw-tpl-bar {
-	height: 12px;
-	border-radius: 6px;
-	background: #d7dbe0;
-	width: 70%;
-}
-
-.acfw-tpl-bar.is-active {
-	background: var(--acfw-tpl-accent, var(--acfw-accent));
-	width: 90%;
-}
-
-/* Preview variants hint at the layout. */
-.acfw-template-preview.acfw-tpl-tabbed-top {
+.acfw-mock.pos-top .acfw-mock-nav {
+	flex: 0 0 auto;
 	flex-direction: row;
-	align-items: flex-start;
-	height: 96px;
+	flex-wrap: nowrap;
+	gap: 4px;
+	border-bottom: 1px solid #e5e7eb;
+	padding-bottom: 4px;
+	overflow: hidden;
 }
 
-.acfw-template-preview.acfw-tpl-tabbed-top .acfw-tpl-bar {
-	width: 46px;
-	height: 10px;
+.acfw-mock-item {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 5px;
+	border-radius: 4px;
+	color: #6b7280;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
-.acfw-template-preview.acfw-tpl-modern-cards .acfw-tpl-bar {
-	height: 16px;
-	background: #fff;
-	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
-	width: 100%;
+.acfw-mock-item .acfw-mock-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.acfw-template-preview.acfw-tpl-modern-cards .acfw-tpl-bar.is-active {
-	background: var(--acfw-tpl-accent, var(--acfw-accent));
+.acfw-mock-icon {
+	font-size: 7px;
+	width: 8px;
+	text-align: center;
+	color: #9aa1ab;
+	flex: 0 0 8px;
 }
 
-.acfw-template-preview.acfw-tpl-rounded-pills .acfw-tpl-bar {
-	border-radius: 999px;
+/* Active state: default ( bar indicator ). */
+.acfw-mock-item.is-active {
+	color: var(--m-accent);
+	background: color-mix(in srgb, var(--m-accent) 12%, transparent);
+	font-weight: 700;
 }
 
-.acfw-template-preview.acfw-tpl-minimal {
+.acfw-mock-item.is-active .acfw-mock-icon {
+	color: var(--m-accent);
+}
+
+.acfw-mock.ind-bar .acfw-mock-item.is-active {
+	box-shadow: inset 2px 0 0 var(--m-accent);
+}
+
+.acfw-mock.ind-underline .acfw-mock-item.is-active {
 	background: none;
-}
-
-.acfw-template-preview.acfw-tpl-minimal .acfw-tpl-bar {
-	background: transparent;
-	height: 10px;
-	box-shadow: inset 0 -1px 0 #e5e7eb;
+	box-shadow: inset 0 -2px 0 var(--m-accent);
 	border-radius: 0;
 }
 
-.acfw-template-preview.acfw-tpl-minimal .acfw-tpl-bar.is-active {
-	background: transparent;
-	color: var(--acfw-tpl-accent);
-	box-shadow: inset 0 -2px 0 var(--acfw-tpl-accent, var(--acfw-accent));
+.acfw-mock.ind-dot .acfw-mock-item.is-active {
+	background: none;
+}
+
+.acfw-mock.ind-none .acfw-mock-item.is-active {
+	box-shadow: none;
+}
+
+/* Preset: modern cards. */
+.acfw-mock.lay-modern .acfw-mock-item {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.acfw-mock.lay-modern .acfw-mock-item.is-active {
+	border-color: var(--m-accent);
+	background: color-mix(in srgb, var(--m-accent) 12%, #fff);
+}
+
+/* Modern: icons become tinted chips ( mirrors the frontend 34px chip ). */
+.acfw-mock.lay-modern .acfw-mock-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 15px;
+	height: 15px;
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--m-accent) 14%, #fff);
+	color: var(--m-accent);
+	flex: 0 0 15px;
+	font-size: 8px;
+}
+
+/* Preset: pills. */
+.acfw-mock.pre-pill .acfw-mock-item {
+	border-radius: 999px;
+}
+
+/* Preset: boxed. */
+.acfw-mock.pre-boxed .acfw-mock-item {
+	border: 1px solid #e5e7eb;
+}
+
+/* Minimal / theme: plain rows. */
+.acfw-mock.lay-no-borders .acfw-mock-item,
+.acfw-mock.lay-theme .acfw-mock-item {
+	padding-left: 0;
+	background: none;
+}
+
+/* Theme Native: inherits the theme — plain list, no chips, active just bold. */
+.acfw-mock.lay-theme .acfw-mock-item {
+	padding: 3px 0;
+	color: #3c434a;
+}
+
+.acfw-mock.lay-theme .acfw-mock-item.is-active {
+	background: none;
+	box-shadow: none;
+	color: #3c434a;
+	font-weight: 700;
+}
+
+.acfw-mock.lay-theme .acfw-mock-icon {
+	background: none;
+	border-radius: 0;
+	width: 8px;
+	height: auto;
+	color: #9aa1ab;
+}
+
+.acfw-mock.lay-theme .acfw-mock-item.is-active .acfw-mock-icon {
+	color: #3c434a;
+}
+
+.acfw-mock-content {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+	padding-left: 2px;
+}
+
+.acfw-mock.pos-top .acfw-mock-content {
+	padding-left: 0;
+	padding-top: 4px;
+}
+
+.acfw-mock-line {
+	height: 6px;
+	border-radius: 3px;
+	background: #e5e7eb;
+}
+
+.acfw-mock-line.w1 {
+	width: 80%;
+	height: 8px;
+	background: #d1d5db;
+}
+
+.acfw-mock-line.w2 {
+	width: 100%;
+}
+
+.acfw-mock-line.w3 {
+	width: 60%;
 }
 
 .acfw-template-body {
@@ -1582,4 +1725,142 @@
 	width: 100%;
 	justify-content: center;
 	border-radius: 8px !important;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.acfw-template-apply .acfw-tpl-applied[disabled] {
+	background: color-mix(in srgb, var(--acfw-tpl-accent, var(--acfw-accent)) 12%, #fff);
+	border-color: var(--acfw-tpl-accent, var(--acfw-accent));
+	color: var(--acfw-tpl-accent, var(--acfw-accent));
+	cursor: default;
+	opacity: 1;
+}
+
+.acfw-template-apply .acfw-tpl-applied .dashicons {
+	font-size: 15px;
+	width: 15px;
+	height: 15px;
+}
+
+/* =========================================================================
+   Applied template badge
+   ========================================================================= */
+.acfw-template-card {
+	position: relative;
+}
+
+.acfw-template-card.is-applied {
+	border-color: var(--acfw-tpl-accent, var(--acfw-accent));
+	box-shadow: 0 0 0 1px var(--acfw-tpl-accent, var(--acfw-accent));
+}
+
+.acfw-template-badge {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 3px 9px 3px 6px;
+	border-radius: 999px;
+	background: var(--acfw-tpl-accent, var(--acfw-accent));
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1;
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.25);
+}
+
+.acfw-template-badge .dashicons {
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+}
+
+/* =========================================================================
+   Toast notifications
+   ========================================================================= */
+.acfw-toast-wrap {
+	position: fixed;
+	right: 24px;
+	bottom: 24px;
+	z-index: 100000;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-width: 360px;
+}
+
+.acfw-toast {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 14px;
+	border-radius: 10px;
+	background: #1e2530;
+	color: #fff;
+	box-shadow: 0 10px 30px rgba(16, 24, 40, 0.3);
+	font-size: 13px;
+	font-weight: 500;
+	opacity: 0;
+	transform: translateY(12px);
+	animation: acfw-toast-in 0.25s ease forwards;
+}
+
+.acfw-toast.is-leaving {
+	animation: acfw-toast-out 0.25s ease forwards;
+}
+
+.acfw-toast .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	flex: 0 0 18px;
+}
+
+.acfw-toast-success .dashicons {
+	color: #34d399;
+}
+
+.acfw-toast-error {
+	background: #7f1d1d;
+}
+
+.acfw-toast-error .dashicons {
+	color: #fecaca;
+}
+
+.acfw-toast-msg {
+	flex: 1 1 auto;
+}
+
+.acfw-toast-close {
+	border: 0;
+	background: none;
+	color: rgba(255, 255, 255, 0.6);
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+	padding: 0 2px;
+}
+
+.acfw-toast-close:hover {
+	color: #fff;
+}
+
+@keyframes acfw-toast-in {
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes acfw-toast-out {
+	to {
+		opacity: 0;
+		transform: translateY(12px);
+	}
 }

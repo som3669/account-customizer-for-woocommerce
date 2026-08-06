@@ -4,9 +4,16 @@
 
 	$( function () {
 
-		// Group expand/collapse.
+		// Group expand/collapse ( click the title again to close ).
 		$( '.acfw-menu' ).on( 'click', '.acfw-group-toggle', function () {
 			$( this ).closest( '.acfw-type-group' ).toggleClass( 'is-open' );
+		} );
+
+		// Click outside closes open group dropdowns in the Tabs layout.
+		$( document ).on( 'click', function ( e ) {
+			if ( ! $( e.target ).closest( '.acfw-type-group' ).length ) {
+				$( '.acfw-menu.layout-tabs .acfw-type-group.is-open' ).removeClass( 'is-open' );
+			}
 		} );
 
 		// Menu search filter.
