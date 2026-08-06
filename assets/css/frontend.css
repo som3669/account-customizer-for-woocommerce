@@ -592,6 +592,13 @@
   display: inline-flex;
 }
 
+.acfw-menu.acfw-pinnable .acfw-pin:focus,
+.acfw-menu.acfw-pinnable .acfw-pin:focus-visible {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
 .acfw-menu.acfw-pinnable .acfw-menu-item:hover .acfw-pin,
 .acfw-menu.acfw-pinnable .acfw-menu-item.is-pinned .acfw-pin {
   opacity: 1;
@@ -1077,7 +1084,8 @@
 }
 
 .acfw-stat {
-  flex: 1 1 140px;
+  flex: 0 0 140px;
+  width: 140px;
   min-width: 140px;
   display: flex;
   flex-direction: column;
