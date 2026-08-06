@@ -1,387 +1,299 @@
-# Account Customizer for WooCommerce — Documentation
+# How to Customize the WooCommerce My Account Page
 
-Customize the WooCommerce **My Account** page: rebuild the navigation, add custom
-endpoints/links/pages/groups, style the menu live in the Customizer, apply
-one‑click starter templates, add banners, a rich dashboard, and more.
+**Account Customizer for WooCommerce** lets you completely rebuild the WooCommerce
+**My Account** page — reorder and add menu items, create custom endpoints, links,
+pages and groups, style everything live in the Customizer, apply one‑click starter
+templates, add banners, and enrich the dashboard.
 
-- **Requires:** WordPress + WooCommerce, PHP 7.4+
-- **Admin home:** WP Admin → **My Account** (top‑level menu, WooCommerce capability)
-- **Where design lives:** the **Customizer** (live preview). Behaviour/content lives in the plugin admin tabs.
-
----
-
-## Table of contents
-1. [Admin overview](#admin-overview)
-2. [Menu Items (builder)](#menu-items)
-3. [Item types: Endpoint, Group, Link, Page](#item-types)
-4. [Icons](#icons)
-5. [Custom content — Classic & Block editor](#custom-content)
-6. [Visibility rules](#visibility)
-7. [Starter templates](#templates)
-8. [Customizer — design options](#customizer)
-9. [Avatar block](#avatar)
-10. [Dashboard widgets](#dashboard)
-11. [Banners](#banners)
-12. [Settings tab](#settings)
-13. [Import / Export](#import-export)
-14. [Smart tags](#smart-tags)
-15. [Shortcode / Widget / Block](#embedding)
-16. [Developer: build, hooks, templates](#developer)
+This guide walks through installation, the admin interface, endpoint setup, the
+style Customizer, settings, and third‑party compatibility.
 
 ---
 
-<a name="admin-overview"></a>
-## 1. Admin overview
+## Installation
 
-The plugin adds a top‑level **My Account** menu with tabs:
+1. In WordPress admin, go to **Plugins → Add New → Upload Plugin**.
+2. Upload the plugin ZIP (`account-customizer-for-woocommerce.zip`) and click **Install Now**.
+3. Click **Activate**. WooCommerce must be installed and active.
+4. A new top‑level **My Account** menu appears in the admin sidebar. Open it to start.
 
-| Tab | Purpose |
-|-----|---------|
-| **Menu Items** | Build & order the account menu (endpoints, groups, links, pages). |
-| **Templates** | One‑click starter designs. |
-| **Settings** | Behaviour: AJAX nav, default endpoint, redirects, guest message, view tracking, design presets, reset. |
-| **Customizer** | Opens the WP Customizer focused on the “My Account” panel (all visual styling). |
-| **Banners** | Reusable widget/image banners to attach to endpoints. |
-| **Import / Export** | Back up or move the whole configuration as JSON. |
-
-### Header bar
-
-The header has the **tab navigation** (left) and **context action buttons** (right), plus two **floating buttons** pinned to the screen’s right edge.
-
-**Action buttons (top‑right), by tab:**
-| Tab | Buttons |
-|-----|---------|
-| Menu Items | **Add endpoint**, **Add group**, **Add link**, **Add page** |
-| Banners | **Add banner** |
-
-**Floating buttons (always visible on the admin page):**
-- **Preview** — opens the live My Account page in an in‑page overlay (iframe), no navigation away.
-- **View My Account** — opens the live My Account page in a new tab.
-
-There is also a **second “Add banner”** button directly beneath the banner list, and the **Save changes** button in each editor footer.
+> Requires WordPress, WooCommerce 6.0+, and PHP 7.4+.
 
 ---
 
-<a name="menu-items"></a>
-## 2. Menu Items (builder)
+## Admin Interface Overview
 
-A two‑pane builder: the ordered list on the left, the selected item’s options on the right.
+The plugin admin (WP Admin → **My Account**) is organised into a header bar and a
+working area. It has four regions.
 
-**Steps**
-1. Go to **My Account → Menu Items**.
-2. Click **Add endpoint / Add group / Add link / Add page** (top‑right) and type a label → **Create**. New items land at the end.
-3. Click a row to edit it in the right pane.
-4. **Drag** the handle to reorder; drag an item onto a group to nest it (one level).
-5. Toggle the switch to enable/disable an item; use the copy icon to **duplicate**, the trash icon to **delete** (default WooCommerce items can be disabled but not deleted).
-6. Click **Save changes** (single save for the whole list).
+### 1. Top Section
 
----
+The header bar contains:
 
-<a name="item-types"></a>
-## 3. Item types
+- **Tab navigation** — *Menu Items, Templates, Settings, Customizer, Banners, Import / Export*.
+- **Action buttons** (top‑right), which change per tab:
+  - *Menu Items:* **Add endpoint**, **Add group**, **Add link**, **Add page**.
+  - *Banners:* **Add banner**.
+- **Floating buttons** (pinned to the right edge, always available):
+  - **Preview** — opens the live My Account page in an in‑page overlay.
+  - **View My Account** — opens the live page in a new browser tab.
 
-- **Endpoint** — a real WooCommerce account endpoint (Dashboard, Orders, …) or your own. Can carry custom content + a banner.
-- **Group** — a non‑clickable heading that expands/collapses to reveal child items (drag items into it). Default icon: folder.
-- **Link** — points anywhere via a URL. Option: **Open in new tab**. Default icon: link.
-- **Page** — links to an existing WordPress **Page** (chosen from a dropdown); resolves to that page’s permalink. Option: **Open in new tab**. Default icon: file.
+### 2. Left Panel
 
----
+On **Menu Items** and **Banners**, the left panel is the **ordered list** of items.
+Each row shows the icon, label, a type badge, an enable/disable switch, and
+duplicate/delete controls. Drag the handle to reorder or to nest items into groups.
 
-<a name="icons"></a>
-## 4. Icons
+### 3. Main Content Area
 
-Each item shows an icon. In the item’s options:
+Selecting a row opens its **options** in the main area on the right — labels, icon,
+content, visibility, banners and more (see *Endpoints Customization Options*).
 
-- **Choose icon** — pick a FontAwesome icon from the searchable dropdown.
-- **Upload icon** — upload/select an image from the Media Library (overrides the FA icon).
+### 4. Bottom Section
 
-Default WooCommerce endpoints ship with sensible FontAwesome defaults (Dashboard → tachometer, Orders → cart, etc.), and those defaults are pre‑selected in the picker.
+Each editor ends with a **Save changes** action. A **toast** notification confirms
+the save. On the Settings tab you’ll also find **Design presets** and **Reset all settings**.
 
 ---
 
-<a name="custom-content"></a>
-## 5. Custom content — Classic & Block editor
+## Endpoints Setup and Configuration
 
-For **Endpoint** items you can add extra content shown on that endpoint.
+Menu items are managed on the **Menu Items** tab. There are four item types:
 
-**Steps**
-1. Select an endpoint → find **Content editor**.
-2. Choose **Classic** (TinyMCE) or **Block** (Gutenberg).
-   - **Classic** — the familiar visual/text editor with Add Media + smart‑tag button.
-   - **Block** — a standalone block editor (paragraphs, headings, images, buttons, columns, embeds, etc.). Block markup is stored and rendered with `do_blocks()` + oEmbed on the front end.
-3. Set **Custom content position**: *Before* / *After* the default endpoint content, or *Replace* it.
-4. Optionally attach a **Banner** + position (top/bottom).
-5. **Save changes.**
+- **Endpoint** — a real My Account endpoint (Dashboard, Orders, …) or a custom one, with optional custom content and a banner.
+- **Group** — a collapsible heading that contains child items.
+- **Link** — points to any URL.
+- **Page** — points to an existing WordPress Page.
 
-> The Block editor only appears when its bundle is built (`pnpm build`). Otherwise the field falls back to Classic automatically.
+### Endpoint Controls
 
----
+For each item in the left list:
 
-<a name="visibility"></a>
-## 6. Visibility rules
+- **Drag handle** — reorder items, or drag an item onto a group to nest it (one level deep).
+- **Enable/disable switch** — show or hide the item without deleting it.
+- **Duplicate** — copy an item.
+- **Delete** — remove a custom item. *Default WooCommerce items can be disabled but not deleted.*
 
-Per item (right pane):
+### Endpoints Customization Options
 
-- **User roles** — show only to selected roles (empty = everyone). Admins always see everything.
+Selecting an endpoint reveals these options:
+
+- **Endpoint label** — the text shown in the menu.
+- **Endpoint icon** — **Choose icon** (searchable FontAwesome picker) or **Upload icon** (image from the Media Library).
+- **CSS class** — extra class on the menu item.
+- **User roles** — restrict the item to selected roles (empty = everyone).
 - **Show from / Show until** — date window during which the item appears.
 - **Purchased product** — only show to customers who bought a given product ID.
+- **Content editor** — **Classic** (TinyMCE) or **Block** (Gutenberg) editor for custom content.
+- **Custom content** — extra content for this endpoint (supports smart tags and shortcodes; block content is rendered with the block engine).
+- **Custom content position** — *Before* / *After* the default content, or *Replace* it.
+- **Banner** + **Banner position** — attach a saved banner at the top or bottom.
+
+### How to Add a New Endpoint?
+
+1. On **Menu Items**, click **Add endpoint** (top‑right).
+2. Enter a label and click **Create**. The new endpoint is added at the end of the list.
+3. Select it to set its icon, content, visibility and banner.
+4. Click **Save changes**.
+
+### Add Group
+
+1. Click **Add group**, enter a name, and **Create**.
+2. Drag other items onto the group to nest them.
+3. Groups expand/collapse on the front end (default folder icon). Use **Expand groups by default** in the Customizer to keep them open.
+
+### Add Link
+
+1. Click **Add link**, enter a label, and **Create**.
+2. Set the **URL** and optionally **Open in new tab**.
+
+### Add Page
+
+1. Click **Add page**, enter a label, and **Create**.
+2. Choose an existing WordPress **Page** from the dropdown (links to that page’s permalink). Optionally **Open in new tab**.
 
 ---
 
-<a name="templates"></a>
-## 7. Starter templates
+## Starter Templates
 
-Ready‑made designs you can apply in one click.
+Ready‑made designs applied in one click, on the **Templates** tab.
 
-**Steps**
-1. Go to **My Account → Templates**.
-2. Each card shows a live mini‑preview of the real menu + a description.
-3. Click **Apply template**. The applied card shows an **Applied** badge and a disabled **Applied** button.
+1. Open **My Account → Templates**.
+2. Each card shows a live mini‑preview of the real menu plus a short description.
+3. Click **Apply template**. The applied card shows an **Applied** badge and a disabled button.
 
-**What happens:** applying **resets all design options to defaults first**, then applies the template’s values — so the result is deterministic and matches the preview exactly. You can then fine‑tune anything in the Customizer; your tweaks persist until you apply another template.
+Applying a template **resets all design options to defaults first**, then applies the
+template’s values, so the result exactly matches the preview. You can fine‑tune
+anything afterwards in the Customizer; your tweaks persist until you apply another template.
 
-**Shipped templates:** Classic Sidebar · Modern Cards · Rounded Pills · Tabbed Top · Minimal · Theme Native.
+**Included templates:** Classic Sidebar · Modern Cards · Rounded Pills · Tabbed Top · Minimal · Theme Native.
 
 ---
 
-<a name="customizer"></a>
-## 8. Customizer — design options
+## My Account Page Style Customizer
 
-**My Account → Customizer** (or Appearance → Customize → *My Account* panel). All changes preview live. Three sections:
+All visual styling is done live in the WordPress Customizer. Open **My Account →
+Customizer** (or *Appearance → Customize → My Account* panel). Changes preview
+instantly. The panel has three sections: **Avatar**, **Navigation**, **Layout & Colors**.
 
-### Avatar
-See [Avatar block](#avatar).
+### Layout & Design
 
-### Navigation
-- **Menu style** — the single control that sets the whole look: **Theme style, Simple, Classic, Modern cards, Minimal, Pills, Tabs**. (Internally this maps to a layout + item‑skin combination.)
-- **Show menu icons** / **Show item counts**.
-- **Dashboard quick‑link tiles**, **Dashboard title**, **Dashboard content position** (Left/Middle/Right).
-- **Dashboard stat widgets** + individual toggles (see [Dashboard](#dashboard)).
-- **Menu search box** — filter box above the menu.
+- **Menu style** — the single control for the overall look: **Theme style, Simple, Classic, Modern cards, Minimal, Pills, Tabs**.
+- **Menu position** — **Left**, **Right**, or **Top (horizontal)**.
+- **Accent color**, **Text color**, **Active color**, **Menu item background**, **Hover background**.
+- **Color scheme** — **Light** (default), **Dark**, or **Auto** (follows the visitor’s OS). Dark is opt‑in so it never clashes with a light theme.
+
+### Customizing Navigation Menu
+
+- **Show menu icons** / **Show item counts** (order/download count badges).
+- **Active indicator** — **Bar**, **Underline**, **Dot**, or **None** (how the current item is marked).
+- **Hover animation** — **None**, **Slide**, or **Grow**.
+- **Menu search box** — a live filter above the menu.
 - **Collapsible icon rail** — collapse the menu to icons only.
 - **Let customers pin favorites** — a star to pin items to the top.
-- **Profile completeness meter** — progress bar on the dashboard.
-- **Sticky menu** — menu sticks on scroll.
-- **Confirm before logout**.
-- **Active indicator** — **Bar / Underline / Dot / None** (how the current item is marked).
-- **Hover animation** — None / Slide / Grow.
+- **Sticky menu** — keeps the menu in view on scroll.
+- **Confirm before logout** — confirm dialog on Log out.
 - **Expand groups by default**.
 - **AJAX navigation** — load endpoints without a full page reload.
 
-### Layout & Colors
-- **Accent / Text / Active** colors, **Menu item background**, **Hover background**.
-- **Corner radius**, **Item spacing (gap)**, **Item padding**, **Font size**, **Font weight**, **Font family**.
-- **Color scheme** — **Light** (default), **Dark**, or **Auto** (follows the visitor’s OS). Dark is opt‑in so it never clashes with a light theme.
-- **Custom CSS**.
+### Customizing Profile Settings
 
----
+The **Avatar** section adds a customer card above the menu.
 
-<a name="avatar"></a>
-## 9. Avatar block
+- **Show avatar** — enable the block. Its sub‑options appear when enabled:
+  - **Custom avatar image** (overrides the gravatar), **Shape** (circle/square), **Alignment**, **Size**, **Show display name**, **Show user role**.
 
-A customer card shown **above the menu** in the same column.
+### Spacing
 
-**Steps**
-1. Customizer → **Avatar** → enable **Show avatar**.
-2. When enabled, the sub‑options appear: **Custom avatar image** (overrides the gravatar), **Shape** (circle/square), **Alignment**, **Size**, **Show display name**, **Show user role**.
+Fine‑tune metrics under **Layout & Colors**:
 
----
+- **Corner radius** — item rounding.
+- **Item spacing** — gap between items.
+- **Item padding** — inner padding.
+- **Font size**, **Font weight**, **Font family**.
 
-<a name="dashboard"></a>
-## 10. Dashboard widgets
+### Customizing Additional CSS
 
-On the Dashboard endpoint you can add:
+- **Custom CSS** — a code field in **Layout & Colors** for your own rules, injected on the account page.
 
-- **Dashboard title** — a custom heading (supports [smart tags](#smart-tags), e.g. `Welcome, {first_name}!`).
-- **Stat widgets** (toggle the master **Dashboard stat widgets** + each card): **Total orders, Pending orders, Total spent, Downloads, Refunds, Reward points, Latest order,** and an **Orders pie chart** (inline SVG donut of orders by status).
+### Dashboard Widgets
+
+On the Dashboard endpoint you can add (from the Navigation section):
+
+- **Dashboard title** — a custom heading (supports smart tags, e.g. `Welcome, {first_name}!`).
+- **Dashboard content position** — Left / Middle / Right.
+- **Dashboard stat widgets** — a master toggle plus individual cards: **Total orders, Pending orders, Total spent, Downloads, Refunds, Reward points, Latest order,** and an **Orders pie chart** (SVG donut).
 - **Quick‑link tiles** — a grid of shortcuts to your endpoints.
-- **Profile completeness meter**.
-- **Content position** — align the dashboard column Left / Middle / Right.
+- **Profile completeness meter** — a progress bar.
+
+### Preview Controls
+
+- **Preview** (floating button) — an in‑page overlay of the live page.
+- **View My Account** (floating button) — opens the live page in a new tab.
+- The Customizer itself previews all design changes live before you publish.
+
+### Restoring the Settings and Customization
+
+- **Design presets** (Settings tab) — save the current design as a named preset and re‑apply it anytime.
+- **Reset all settings** (Settings tab) — restore endpoints, design and banners to defaults. *This cannot be undone.*
 
 ---
 
-<a name="banners"></a>
-## 11. Banners
+## Banners
 
-Reusable promo blocks attached to endpoints.
+Reusable promotional blocks attached to endpoints, on the **Banners** tab.
 
-**Steps**
-1. **My Account → Banners → Add banner** (or the button below the list).
-2. Pick a **Banner type**:
-   - **Widget** — icon + title + text + colors + optional item‑count badge + link.
+1. Click **Add banner** (header, or below the list).
+2. Choose a **Banner type** — the form shows only the relevant fields:
+   - **Widget** — icon, title, text, colors (hex or rgba), optional item‑count badge, link.
    - **Image** — an uploaded image with an optional link.
-   (The form shows only the fields relevant to the chosen type.)
-3. **Banner link**: None / **Endpoint** (pick one) / **External URL** (the matching field shows only for that choice).
+3. **Banner link** — **None**, **Endpoint** (choose one), or **External URL**.
 4. **Show banner to** — restrict by role.
-5. **Create / Save banner.**
-6. Attach it to an endpoint from **Menu Items** → the endpoint’s **Banner** + **Banner position** fields.
-
-Colors support hex **and** rgba (alpha) via the round swatch → popover picker.
+5. Click **Create / Save banner**.
+6. Attach it to an endpoint via the endpoint’s **Banner** + **Banner position** options.
 
 ---
 
-<a name="settings"></a>
-## 12. Settings tab
+## Settings
 
-**My Account → Settings**:
+The **Settings** tab holds behaviour options and maintenance tools.
 
-- **AJAX navigation** — endpoints load without reloading the page.
+### General Settings
+
+- **AJAX navigation** — load endpoints without reloading the page.
 - **Default endpoint** — which endpoint opens first.
 - **After‑login redirect** / **After‑logout redirect**.
 - **Guest message** — shown above the login form for logged‑out visitors.
 - **Track endpoint views** — count how often each endpoint is viewed.
-- **Design presets** — save the current design as a named preset and re‑apply it later (your own snapshots; distinct from shipped Templates).
-- **Reset all settings** — restore endpoints, design and banners to defaults (cannot be undone).
 
-Saving shows a **toast** notification.
+### Import / Export
 
----
-
-<a name="import-export"></a>
-## 13. Import / Export
-
-**My Account → Import / Export**:
+On the **Import / Export** tab:
 
 - **Export** — download all endpoints, design settings and banners as a JSON file.
-- **Import** — upload a JSON file (or paste JSON) to restore/clone a configuration.
+- **Import** — upload (or paste) a JSON file to restore or clone a configuration.
 
-Use it to move a setup between sites or keep backups.
+### Developer Options
 
----
-
-<a name="smart-tags"></a>
-## 14. Smart tags
-
-Dynamic placeholders usable in custom content, the dashboard title and banners:
-
-`{display_name}` `{first_name}` `{last_name}` `{username}` `{user_email}`
-`{site_title}` `{order_count}` `{download_count}` `{last_login}`
-`{points_balance}` *(Points & Rewards)* `{membership_plan}` *(Memberships)*
-
-In the Classic editor, use the **Add smart tags** button next to Add Media.
-
----
-
-<a name="embedding"></a>
-## 15. Shortcode / Widget / Block
-
-The account menu can also be rendered outside the account page — all three reuse the same styling as the main menu:
-
-- **Shortcode** — `[acfw_account_menu]`.
-- **Block** — **Account Menu** (`acfw/account-menu`) in the block inserter (editor script `assets/js/block.js`).
-- **Widget** — the **Account Menu** classic widget (`ACFW_Menu_Widget`).
-
----
-
-<a name="developer"></a>
-## 16. Developer: build, hooks, templates
-
-### Build pipeline
-Source of truth is **SCSS/JS sources**, compiled with **Gulp** (SCSS→CSS + JS minify) and **@wordpress/scripts** (block editor bundle). Package manager: **pnpm**.
+Source styles/scripts are compiled with **Gulp** (SCSS→CSS + JS minify) and
+**@wordpress/scripts** (block editor bundle); package manager is **pnpm**.
 
 ```bash
 pnpm install          # install toolchain
-pnpm build            # gulp (scss→css, *.min.js) + block editor bundle
+pnpm build            # compile SCSS→CSS, minify JS, build block editor bundle
 npx gulp watch        # rebuild on change
-pnpm zip              # build + package dist/account-customizer-for-woocommerce.zip
+pnpm zip              # build + package the distributable ZIP
 ```
 
-- Edit `assets/scss/*.scss` and `assets/js/*.js` (sources) — **not** the compiled `assets/css/*.css`.
-- Design tokens live in `assets/scss/_variables.scss`.
-- Assets are enqueued minified with a filemtime cache‑buster; define `SCRIPT_DEBUG` to load unminified sources.
+- Edit `assets/scss/*.scss` and `assets/js/*.js` sources — not the compiled `assets/css/*.css`.
+- Assets enqueue minified with a filemtime cache‑buster; define `SCRIPT_DEBUG` for unminified.
+- **Template overrides:** copy files from `templates/` into `yourtheme/account-customizer-for-woocommerce/`.
+- **Filters:** `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_item_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`.
 
-### Template overrides
-Copy any file from `templates/` into
-`yourtheme/account-customizer-for-woocommerce/{template}.php` to override:
-`myaccount-menu.php`, `myaccount-menu-item.php`, `myaccount-avatar.php`.
+**Embedding the menu elsewhere:**
 
-### Useful filters
-- `acfw_prebuilt_templates` — add/modify starter templates.
-- `acfw_design_option_keys` / `acfw_design_option_defaults` — extend the design option set.
-- `acfw_menu_styles` — add a Menu style choice.
-- `acfw_default_type_icon` — change default icons per item type.
-- `acfw_smart_tags` / `acfw_apply_smart_tags` — register custom smart tags.
-- `acfw_get_items`, `acfw_item_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`.
+- Shortcode — `[acfw_account_menu]`
+- Block — **Account Menu** (`acfw/account-menu`)
+- Widget — **Account Menu** classic widget
 
----
+### Save Changes
 
-<a name="frontend-behaviours"></a>
-## 17. Front‑end behaviours (JavaScript)
-
-Handled by `assets/js/frontend.js`:
-
-- **Group expand/collapse** — click a group title to open; click again (or click outside, in Tabs layout) to close.
-- **Menu search filter** — live‑filters items as you type (when the search box is enabled).
-- **Pin favourites** — star an item to pin it to the top (stored per browser).
-- **Collapsible icon rail** — toggle the menu between full and icons‑only.
-- **Confirm before logout** — optional confirm dialog on the Log out item.
-- **Mobile nav drawer** — on small screens the menu collapses to an “Account menu” button that opens a drawer.
-- **AJAX navigation** — endpoint clicks swap the content area without a full reload.
+- **Menu Items** — one **Save changes** button saves the entire list + order.
+- **Settings** — **Save changes** stores the general options.
+- **Banners** — **Create / Save banner** per banner.
+- All saves confirm with a toast notification.
 
 ---
 
-## 18. Complete options reference
+## Smart Tags
 
-All options are stored as WordPress options. **Design** options are edited in the **Customizer**; **behaviour** options in the **Settings** tab; **content** in **Menu Items / Banners**.
+Dynamic placeholders usable in custom content, the dashboard title and banners:
 
-### Design (Customizer)
-| Option | Default | Notes |
-|--------|---------|-------|
-| `acfw_menu_position` | `vertical-left` | left / right / horizontal |
-| `acfw_menu_style` | `simple` | theme, simple, classic, modern, minimal, pill, tabs |
-| `acfw_accent_color` | `#2563eb` | |
-| `acfw_text_color` | `#383838` | |
-| `acfw_active_color` | *(empty)* | falls back to accent |
-| `acfw_menu_bg` / `acfw_hover_bg` | *(empty)* | item + hover background |
-| `acfw_menu_radius` | `8` | corner radius (px) |
-| `acfw_menu_gap` | `4` | spacing between items (px) |
-| `acfw_item_padding` | `11` | item padding (px) |
-| `acfw_font_size` | `15` | px |
-| `acfw_font_weight` | `500` | 400 / 500 / 600 |
-| `acfw_font_family` | `inherit` | system / serif / mono / inherit |
-| `acfw_color_scheme` | `light` | light / dark / auto |
-| `acfw_active_indicator` | `bar` | bar / underline / dot / none |
-| `acfw_hover_anim` | `none` | none / slide / grow |
-| `acfw_show_icons` | `yes` | |
-| `acfw_show_counts` | `yes` | endpoint count badges |
-| `acfw_group_open` | `no` | expand groups by default |
-| `acfw_custom_css` | *(empty)* | |
-| `acfw_avatar_enable` | `no` | + `_image`, `_shape`, `_align`, `_size`, `_show_name`, `_show_role` |
+- `{display_name}` — Display name
+- `{first_name}` — First name
+- `{last_name}` — Last name
+- `{username}` — Username
+- `{user_email}` — Email address
+- `{site_title}` — Site title
+- `{order_count}` — Order count
+- `{download_count}` — Download count
+- `{last_login}` — Last login date
+- `{points_balance}` — Points balance *(WooCommerce Points & Rewards)*
+- `{membership_plan}` — Membership plan *(WooCommerce Memberships)*
 
-### Navigation behaviour / dashboard (Customizer)
-| Option | Default | Notes |
-|--------|---------|-------|
-| `acfw_menu_search` | `no` | search box |
-| `acfw_collapsible` | `no` | icon rail toggle |
-| `acfw_pin_enable` | `no` | pin favourites |
-| `acfw_profile_meter` | `no` | dashboard progress bar |
-| `acfw_sticky_menu` | `no` | |
-| `acfw_logout_confirm` | `no` | |
-| `acfw_dashboard_tiles` | `no` | quick‑link tiles |
-| `acfw_dashboard_title` | *(empty)* | supports smart tags |
-| `acfw_dashboard_align` | `left` | left / center / right |
-| `acfw_dashboard_stats` | `no` | master toggle |
-| `acfw_stat_orders` / `_pending` / `_spent` / `_downloads` | `yes` | stat cards |
-| `acfw_stat_refunds` / `_points` / `_latest` / `_piechart` | `no` | stat cards |
-
-### Behaviour (Settings tab)
-| Option | Default | Notes |
-|--------|---------|-------|
-| `acfw_ajax_navigation` | `no` | |
-| `acfw_default_endpoint` | `dashboard` | |
-| `acfw_login_redirect` / `acfw_logout_redirect` | *(default)* | |
-| `acfw_guest_message` | *(empty)* | above login form |
-| `acfw_track_views` | `no` | counts stored in `acfw_endpoint_views` |
-
-### Storage (not user‑facing)
-`acfw_items_order` (menu tree), `acfw_item_{key}` (per‑item options), `acfw_presets` (saved presets), `acfw_active_template` (applied template), banner options, `acfw_flush_rewrite_rules`.
-
-### Per‑item options (Menu Items)
-`type` (endpoint/group/link/page), `label`, `icon` / `icon_url` / `icon_source`, `class`, `active`, `content`, `editor_type` (classic/block), `content_position` (before/after/override), `url`, `page_id`, `target_blank`, `usr_roles`, `visibility`, `vis_from`, `vis_to`, `vis_product`, `banner_slug`, `banner_position`, `children`.
-
-### Banner options
-`type` (widget/image), `title`, `content`, `image_url`, `icon` / `icon_url` / `icon_source`, `icon_width`, `widget_width`, `show_count`, `link_type` (none/endpoint/external), `link_endpoint`, `link`, `roles`, and colours: `text_color`, `text_hover`, `bg_color`, `bg_hover`, `border_color`, `border_hover`.
+In the Classic editor, use the **Add smart tags** button beside **Add Media**.
 
 ---
 
-*For a shorter contributor‑oriented reference, see `CLAUDE.md`.*
+## Compatibility with Third‑Party WooCommerce Plugins
+
+- **WooCommerce Points & Rewards** — the `{points_balance}` smart tag and the **Reward points** dashboard stat read the customer’s balance.
+- **WooCommerce Memberships** — the `{membership_plan}` smart tag shows the active plan.
+- **Themes** — the menu neutralises common theme interference on list rows; the **Theme style** menu style intentionally inherits the active theme’s look. Block content pulls in core block styles so blocks render correctly on the account page.
+- **Block editor** — custom endpoint content can use the standalone Gutenberg editor (core blocks, media, embeds, patterns).
+
+---
+
+*Front‑end behaviours (group toggle, search filter, pin, collapsible rail, logout
+confirm, mobile drawer, AJAX) are handled in `assets/js/frontend.js`. For a full
+option‑key reference and contributor notes, see `CLAUDE.md`.*
