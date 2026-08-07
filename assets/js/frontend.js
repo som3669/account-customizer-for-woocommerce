@@ -162,6 +162,60 @@
 			} );
 		} );
 
+		// Reorder / Buy Again: add past products to the cart via AJAX.
+		function acfwToast( msg ) {
+			var $t = $( '<div class="acfw-toast" role="status"></div>' ).text( msg );
+			$( 'body' ).append( $t );
+			// Force reflow so the transition runs, then show and auto-dismiss.
+			$t[ 0 ].offsetHeight; // eslint-disable-line no-unused-expressions
+			$t.addClass( 'is-visible' );
+			window.setTimeout( function () {
+				$t.removeClass( 'is-visible' );
+				window.setTimeout( function () {
+					$t.remove();
+				}, 300 );
+			}, 2600 );
+		}
+
+		function acfwReorder( $btn, payload ) {
+			if ( $btn.prop( 'disabled' ) ) {
+				return;
+			}
+			$btn.prop( 'disabled', true ).addClass( 'loading' );
+			payload.action = payload.action || 'acfw_reorder_add';
+			payload.nonce = $btn.data( 'nonce' );
+
+			$.post( acfw.ajaxUrl, payload ).done( function ( res ) {
+				if ( res && res.success ) {
+					acfwToast( ( res.data && res.data.message ) || 'Added to cart.' );
+					$( document.body ).trigger( 'wc_fragment_refresh' );
+				} else {
+					acfwToast( ( res && res.data && res.data.message ) || 'Could not add to cart.' );
+				}
+			} ).fail( function () {
+				acfwToast( 'Could not add to cart.' );
+			} ).always( function () {
+				$btn.prop( 'disabled', false ).removeClass( 'loading' );
+			} );
+		}
+
+		$( document ).on( 'click', '.acfw-reorder-btn', function () {
+			var $btn = $( this );
+			acfwReorder( $btn, {
+				action: 'acfw_reorder_add',
+				product_id: $btn.data( 'product' ),
+				quantity: $btn.data( 'qty' ) || 1
+			} );
+		} );
+
+		$( document ).on( 'click', '.acfw-reorder-order-btn', function () {
+			var $btn = $( this );
+			acfwReorder( $btn, {
+				action: 'acfw_reorder_order',
+				order_id: $btn.data( 'order' )
+			} );
+		} );
+
 		// AJAX navigation between endpoints.
 		if ( ! acfw || ! acfw.ajaxNavigation ) {
 			return;
