@@ -109,6 +109,8 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 				'payment-methods' => 'fas fa-credit-card',
 				'edit-account'    => 'fas fa-user',
 				'customer-logout' => 'fas fa-sign-out-alt',
+				'buy-again'       => 'fas fa-cart-plus',
+				'recently-viewed' => 'fas fa-history',
 			);
 
 			foreach ( $labels as $key => $label ) {
@@ -186,8 +188,18 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 				$this->items[ $key ] = $options;
 			}
 
-			// Append any WooCommerce defaults not present in the saved order.
-			$this->items = array_merge( $this->items, $defaults );
+			// Add any defaults not present in the saved order. New endpoints
+			// ( e.g. Buy Again, Recently Viewed ) should sit above Log out by
+			// default, so insert leftovers before customer-logout when it exists.
+			if ( ! empty( $defaults ) ) {
+				if ( isset( $this->items['customer-logout'] ) ) {
+					$logout = $this->items['customer-logout'];
+					unset( $this->items['customer-logout'] );
+					$this->items = array_merge( $this->items, $defaults, array( 'customer-logout' => $logout ) );
+				} else {
+					$this->items = array_merge( $this->items, $defaults );
+				}
+			}
 
 			$this->restore_default_icons();
 		}

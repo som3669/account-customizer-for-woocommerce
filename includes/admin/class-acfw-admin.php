@@ -123,6 +123,9 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'acfw_logout_redirect'  => 'sanitize_text_field',
 				'acfw_guest_message'    => 'wp_kses_post',
 				'acfw_track_views'      => 'sanitize_text_field',
+				'acfw_buyagain_enable'  => 'sanitize_text_field',
+				'acfw_recent_enable'    => 'sanitize_text_field',
+				'acfw_tracking_enable'  => 'sanitize_text_field',
 			);
 
 			foreach ( $settings as $option => $sanitize ) {

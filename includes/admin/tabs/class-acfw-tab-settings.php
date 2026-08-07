@@ -182,6 +182,45 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 							</td>
 						</tr>
 
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Buy Again', 'account-customizer-for-woocommerce' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_buyagain_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_buyagain_enable', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Add a "Buy again" menu tab and dashboard tile for one-click reordering of past products.', 'account-customizer-for-woocommerce' ); ?></span>
+								</div>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Recently viewed', 'account-customizer-for-woocommerce' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_recent_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_recent_enable', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Show a Recently Viewed products tile on the dashboard.', 'account-customizer-for-woocommerce' ); ?></span>
+								</div>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Order tracking', 'account-customizer-for-woocommerce' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_tracking_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_tracking_enable', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Show a tracking summary of recent orders on the dashboard ( auto-detects WooCommerce Shipment Tracking ).', 'account-customizer-for-woocommerce' ); ?></span>
+								</div>
+							</td>
+						</tr>
+
 					<?php elseif ( 'style' === $tab ) : // style. ?>
 
 						<tr>
