@@ -10,7 +10,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 global $wpdb;
 
 // Remove global options.
-$options = array(
+$acfw_options = array(
 	'acfw_items_order',
 	'acfw_flush_rewrite_rules',
 	'acfw_menu_position',
@@ -22,8 +22,8 @@ $options = array(
 	'acfw_menu_radius',
 );
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $acfw_options as $acfw_option ) {
+	delete_option( $acfw_option );
 }
 
 // Remove per-item options (acfw_item_*).

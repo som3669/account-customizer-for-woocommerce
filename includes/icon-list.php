@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 return apply_filters(
-	'tgwc_icon_list',
+	'acfw_icon_list_choices',
 	array(
 		'fas fa-ad',
 		'fas fa-address-book',

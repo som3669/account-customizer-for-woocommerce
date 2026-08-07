@@ -228,7 +228,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			wp_enqueue_script( 'wp-format-library' );
 
 			// Same hook as the post/widgets editor so registered blocks load.
-			do_action( 'enqueue_block_editor_assets' );
+			do_action( 'enqueue_block_editor_assets' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- re-firing a WordPress core hook, same as the widgets editor.
 
 			$dependencies = array_merge(
 				(array) $asset['dependencies'],
@@ -423,7 +423,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				case 'save_banner':
 					$roles       = isset( $_POST['banner_roles'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['banner_roles'] ) ) : array();
 					$icon_source = isset( $_POST['banner_icon_source'] ) ? sanitize_key( wp_unslash( $_POST['banner_icon_source'] ) ) : 'choose';
-					$bdata = array(
+					$bdata       = array(
 						'type'          => isset( $_POST['banner_type'] ) ? sanitize_key( wp_unslash( $_POST['banner_type'] ) ) : 'widget',
 						'title'         => isset( $_POST['banner_title'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_title'] ) ) : '',
 						'content'       => isset( $_POST['banner_content'] ) ? wp_kses_post( wp_unslash( $_POST['banner_content'] ) ) : '',
@@ -501,7 +501,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							$n      = 2;
 							while ( isset( $all[ $newkey ] ) || false !== get_option( 'acfw_item_' . $newkey, false ) ) {
 								$newkey = acfw_sanitize_key( $src . '-copy-' . $n );
-								$n++;
+								++$n;
 							}
 							$data          = $source;
 							$data['label'] = ( $source['label'] ?? $src ) . ' (copy)';
@@ -670,9 +670,12 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				<hr class="wp-header-end" />
 
 				<?php
-				$acfw_toasts        = array();
+				$acfw_toasts = array();
 				if ( isset( $_GET['updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					$acfw_toasts[] = array( 'type' => 'success', 'msg' => __( 'Changes saved.', 'account-customizer-for-woocommerce' ) );
+					$acfw_toasts[] = array(
+						'type' => 'success',
+						'msg'  => __( 'Changes saved.', 'account-customizer-for-woocommerce' ),
+					);
 				}
 				$acfw_import_notice = get_transient( 'acfw_import_notice' );
 				if ( $acfw_import_notice ) {
@@ -717,11 +720,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * @param array $tpl Template definition ( label, accent, options ).
 		 */
 		protected function template_preview_mock( $tpl ) {
-			$o        = $tpl['options'];
-			$position = $o['acfw_menu_position'] ?? 'vertical-left';
+			$o                       = $tpl['options'];
+			$position                = $o['acfw_menu_position'] ?? 'vertical-left';
 			list( $layout, $preset ) = acfw_menu_style_resolve( $o['acfw_menu_style'] ?? 'simple' );
-			$indicator = $o['acfw_active_indicator'] ?? 'bar';
-			$show_icons = ( 'no' !== ( $o['acfw_show_icons'] ?? 'yes' ) );
+			$indicator               = $o['acfw_active_indicator'] ?? 'bar';
+			$show_icons              = ( 'no' !== ( $o['acfw_show_icons'] ?? 'yes' ) );
 
 			// Top row layout for tabs / horizontal, else a sidebar.
 			$is_top = ( 'tabs' === $layout || 'horizontal' === $position );
@@ -930,9 +933,18 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 									'acfw_menu_position',
 									get_option( 'acfw_menu_position', 'vertical-left' ),
 									array(
-										'vertical-left'  => array( 'label' => __( 'Left', 'account-customizer-for-woocommerce' ), 'img' => 'vertical-left.svg' ),
-										'vertical-right' => array( 'label' => __( 'Right', 'account-customizer-for-woocommerce' ), 'img' => 'vertical-right.svg' ),
-										'horizontal'     => array( 'label' => __( 'Top', 'account-customizer-for-woocommerce' ), 'img' => 'top-horizontal.svg' ),
+										'vertical-left'  => array(
+											'label' => __( 'Left', 'account-customizer-for-woocommerce' ),
+											'img'   => 'vertical-left.svg',
+										),
+										'vertical-right' => array(
+											'label' => __( 'Right', 'account-customizer-for-woocommerce' ),
+											'img'   => 'vertical-right.svg',
+										),
+										'horizontal'     => array(
+											'label' => __( 'Top', 'account-customizer-for-woocommerce' ),
+											'img'   => 'top-horizontal.svg',
+										),
 									),
 									'vertical-left'
 								);
@@ -1029,8 +1041,14 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 									'acfw_avatar_shape',
 									get_option( 'acfw_avatar_shape', 'circle' ),
 									array(
-										'circle' => array( 'label' => __( 'Circle', 'account-customizer-for-woocommerce' ), 'img' => 'circle-profile.svg' ),
-										'square' => array( 'label' => __( 'Square', 'account-customizer-for-woocommerce' ), 'img' => 'square-profile.svg' ),
+										'circle' => array(
+											'label' => __( 'Circle', 'account-customizer-for-woocommerce' ),
+											'img'   => 'circle-profile.svg',
+										),
+										'square' => array(
+											'label' => __( 'Square', 'account-customizer-for-woocommerce' ),
+											'img'   => 'square-profile.svg',
+										),
 									),
 									'circle'
 								);
@@ -1046,9 +1064,18 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 									'acfw_avatar_align',
 									get_option( 'acfw_avatar_align', 'center' ),
 									array(
-										'left'   => array( 'label' => __( 'Left', 'account-customizer-for-woocommerce' ), 'img' => 'align-left.svg' ),
-										'center' => array( 'label' => __( 'Center', 'account-customizer-for-woocommerce' ), 'img' => 'align-center.svg' ),
-										'right'  => array( 'label' => __( 'Right', 'account-customizer-for-woocommerce' ), 'img' => 'align-right.svg' ),
+										'left'   => array(
+											'label' => __( 'Left', 'account-customizer-for-woocommerce' ),
+											'img'   => 'align-left.svg',
+										),
+										'center' => array(
+											'label' => __( 'Center', 'account-customizer-for-woocommerce' ),
+											'img'   => 'align-center.svg',
+										),
+										'right'  => array(
+											'label' => __( 'Right', 'account-customizer-for-woocommerce' ),
+											'img'   => 'align-right.svg',
+										),
 									),
 									'center'
 								);
@@ -1381,7 +1408,17 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 				<div class="acfw-field">
 					<label><?php esc_html_e( 'Banner type', 'account-customizer-for-woocommerce' ); ?></label>
-					<?php $this->buttonset( 'banner_type', $banner['type'], array( 'widget' => __( 'Widget', 'account-customizer-for-woocommerce' ), 'image' => __( 'Image', 'account-customizer-for-woocommerce' ) ), 'widget' ); ?>
+					<?php
+					$this->buttonset(
+						'banner_type',
+						$banner['type'],
+						array(
+							'widget' => __( 'Widget', 'account-customizer-for-woocommerce' ),
+							'image'  => __( 'Image', 'account-customizer-for-woocommerce' ),
+						),
+						'widget'
+					);
+					?>
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
@@ -1440,7 +1477,18 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 				<div class="acfw-field">
 					<label><?php esc_html_e( 'Banner link', 'account-customizer-for-woocommerce' ); ?></label>
-					<?php $this->buttonset( 'banner_link_type', $banner['link_type'] ?? 'none', array( 'none' => __( 'None', 'account-customizer-for-woocommerce' ), 'endpoint' => __( 'Endpoint', 'account-customizer-for-woocommerce' ), 'external' => __( 'External URL', 'account-customizer-for-woocommerce' ) ), 'none' ); ?>
+					<?php
+					$this->buttonset(
+						'banner_link_type',
+						$banner['link_type'] ?? 'none',
+						array(
+							'none'     => __( 'None', 'account-customizer-for-woocommerce' ),
+							'endpoint' => __( 'Endpoint', 'account-customizer-for-woocommerce' ),
+							'external' => __( 'External URL', 'account-customizer-for-woocommerce' ),
+						),
+						'none'
+					);
+					?>
 				</div>
 
 				<div class="acfw-field acfw-blink acfw-blink-endpoint">
@@ -1448,7 +1496,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					<select name="banner_link_endpoint">
 						<option value=""><?php esc_html_e( '— Select —', 'account-customizer-for-woocommerce' ); ?></option>
 						<?php foreach ( ACFW()->items->get_items() as $ep_key => $ep ) : ?>
-							<?php if ( 'endpoint' !== ( $ep['type'] ?? 'endpoint' ) ) { continue; } ?>
+							<?php
+							if ( 'endpoint' !== ( $ep['type'] ?? 'endpoint' ) ) {
+								continue; }
+							?>
 							<option value="<?php echo esc_attr( $ep_key ); ?>" <?php selected( $banner['link_endpoint'] ?? '', $ep_key ); ?>><?php echo esc_html( $ep['label'] ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -1574,7 +1625,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 								}
 							};
 							$render_details( $items );
-							?>
+			?>
 						</div>
 					</div>
 
@@ -1658,7 +1709,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$type        = $item['type'] ?? 'endpoint';
 			$roles       = wp_roles()->get_names();
-			$active       = ! empty( $item['active'] );
+			$active      = ! empty( $item['active'] );
 			$icon_source = ( ! empty( $item['icon_url'] ) || ( isset( $item['icon_source'] ) && 'upload' === $item['icon_source'] ) ) ? 'upload' : 'choose';
 			$sel_roles   = (array) ( $item['usr_roles'] ?? array() );
 			$type_labels = array(
@@ -1760,7 +1811,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							array(
 								'name'              => 'items[' . esc_attr( $key ) . '][page_id]',
 								'selected'          => (int) ( $item['page_id'] ?? 0 ),
-								'show_option_none'  => __( '— Select a page —', 'account-customizer-for-woocommerce' ),
+								'show_option_none'  => esc_html__( '— Select a page —', 'account-customizer-for-woocommerce' ),
 								'option_none_value' => 0,
 							)
 						);

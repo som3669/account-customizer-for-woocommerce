@@ -35,6 +35,7 @@ const DIST_GLOBS = [
 	'**/*',
 	'!node_modules/**',
 	'!assets/scss/**',
+	'!assets/src/**',
 	'!dist/**',
 	'!.git/**',
 	'!.github/**',
@@ -42,8 +43,14 @@ const DIST_GLOBS = [
 	'!gulpfile.mjs',
 	'!package.json',
 	'!package-lock.json',
+	'!pnpm-lock.yaml',
 	'!.gitignore',
 	'!.editorconfig',
+	'!.browserslistrc',
+	'!phpcs.xml.dist',
+	'!phpcs.xml',
+	'!CLAUDE.md',
+	'!DOCUMENTATION.docx',
 	'!**/*.map',
 ];
 

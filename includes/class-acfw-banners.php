@@ -228,7 +228,7 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 					return '';
 				}
 				$user = wp_get_current_user();
-				if ( ! array_intersect( (array) $banner['roles'], (array) $user->roles ) && ! current_user_can( 'administrator' ) ) {
+				if ( ! array_intersect( (array) $banner['roles'], (array) $user->roles ) && ! current_user_can( 'manage_woocommerce' ) ) {
 					return '';
 				}
 			}

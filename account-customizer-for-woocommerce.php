@@ -176,9 +176,12 @@ if ( class_exists( 'WP_Widget' ) ) {
 		}
 	}
 
-	add_action( 'widgets_init', function () {
-		register_widget( 'ACFW_Menu_Widget' );
-	} );
+	add_action(
+		'widgets_init',
+		function () {
+			register_widget( 'ACFW_Menu_Widget' );
+		}
+	);
 }
 
 /**

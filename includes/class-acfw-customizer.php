@@ -110,21 +110,42 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 
 			// ---- Navigation ----
 			$this->section = 'acfw_nav';
-			$this->add_image_radio( $wp_customize, 'acfw_menu_position', 'vertical-left', __( 'Menu position', 'account-customizer-for-woocommerce' ), array(
-				'vertical-left'  => array( 'name' => __( 'Left', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'vertical-left.svg' ) ),
-				'vertical-right' => array( 'name' => __( 'Right', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'vertical-right.svg' ) ),
-				'horizontal'     => array( 'name' => __( 'Top', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'top-horizontal.svg' ) ),
-			) );
+			$this->add_image_radio(
+				$wp_customize,
+				'acfw_menu_position',
+				'vertical-left',
+				__( 'Menu position', 'account-customizer-for-woocommerce' ),
+				array(
+					'vertical-left'  => array(
+						'name'  => __( 'Left', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'vertical-left.svg' ),
+					),
+					'vertical-right' => array(
+						'name'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'vertical-right.svg' ),
+					),
+					'horizontal'     => array(
+						'name'  => __( 'Top', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'top-horizontal.svg' ),
+					),
+				)
+			);
 			$this->add_buttonset( $wp_customize, 'acfw_menu_style', 'simple', __( 'Menu style', 'account-customizer-for-woocommerce' ), acfw_menu_styles() );
 			$this->add_toggle( $wp_customize, 'acfw_show_icons', 'yes', __( 'Show menu icons', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_show_counts', 'yes', __( 'Show item counts', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_dashboard_tiles', 'no', __( 'Dashboard quick-link tiles', 'account-customizer-for-woocommerce' ) );
 			$this->add_text( $wp_customize, 'acfw_dashboard_title', '', __( 'Dashboard title', 'account-customizer-for-woocommerce' ) );
-			$this->add_buttonset( $wp_customize, 'acfw_dashboard_align', 'left', __( 'Dashboard content position', 'account-customizer-for-woocommerce' ), array(
-				'left'   => __( 'Left', 'account-customizer-for-woocommerce' ),
-				'center' => __( 'Middle', 'account-customizer-for-woocommerce' ),
-				'right'  => __( 'Right', 'account-customizer-for-woocommerce' ),
-			) );
+			$this->add_buttonset(
+				$wp_customize,
+				'acfw_dashboard_align',
+				'left',
+				__( 'Dashboard content position', 'account-customizer-for-woocommerce' ),
+				array(
+					'left'   => __( 'Left', 'account-customizer-for-woocommerce' ),
+					'center' => __( 'Middle', 'account-customizer-for-woocommerce' ),
+					'right'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+				)
+			);
 			$this->add_toggle( $wp_customize, 'acfw_dashboard_stats', 'no', __( 'Dashboard stat widgets', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_stat_orders', 'yes', __( '• Total orders', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_stat_pending', 'yes', __( '• Pending orders', 'account-customizer-for-woocommerce' ) );
@@ -140,17 +161,29 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$this->add_toggle( $wp_customize, 'acfw_profile_meter', 'no', __( 'Profile completeness meter', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_sticky_menu', 'no', __( 'Sticky menu', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_logout_confirm', 'no', __( 'Confirm before logout', 'account-customizer-for-woocommerce' ) );
-			$this->add_buttonset( $wp_customize, 'acfw_active_indicator', 'bar', __( 'Active indicator', 'account-customizer-for-woocommerce' ), array(
-				'bar'       => __( 'Bar', 'account-customizer-for-woocommerce' ),
-				'underline' => __( 'Underline', 'account-customizer-for-woocommerce' ),
-				'dot'       => __( 'Dot', 'account-customizer-for-woocommerce' ),
-				'none'      => __( 'None', 'account-customizer-for-woocommerce' ),
-			) );
-			$this->add_buttonset( $wp_customize, 'acfw_hover_anim', 'none', __( 'Hover animation', 'account-customizer-for-woocommerce' ), array(
-				'none'  => __( 'None', 'account-customizer-for-woocommerce' ),
-				'slide' => __( 'Slide', 'account-customizer-for-woocommerce' ),
-				'grow'  => __( 'Grow', 'account-customizer-for-woocommerce' ),
-			) );
+			$this->add_buttonset(
+				$wp_customize,
+				'acfw_active_indicator',
+				'bar',
+				__( 'Active indicator', 'account-customizer-for-woocommerce' ),
+				array(
+					'bar'       => __( 'Bar', 'account-customizer-for-woocommerce' ),
+					'underline' => __( 'Underline', 'account-customizer-for-woocommerce' ),
+					'dot'       => __( 'Dot', 'account-customizer-for-woocommerce' ),
+					'none'      => __( 'None', 'account-customizer-for-woocommerce' ),
+				)
+			);
+			$this->add_buttonset(
+				$wp_customize,
+				'acfw_hover_anim',
+				'none',
+				__( 'Hover animation', 'account-customizer-for-woocommerce' ),
+				array(
+					'none'  => __( 'None', 'account-customizer-for-woocommerce' ),
+					'slide' => __( 'Slide', 'account-customizer-for-woocommerce' ),
+					'grow'  => __( 'Grow', 'account-customizer-for-woocommerce' ),
+				)
+			);
 			$this->add_toggle( $wp_customize, 'acfw_group_open', 'no', __( 'Expand groups by default', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_ajax_navigation', 'no', __( 'AJAX navigation', 'account-customizer-for-woocommerce' ) );
 
@@ -165,37 +198,82 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$this->add_slider( $wp_customize, 'acfw_menu_gap', 4, __( 'Item spacing', 'account-customizer-for-woocommerce' ), 0, 24 );
 			$this->add_slider( $wp_customize, 'acfw_item_padding', 11, __( 'Item padding', 'account-customizer-for-woocommerce' ), 4, 28 );
 			$this->add_slider( $wp_customize, 'acfw_font_size', 15, __( 'Font size', 'account-customizer-for-woocommerce' ), 11, 22 );
-			$this->add_buttonset( $wp_customize, 'acfw_font_weight', '500', __( 'Font weight', 'account-customizer-for-woocommerce' ), array(
-				'400' => __( 'Normal', 'account-customizer-for-woocommerce' ),
-				'500' => __( 'Medium', 'account-customizer-for-woocommerce' ),
-				'600' => __( 'Bold', 'account-customizer-for-woocommerce' ),
-			) );
-			$this->add_buttonset( $wp_customize, 'acfw_font_family', 'inherit', __( 'Font family', 'account-customizer-for-woocommerce' ), array(
-				'inherit' => __( 'Theme', 'account-customizer-for-woocommerce' ),
-				'system'  => __( 'System', 'account-customizer-for-woocommerce' ),
-				'serif'   => __( 'Serif', 'account-customizer-for-woocommerce' ),
-				'mono'    => __( 'Mono', 'account-customizer-for-woocommerce' ),
-			) );
-			$this->add_buttonset( $wp_customize, 'acfw_color_scheme', 'light', __( 'Color scheme', 'account-customizer-for-woocommerce' ), array(
-				'auto'  => __( 'Auto ( follow visitor OS )', 'account-customizer-for-woocommerce' ),
-				'light' => __( 'Light', 'account-customizer-for-woocommerce' ),
-				'dark'  => __( 'Dark', 'account-customizer-for-woocommerce' ),
-			) );
+			$this->add_buttonset(
+				$wp_customize,
+				'acfw_font_weight',
+				'500',
+				__( 'Font weight', 'account-customizer-for-woocommerce' ),
+				array(
+					'400' => __( 'Normal', 'account-customizer-for-woocommerce' ),
+					'500' => __( 'Medium', 'account-customizer-for-woocommerce' ),
+					'600' => __( 'Bold', 'account-customizer-for-woocommerce' ),
+				)
+			);
+			$this->add_buttonset(
+				$wp_customize,
+				'acfw_font_family',
+				'inherit',
+				__( 'Font family', 'account-customizer-for-woocommerce' ),
+				array(
+					'inherit' => __( 'Theme', 'account-customizer-for-woocommerce' ),
+					'system'  => __( 'System', 'account-customizer-for-woocommerce' ),
+					'serif'   => __( 'Serif', 'account-customizer-for-woocommerce' ),
+					'mono'    => __( 'Mono', 'account-customizer-for-woocommerce' ),
+				)
+			);
+			$this->add_buttonset(
+				$wp_customize,
+				'acfw_color_scheme',
+				'light',
+				__( 'Color scheme', 'account-customizer-for-woocommerce' ),
+				array(
+					'auto'  => __( 'Auto ( follow visitor OS )', 'account-customizer-for-woocommerce' ),
+					'light' => __( 'Light', 'account-customizer-for-woocommerce' ),
+					'dark'  => __( 'Dark', 'account-customizer-for-woocommerce' ),
+				)
+			);
 			$this->add_css( $wp_customize, 'acfw_custom_css', __( 'Custom CSS', 'account-customizer-for-woocommerce' ) );
 
 			// ---- Avatar ----
 			$this->section = 'acfw_avatar';
 			$this->add_toggle( $wp_customize, 'acfw_avatar_enable', 'no', __( 'Show avatar', 'account-customizer-for-woocommerce' ) );
 			$this->add_image( $wp_customize, 'acfw_avatar_image', '', __( 'Custom avatar image', 'account-customizer-for-woocommerce' ), __( 'Overrides the gravatar. Leave empty to use the customer avatar.', 'account-customizer-for-woocommerce' ) );
-			$this->add_image_radio( $wp_customize, 'acfw_avatar_shape', 'circle', __( 'Avatar shape', 'account-customizer-for-woocommerce' ), array(
-				'circle' => array( 'name' => __( 'Circle', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'circle-profile.svg' ) ),
-				'square' => array( 'name' => __( 'Square', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'square-profile.svg' ) ),
-			) );
-			$this->add_image_radio( $wp_customize, 'acfw_avatar_align', 'center', __( 'Avatar alignment', 'account-customizer-for-woocommerce' ), array(
-				'left'   => array( 'name' => __( 'Left', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'align-left.svg' ) ),
-				'center' => array( 'name' => __( 'Center', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'align-center.svg' ) ),
-				'right'  => array( 'name' => __( 'Right', 'account-customizer-for-woocommerce' ), 'image' => $this->img( 'align-right.svg' ) ),
-			) );
+			$this->add_image_radio(
+				$wp_customize,
+				'acfw_avatar_shape',
+				'circle',
+				__( 'Avatar shape', 'account-customizer-for-woocommerce' ),
+				array(
+					'circle' => array(
+						'name'  => __( 'Circle', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'circle-profile.svg' ),
+					),
+					'square' => array(
+						'name'  => __( 'Square', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'square-profile.svg' ),
+					),
+				)
+			);
+			$this->add_image_radio(
+				$wp_customize,
+				'acfw_avatar_align',
+				'center',
+				__( 'Avatar alignment', 'account-customizer-for-woocommerce' ),
+				array(
+					'left'   => array(
+						'name'  => __( 'Left', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'align-left.svg' ),
+					),
+					'center' => array(
+						'name'  => __( 'Center', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'align-center.svg' ),
+					),
+					'right'  => array(
+						'name'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+						'image' => $this->img( 'align-right.svg' ),
+					),
+				)
+			);
 			$this->add_slider( $wp_customize, 'acfw_avatar_size', 72, __( 'Avatar size', 'account-customizer-for-woocommerce' ), 32, 160 );
 			$this->add_toggle( $wp_customize, 'acfw_avatar_show_name', 'yes', __( 'Show display name', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_avatar_show_role', 'no', __( 'Show user role', 'account-customizer-for-woocommerce' ) );
@@ -222,149 +300,225 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 		/**
 		 * Register a yes/no toggle.
 		 */
-		protected function add_text( $wp_customize, $id, $default, $label ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => $default,
-				'transport'         => 'refresh',
-				'sanitize_callback' => 'sanitize_text_field',
-			) );
-			$wp_customize->add_control( $id, array(
-				'type'    => 'text',
-				'section' => $this->section,
-				'label'   => $label,
-			) );
+		protected function add_text( $wp_customize, $id, $default_value, $label ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => $default_value,
+					'transport'         => 'refresh',
+					'sanitize_callback' => 'sanitize_text_field',
+				)
+			);
+			$wp_customize->add_control(
+				$id,
+				array(
+					'type'    => 'text',
+					'section' => $this->section,
+					'label'   => $label,
+				)
+			);
 		}
 
 		/**
 		 * Register a yes/no toggle control.
 		 */
-		protected function add_toggle( $wp_customize, $id, $default, $label ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => $default,
-				'transport'         => 'refresh',
-				'sanitize_callback' => function ( $value ) {
-					return 'yes' === $value ? 'yes' : 'no';
-				},
-			) );
-			$wp_customize->add_control( new ACFW_Customize_Toggle( $wp_customize, $id, array(
-				'section' => $this->section,
-				'label'   => $label,
-			) ) );
+		protected function add_toggle( $wp_customize, $id, $default_value, $label ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => $default_value,
+					'transport'         => 'refresh',
+					'sanitize_callback' => function ( $value ) {
+						return 'yes' === $value ? 'yes' : 'no';
+					},
+				)
+			);
+			$wp_customize->add_control(
+				new ACFW_Customize_Toggle(
+					$wp_customize,
+					$id,
+					array(
+						'section' => $this->section,
+						'label'   => $label,
+					)
+				)
+			);
 		}
 
 		/**
 		 * Register a numeric slider ( px ).
 		 */
-		protected function add_slider( $wp_customize, $id, $default, $label, $min, $max ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => $default,
-				'transport'         => 'refresh',
-				'sanitize_callback' => 'absint',
-			) );
-			$wp_customize->add_control( new ACFW_Customize_Slider( $wp_customize, $id, array(
-				'section'     => $this->section,
-				'label'       => $label,
-				'input_attrs' => array( 'min' => $min, 'max' => $max, 'step' => 1 ),
-			) ) );
+		protected function add_slider( $wp_customize, $id, $default_value, $label, $min, $max ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => $default_value,
+					'transport'         => 'refresh',
+					'sanitize_callback' => 'absint',
+				)
+			);
+			$wp_customize->add_control(
+				new ACFW_Customize_Slider(
+					$wp_customize,
+					$id,
+					array(
+						'section'     => $this->section,
+						'label'       => $label,
+						'input_attrs' => array(
+							'min'  => $min,
+							'max'  => $max,
+							'step' => 1,
+						),
+					)
+				)
+			);
 		}
 
 		/**
 		 * Register a buttonset ( radio group ).
 		 */
-		protected function add_buttonset( $wp_customize, $id, $default, $label, $choices ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => $default,
-				'transport'         => 'refresh',
-				'sanitize_callback' => function ( $value ) use ( $choices ) {
-					return array_key_exists( $value, $choices ) ? $value : '';
-				},
-			) );
-			$wp_customize->add_control( new ACFW_Customize_ButtonSet( $wp_customize, $id, array(
-				'section' => $this->section,
-				'label'   => $label,
-				'choices' => $choices,
-			) ) );
+		protected function add_buttonset( $wp_customize, $id, $default_value, $label, $choices ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => $default_value,
+					'transport'         => 'refresh',
+					'sanitize_callback' => function ( $value ) use ( $choices ) {
+						return array_key_exists( $value, $choices ) ? $value : '';
+					},
+				)
+			);
+			$wp_customize->add_control(
+				new ACFW_Customize_ButtonSet(
+					$wp_customize,
+					$id,
+					array(
+						'section' => $this->section,
+						'label'   => $label,
+						'choices' => $choices,
+					)
+				)
+			);
 		}
 
 		/**
 		 * Register an image-radio.
 		 */
-		protected function add_image_radio( $wp_customize, $id, $default, $label, $choices ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => $default,
-				'transport'         => 'refresh',
-				'sanitize_callback' => function ( $value ) use ( $choices ) {
-					return array_key_exists( $value, $choices ) ? $value : '';
-				},
-			) );
-			$wp_customize->add_control( new ACFW_Customize_ImageRadio( $wp_customize, $id, array(
-				'section' => $this->section,
-				'label'   => $label,
-				'choices' => $choices,
-			) ) );
+		protected function add_image_radio( $wp_customize, $id, $default_value, $label, $choices ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => $default_value,
+					'transport'         => 'refresh',
+					'sanitize_callback' => function ( $value ) use ( $choices ) {
+						return array_key_exists( $value, $choices ) ? $value : '';
+					},
+				)
+			);
+			$wp_customize->add_control(
+				new ACFW_Customize_ImageRadio(
+					$wp_customize,
+					$id,
+					array(
+						'section' => $this->section,
+						'label'   => $label,
+						'choices' => $choices,
+					)
+				)
+			);
 		}
 
 		/**
 		 * Register an image ( media ) control storing a URL.
 		 */
-		protected function add_image( $wp_customize, $id, $default, $label, $description = '' ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => $default,
-				'transport'         => 'refresh',
-				'sanitize_callback' => 'esc_url_raw',
-			) );
-			$wp_customize->add_control( new WP_Customize_Image_Control( $wp_customize, $id, array(
-				'section'     => $this->section,
-				'label'       => $label,
-				'description' => $description,
-			) ) );
+		protected function add_image( $wp_customize, $id, $default_value, $label, $description = '' ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => $default_value,
+					'transport'         => 'refresh',
+					'sanitize_callback' => 'esc_url_raw',
+				)
+			);
+			$wp_customize->add_control(
+				new WP_Customize_Image_Control(
+					$wp_customize,
+					$id,
+					array(
+						'section'     => $this->section,
+						'label'       => $label,
+						'description' => $description,
+					)
+				)
+			);
 		}
 
 		/**
 		 * Register a Custom CSS code editor ( falls back to a textarea ).
 		 */
 		protected function add_css( $wp_customize, $id, $label ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => '',
-				'transport'         => 'refresh',
-				'sanitize_callback' => 'wp_strip_all_tags',
-			) );
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => '',
+					'transport'         => 'refresh',
+					'sanitize_callback' => 'wp_strip_all_tags',
+				)
+			);
 			if ( class_exists( 'WP_Customize_Code_Editor_Control' ) ) {
-				$wp_customize->add_control( new WP_Customize_Code_Editor_Control( $wp_customize, $id, array(
-					'section'   => $this->section,
-					'label'     => $label,
-					'code_type' => 'text/css',
-				) ) );
+				$wp_customize->add_control(
+					new WP_Customize_Code_Editor_Control(
+						$wp_customize,
+						$id,
+						array(
+							'section'   => $this->section,
+							'label'     => $label,
+							'code_type' => 'text/css',
+						)
+					)
+				);
 			} else {
-				$wp_customize->add_control( $id, array(
-					'section' => $this->section,
-					'label'   => $label,
-					'type'    => 'textarea',
-				) );
+				$wp_customize->add_control(
+					$id,
+					array(
+						'section' => $this->section,
+						'label'   => $label,
+						'type'    => 'textarea',
+					)
+				);
 			}
 		}
 
 		/**
 		 * Register a color control.
 		 */
-		protected function add_color( $wp_customize, $id, $default, $label ) {
-			$wp_customize->add_setting( $id, array(
-				'type'              => 'option',
-				'default'           => $default,
-				'transport'         => 'refresh',
-				'sanitize_callback' => 'sanitize_hex_color',
-			) );
-			$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, $id, array(
-				'section' => $this->section,
-				'label'   => $label,
-			) ) );
+		protected function add_color( $wp_customize, $id, $default_value, $label ) {
+			$wp_customize->add_setting(
+				$id,
+				array(
+					'type'              => 'option',
+					'default'           => $default_value,
+					'transport'         => 'refresh',
+					'sanitize_callback' => 'sanitize_hex_color',
+				)
+			);
+			$wp_customize->add_control(
+				new WP_Customize_Color_Control(
+					$wp_customize,
+					$id,
+					array(
+						'section' => $this->section,
+						'label'   => $label,
+					)
+				)
+			);
 		}
 	}
 }

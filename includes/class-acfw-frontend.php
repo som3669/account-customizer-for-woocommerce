@@ -71,8 +71,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 */
 		public function body_class( $classes ) {
 			if ( $this->is_account && 'dashboard' === acfw_get_current_endpoint() ) {
-				$tpl = get_option( 'acfw_dashboard_align', 'left' );
-				$tpl = in_array( $tpl, array( 'left', 'center', 'right' ), true ) ? $tpl : 'left';
+				$tpl       = get_option( 'acfw_dashboard_align', 'left' );
+				$tpl       = in_array( $tpl, array( 'left', 'center', 'right' ), true ) ? $tpl : 'left';
 				$classes[] = 'acfw-dash-tpl-' . $tpl;
 			}
 			return $classes;
@@ -94,9 +94,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			// Track endpoint views.
 			if ( is_user_logged_in() && 'yes' === get_option( 'acfw_track_views', 'no' ) ) {
-				$ep    = acfw_get_current_endpoint();
-				$views = get_option( 'acfw_endpoint_views', array() );
-				$views = is_array( $views ) ? $views : array();
+				$ep           = acfw_get_current_endpoint();
+				$views        = get_option( 'acfw_endpoint_views', array() );
+				$views        = is_array( $views ) ? $views : array();
 				$views[ $ep ] = ( isset( $views[ $ep ] ) ? (int) $views[ $ep ] : 0 ) + 1;
 				update_option( 'acfw_endpoint_views', $views, false );
 			}
@@ -140,7 +140,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			// Date-range visibility.
-			$now = current_time( 'timestamp' );
+			$now = time();
 			if ( ! empty( $item['vis_from'] ) && $now < strtotime( $item['vis_from'] . ' 00:00:00' ) ) {
 				return false;
 			}
@@ -149,7 +149,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			// Purchased-product visibility.
-			if ( ! empty( $item['vis_product'] ) && function_exists( 'wc_customer_bought_product' ) && ! current_user_can( 'administrator' ) ) {
+			if ( ! empty( $item['vis_product'] ) && function_exists( 'wc_customer_bought_product' ) && ! current_user_can( 'manage_woocommerce' ) ) {
 				$u = wp_get_current_user();
 				if ( empty( $u->ID ) || ! wc_customer_bought_product( $u->user_email, $u->ID, (int) $item['vis_product'] ) ) {
 					return false;
@@ -159,7 +159,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$visible = true;
 
 			if ( isset( $item['visibility'] ) && 'roles' === $item['visibility'] && ! empty( $item['usr_roles'] ) ) {
-				if ( current_user_can( 'administrator' ) ) {
+				if ( current_user_can( 'manage_woocommerce' ) ) {
 					$visible = true;
 				} else {
 					$user    = wp_get_current_user();
@@ -227,10 +227,10 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				'acfw-frontend',
 				'acfw',
 				array(
-					'ajaxNavigation' => 'yes' === get_option( 'acfw_ajax_navigation', 'no' ),
-					'contentSelector' => apply_filters( 'acfw_content_selector', '.woocommerce-MyAccount-content' ),
-					'logoutConfirm'  => 'yes' === get_option( 'acfw_logout_confirm', 'no' ),
-					'logoutMsg'      => __( 'Are you sure you want to log out?', 'account-customizer-for-woocommerce' ),
+					'ajaxNavigation'    => 'yes' === get_option( 'acfw_ajax_navigation', 'no' ),
+					'contentSelector'   => apply_filters( 'acfw_content_selector', '.woocommerce-MyAccount-content' ),
+					'logoutConfirm'     => 'yes' === get_option( 'acfw_logout_confirm', 'no' ),
+					'logoutMsg'         => __( 'Are you sure you want to log out?', 'account-customizer-for-woocommerce' ),
 					'searchPlaceholder' => __( 'Search…', 'account-customizer-for-woocommerce' ),
 				)
 			);
@@ -263,7 +263,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$active   = sanitize_hex_color( get_option( 'acfw_active_color', '' ) );
 			$active   = $active ? $active : $accent;
 
-			$vars  = sprintf(
+			$vars = sprintf(
 				'.acfw-menu,.acfw-avatar-block{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;--acfw-active:%10$s;',
 				$accent,
 				$text,
@@ -288,7 +288,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				'serif'  => 'Georgia,"Times New Roman",serif',
 				'mono'   => 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace',
 			);
-			$ff = get_option( 'acfw_font_family', 'inherit' );
+			$ff    = get_option( 'acfw_font_family', 'inherit' );
 			if ( isset( $fonts[ $ff ] ) ) {
 				$vars .= '--acfw-font-family:' . $fonts[ $ff ] . ';';
 			}
@@ -409,7 +409,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$cards = array();
 
 			// Gather orders once for counts / statuses.
-			$orders = wc_get_orders(
+			$orders    = wc_get_orders(
 				array(
 					'customer_id' => $user_id,
 					'limit'       => -1,
@@ -504,10 +504,10 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$i       = 0;
 
 			foreach ( $by_status as $status => $count ) {
-				$frac  = $count / $total;
-				$color = $palette[ $i % count( $palette ) ];
-				$dash  = $frac * $circ;
-				$segs .= sprintf(
+				$frac    = $count / $total;
+				$color   = $palette[ $i % count( $palette ) ];
+				$dash    = $frac * $circ;
+				$segs   .= sprintf(
 					'<circle r="%1$d" cx="80" cy="80" fill="transparent" stroke="%2$s" stroke-width="28" stroke-dasharray="%3$F %4$F" stroke-dashoffset="%5$F"></circle>',
 					$radius,
 					esc_attr( $color ),
@@ -522,7 +522,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					esc_html( wc_get_order_status_name( $status ) ),
 					(int) $count
 				);
-				$i++;
+				++$i;
 			}
 
 			return sprintf(
@@ -543,15 +543,15 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				return;
 			}
 
-			$base = wc_get_page_permalink( 'myaccount' );
+			$base  = wc_get_page_permalink( 'myaccount' );
 			$tiles = '';
 			foreach ( $this->menu_items as $key => $item ) {
 				if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || in_array( $key, array( 'dashboard', 'customer-logout' ), true ) ) {
 					continue;
 				}
-				$url   = wc_get_endpoint_url( $key, '', $base );
-				$count = acfw_endpoint_count( $key );
-				$icon  = acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-tile-icon' );
+				$url    = wc_get_endpoint_url( $key, '', $base );
+				$count  = acfw_endpoint_count( $key );
+				$icon   = acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-tile-icon' );
 				$tiles .= sprintf(
 					'<a class="acfw-tile" href="%s">%s<span class="acfw-tile-label">%s</span>%s</a>',
 					esc_url( $url ),
@@ -700,9 +700,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				! empty( get_user_meta( $uid, 'billing_phone', true ) ),
 				! empty( get_user_meta( $uid, 'billing_address_1', true ) ),
 			);
-			$total = count( $checks );
-			$done  = count( array_filter( $checks ) );
-			$pct   = $total ? (int) round( $done / $total * 100 ) : 0;
+			$total  = count( $checks );
+			$done   = count( array_filter( $checks ) );
+			$pct    = $total ? (int) round( $done / $total * 100 ) : 0;
 			?>
 			<div class="acfw-profile-meter">
 				<div class="acfw-pm-head">
@@ -737,7 +737,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 */
 		public function render_menu() {
 
-			$position = get_option( 'acfw_menu_position', 'vertical-left' );
+			$position                = get_option( 'acfw_menu_position', 'vertical-left' );
 			list( $layout, $preset ) = acfw_menu_style_resolve( get_option( 'acfw_menu_style', 'simple' ) );
 
 			ob_start();
@@ -748,18 +748,18 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				'myaccount-menu.php',
 				array(
 					'avatar_html' => $avatar_html,
-					'items'      => $this->menu_items,
-					'current'    => acfw_get_current_endpoint(),
-					'position'   => $position,
-					'layout'     => $layout,
-					'preset'     => $preset,
-					'theme'      => sanitize_html_class( get_template() ),
-					'show_icons' => 'no' !== get_option( 'acfw_show_icons', 'yes' ),
-					'group_open' => 'yes' === get_option( 'acfw_group_open', 'no' ),
-					'search'     => 'yes' === get_option( 'acfw_menu_search', 'no' ),
-					'sticky'     => 'yes' === get_option( 'acfw_sticky_menu', 'no' ),
-					'indicator'  => get_option( 'acfw_active_indicator', 'bar' ),
-					'anim'       => get_option( 'acfw_hover_anim', 'none' ),
+					'items'       => $this->menu_items,
+					'current'     => acfw_get_current_endpoint(),
+					'position'    => $position,
+					'layout'      => $layout,
+					'preset'      => $preset,
+					'theme'       => sanitize_html_class( get_template() ),
+					'show_icons'  => 'no' !== get_option( 'acfw_show_icons', 'yes' ),
+					'group_open'  => 'yes' === get_option( 'acfw_group_open', 'no' ),
+					'search'      => 'yes' === get_option( 'acfw_menu_search', 'no' ),
+					'sticky'      => 'yes' === get_option( 'acfw_sticky_menu', 'no' ),
+					'indicator'   => get_option( 'acfw_active_indicator', 'bar' ),
+					'anim'        => get_option( 'acfw_hover_anim', 'none' ),
 					'scheme'      => get_option( 'acfw_color_scheme', 'light' ),
 					'collapsible' => 'yes' === get_option( 'acfw_collapsible', 'no' ),
 					'pinnable'    => 'yes' === get_option( 'acfw_pin_enable', 'no' ),
@@ -871,8 +871,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$url    = ! empty( $item['page_id'] ) ? esc_url( get_permalink( (int) $item['page_id'] ) ) : '#';
 				$target = ! empty( $item['target_blank'] ) ? ' target="_blank" rel="noopener"' : '';
 			} else {
-				$base = wc_get_page_permalink( 'myaccount' );
-				$url  = ( 'dashboard' === $key ) ? $base : wc_get_endpoint_url( $key, '', $base );
+				$base   = wc_get_page_permalink( 'myaccount' );
+				$url    = ( 'dashboard' === $key ) ? $base : wc_get_endpoint_url( $key, '', $base );
 				$target = '';
 			}
 

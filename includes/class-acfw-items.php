@@ -96,7 +96,7 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 				'customer-logout' => __( 'Log out', 'account-customizer-for-woocommerce' ),
 			);
 
-			$labels = apply_filters( 'woocommerce_account_menu_items', $labels );
+			$labels = apply_filters( 'woocommerce_account_menu_items', $labels ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- reading WooCommerce's own filter.
 			if ( ! is_array( $labels ) ) {
 				$labels = array();
 			}
@@ -153,7 +153,7 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 
 			foreach ( $order as $key => $node ) {
 
-				$type          = ! empty( $node['type'] ) ? $node['type'] : 'endpoint';
+				$type           = ! empty( $node['type'] ) ? $node['type'] : 'endpoint';
 				$default_fn     = "acfw_default_{$type}_options";
 				$default_option = function_exists( $default_fn ) ? call_user_func( $default_fn, $key ) : array();
 				$stored         = get_option( 'acfw_item_' . $key, array() );

@@ -1,21 +1,20 @@
 /**
- * Standalone Block Editor for endpoint custom content.
+ * Endpoint content block editor.
  *
- * Mounts a WordPress Block Editor (Gutenberg) into the plugin settings panel
- * without relying on a custom post type. The serialized block markup is written
- * to a hidden textarea that is submitted with the settings form.
+ * Mounts an isolated WordPress block editor onto each endpoint's custom-content
+ * field and keeps a hidden <textarea> in sync with the serialized block markup,
+ * so the standard settings form submits it like any other field. No custom post
+ * type or REST persistence is involved.
  *
- * @since 2.0.4
+ * The DOM contract (wrapper/​radio/​textarea class names) is produced by the
+ * plugin's own PHP template; this script only reads it.
+ *
+ * @package AccountCustomizerForWooCommerce
  */
 
-import {
-	createRoot,
-	useState,
-	useEffect,
-	useRef,
-	useCallback,
-} from '@wordpress/element';
+import { createRoot, useState, useMemo, useRef, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import domReady from '@wordpress/dom-ready';
 import { registerCoreBlocks } from '@wordpress/block-library';
 import { parse, serialize, rawHandler } from '@wordpress/blocks';
 import {
@@ -23,540 +22,154 @@ import {
 	BlockList,
 	BlockTools,
 	BlockInspector,
-	ButtonBlockAppender,
-	EditorStyles,
 	WritingFlow,
 	ObserveTyping,
+	ButtonBlockAppender,
+	EditorStyles,
+	Inserter,
 	store as blockEditorStore,
-	ListView as StableListView,
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalListView as ExperimentalListView,
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalLibrary as InserterLibrary,
 } from '@wordpress/block-editor';
 import { useDispatch } from '@wordpress/data';
 import { Button, Popover, SlotFillProvider } from '@wordpress/components';
 import { ShortcutProvider } from '@wordpress/keyboard-shortcuts';
 import { addFilter } from '@wordpress/hooks';
 import { MediaUpload, uploadMedia } from '@wordpress/media-utils';
-import { listView as listViewIcon, undo as undoIcon, redo as redoIcon, plus as plusIcon, cog as cogIcon, fullscreen } from '@wordpress/icons';
-import { ALLOWED_BLOCK_TYPES } from './allowed-blocks';
+import { ALLOWED_BLOCKS } from './allowed-blocks';
 import './style.scss';
 
-// `ListView` became stable in newer WordPress; fall back to the experimental name.
-const ListView = StableListView || ExperimentalListView;
+/* -------------------------------------------------------------------------
+ * Environment ( values localized from PHP ).
+ * ---------------------------------------------------------------------- */
+const ENV = window.acfwBlockEditorData || {};
+const MAY_UPLOAD = ENV.canUploadMedia !== false;
+const MAY_UNFILTERED = ENV.canUserUseUnfilteredHTML !== false;
 
-// Whether the current user can upload media (localized from PHP).
-const CAN_UPLOAD_MEDIA =
-	! window.acfwBlockEditorData ||
-	false !== window.acfwBlockEditorData.canUploadMedia;
-
-// Custom HTML / Custom CSS needs unfiltered_html (admins usually have it).
-const CAN_USE_UNFILTERED_HTML =
-	! window.acfwBlockEditorData ||
-	false !== window.acfwBlockEditorData.canUserUseUnfilteredHTML;
-
-/*
- * Image, Cover, Gallery, File, Media & Text, Audio, Video, etc. use the
- * `editor.MediaUpload` filter. Without wp-edit-post / wp-editor, the default
- * is a no-op — same pattern as edit-widgets.
- */
-addFilter(
-	'editor.MediaUpload',
-	'acfw/replace-media-upload',
-	() => MediaUpload
-);
-
-/**
- * Media upload handler for Image / Cover / File / Gallery blocks.
- * Without this, those blocks show "To edit this block, you need permission to upload media."
- *
- * @param {Object}   options         Upload options from the block.
- * @param {Function} options.onError Error callback.
- */
-function mediaUpload( { onError = () => {}, ...rest } ) {
-	uploadMedia( {
-		onError: ( { message } ) => onError( message ),
-		...rest,
-	} );
-}
-
-let blocksRegistered = false;
-
-/**
- * Register the core blocks a single time.
- */
-function registerBlocksOnce() {
-	if ( blocksRegistered ) {
+/* One-time boot: register core blocks + point block media pickers at wp.media. */
+let booted = false;
+function bootOnce() {
+	if ( booted ) {
 		return;
 	}
+	booted = true;
 
 	if ( typeof registerCoreBlocks === 'function' ) {
 		registerCoreBlocks();
 	}
 
-	blocksRegistered = true;
+	addFilter( 'editor.MediaUpload', 'acfw/endpoint-editor/media', () => MediaUpload );
 }
 
-/**
- * Convert stored content into blocks.
- *
- * Saved Block editor content uses `<!-- wp:... -->` delimiters and must go
- * through `parse()`. Classic editor HTML has no delimiters — using `parse()`
- * on it (especially images) creates invalid blocks that show "Attempt Recovery".
- * `rawHandler()` converts plain HTML into valid blocks instead.
- *
- * @param {string} content Serialized blocks or classic HTML.
- * @return {Array} Block objects.
- */
-function contentToBlocks( content ) {
-	if ( ! content || ! content.trim() || '<p></p>' === content.trim() ) {
+/* Parse stored value into blocks. Delimited markup → parse(); plain HTML from
+ * the Classic editor → rawHandler() ( parse() would flag it "needs recovery" ). */
+function toBlocks( value ) {
+	const html = ( value || '' ).trim();
+	if ( ! html || html === '<p></p>' ) {
 		return [];
 	}
-
-	if ( /<!--\s*wp:/i.test( content ) ) {
-		return parse( content );
-	}
-
-	return rawHandler( { HTML: content } );
+	return /<!--\s*wp:/i.test( html ) ? parse( html ) : rawHandler( { HTML: html } );
 }
 
-/**
- * The editor component bound to a hidden textarea.
- *
- * @param {Object}             props          Component props.
- * @param {HTMLTextAreaElement} props.textarea The hidden textarea to persist to.
- */
-function Editor( { textarea } ) {
-	const [ blocks, setBlocks ] = useState( () =>
-		contentToBlocks( textarea.value )
-	);
-	const [ showInspector, setShowInspector ] = useState( false );
-	const [ showListView, setShowListView ] = useState( false );
-	const [ showInserter, setShowInserter ] = useState( false );
-	const [ isExpanded, setIsExpanded ] = useState( false );
-	const [ canUndo, setCanUndo ] = useState( false );
-	const [ canRedo, setCanRedo ] = useState( false );
-	// Required by __experimentalLibrary: on insert it reads ref.current in an
-	// rAF (shouldFocusBlock defaults to false). Without a ref, that throws
-	// "Cannot read properties of null (reading 'current')".
-	const inserterLibraryRef = useRef( null );
-	// Match BlockCanvas: popovers / in-between inserter need the content node.
-	const contentRef = useRef( null );
+/* -------------------------------------------------------------------------
+ * The editor surface, bound to one hidden textarea.
+ * ---------------------------------------------------------------------- */
+function EndpointEditor( { field } ) {
+	const [ blocks, setBlocks ] = useState( () => toBlocks( field.value ) );
+	const [ sidebar, setSidebar ] = useState( '' ); // '' | 'inspector'
+	const canvasRef = useRef( null );
 	const { clearSelectedBlock } = useDispatch( blockEditorStore );
 
-	/**
-	 * Open the docked inserter and clear selection so new blocks append at the
-	 * root (after Details / Group / etc.) instead of nesting into the selected
-	 * inner block.
-	 *
-	 * @param {boolean} [next=true] Whether the inserter should open.
-	 */
-	const openInserterAtRoot = useCallback( ( next = true ) => {
-		if ( next ) {
-			clearSelectedBlock();
-			setShowInserter( true );
-			setShowListView( false );
-			return;
-		}
-		setShowInserter( false );
-	}, [ clearSelectedBlock ] );
-
-	const openExpandedEditor = ( {
-		openInserter = false,
-		openInspector = false,
-		openListView = false,
-	} = {} ) => {
-		setIsExpanded( true );
-		setShowInserter( openInserter );
-		setShowInspector( openInspector );
-		setShowListView( openListView );
-		// Inserter and list view share the left secondary sidebar.
-		if ( openInserter ) {
-			setShowListView( false );
-		}
-		if ( openListView ) {
-			setShowInserter( false );
-		}
-	};
-
-	const closeExpandedEditor = () => {
-		setIsExpanded( false );
-		setShowInspector( false );
-		setShowListView( false );
-		setShowInserter( false );
-	};
-
-	// Simple undo/redo history stack (the standalone editor has no core/editor store).
-	const history = useRef( { stack: [ blocks ], index: 0 } );
-
-	const write = ( next ) => {
-		setBlocks( next );
-		textarea.value = serialize( next );
-	};
-
-	// Transient changes (e.g. typing) — update value without a history entry.
-	const handleInput = ( next ) => {
-		write( next );
-	};
-
-	// Persistent changes — record a history entry.
-	const handleChange = ( next ) => {
-		const h = history.current;
-		h.stack = h.stack.slice( 0, h.index + 1 );
-		h.stack.push( next );
-		h.index = h.stack.length - 1;
-
-		setCanUndo( h.index > 0 );
-		setCanRedo( false );
-		write( next );
-	};
-
-	const undo = () => {
-		const h = history.current;
-		if ( h.index > 0 ) {
-			h.index -= 1;
-			write( h.stack[ h.index ] );
-			setCanUndo( h.index > 0 );
-			setCanRedo( true );
-		}
-	};
-
-	const redo = () => {
-		const h = history.current;
-		if ( h.index < h.stack.length - 1 ) {
-			h.index += 1;
-			write( h.stack[ h.index ] );
-			setCanRedo( h.index < h.stack.length - 1 );
-			setCanUndo( true );
-		}
-	};
-
-	// Ensure the textarea reflects the parsed content on first render.
-	useEffect( () => {
-		textarea.value = serialize( blocks );
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [] );
-
-	// Lock page scroll while the editor is expanded; Escape collapses it.
-	useEffect( () => {
-		if ( ! isExpanded ) {
-			return undefined;
-		}
-
-		const previousOverflow = document.body.style.overflow;
-		const previousHtmlOverflow = document.documentElement.style.overflow;
-		document.body.style.overflow = 'hidden';
-		document.documentElement.style.overflow = 'hidden';
-
-		const onKeyDown = ( event ) => {
-			if ( 'Escape' !== event.key ) {
-				return;
-			}
-
-			if ( showInserter ) {
-				setShowInserter( false );
-				return;
-			}
-
-			if ( showListView ) {
-				setShowListView( false );
-				return;
-			}
-
-			if ( showInspector ) {
-				setShowInspector( false );
-				return;
-			}
-
-			closeExpandedEditor();
-		};
-
-		document.addEventListener( 'keydown', onKeyDown );
-
-		return () => {
-			document.body.style.overflow = previousOverflow;
-			document.documentElement.style.overflow = previousHtmlOverflow;
-			document.removeEventListener( 'keydown', onKeyDown );
-		};
-	}, [ isExpanded, showInserter, showListView, showInspector ] );
-
-	// Wire Quick Inserter's "Browse all" to the docked Library sidebar
-	// (same as the page editor via __experimentalSetIsInserterOpened).
-	const setIsInserterOpened = useCallback(
-		( value ) => {
-			const shouldOpen = !! value;
-			if ( shouldOpen ) {
-				if ( ! isExpanded ) {
-					clearSelectedBlock();
-					openExpandedEditor( { openInserter: true } );
-					return;
-				}
-				openInserterAtRoot( true );
-				return;
-			}
-			setShowInserter( false );
+	// Write blocks back to the textarea on every change.
+	const sync = useCallback(
+		( next ) => {
+			setBlocks( next );
+			field.value = serialize( next );
 		},
-		// openExpandedEditor closes over stable setters; isExpanded is the
-		// only runtime dependency that changes the branch.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ isExpanded, clearSelectedBlock, openInserterAtRoot ]
+		[ field ]
 	);
 
-	// The same editor settings the page editor uses (theme editor styles,
-	// theme.json features, patterns) so blocks render/behave identically.
-	const editorSettings = window.acfwBlockEditorSettings || {};
+	const editorSettings = useMemo(
+		() => ( {
+			...( window.acfwBlockEditorSettings || {} ),
+			hasFixedToolbar: true,
+			allowedBlockTypes: ALLOWED_BLOCKS,
+			__experimentalCanUserUseUnfilteredHTML: MAY_UNFILTERED,
+			codeEditingEnabled: MAY_UNFILTERED,
+			...( MAY_UPLOAD
+				? {
+						mediaUpload: ( args ) =>
+							uploadMedia( {
+								...args,
+								onError: ( { message } ) => args.onError && args.onError( message ),
+							} ),
+				  }
+				: {} ),
+		} ),
+		[]
+	);
 
-	const settings = {
-		...editorSettings,
-		// Floating toolbar restores "Insert after" for Details / Group / etc.
-		// (hasFixedToolbar:true without mounting <BlockToolbar /> hid that UI.)
-		hasFixedToolbar: false,
-		// Restrict the inserter to the approved block set.
-		allowedBlockTypes: ALLOWED_BLOCK_TYPES,
-		// Media / Openverse tabs insert Image/Video blocks which are not allowed.
-		inserterMediaCategories: [],
-		enableOpenverseMediaCategory: false,
-		// Shows "Browse all" on the canvas + quick inserter and opens the
-		// docked Blocks / Patterns / Media sidebar (matches page editor).
-		__experimentalSetIsInserterOpened: setIsInserterOpened,
-		// Custom HTML block modal (and related unfiltered markup).
-		__experimentalCanUserUseUnfilteredHTML: CAN_USE_UNFILTERED_HTML,
-		codeEditingEnabled: CAN_USE_UNFILTERED_HTML,
-		// Required for Image, Cover, File, Gallery, Media & Text, etc.
-		...( CAN_UPLOAD_MEDIA ? { mediaUpload } : {} ),
-	};
+	const toggleInspector = () => setSidebar( ( cur ) => ( cur === 'inspector' ? '' : 'inspector' ) );
 
 	return (
-		<div
-			className={
-				'acfw-block-editor__frame' +
-				( isExpanded ? ' is-expanded' : '' ) +
-				( isExpanded && showInserter ? ' has-inserter-open' : '' )
-			}
-		>
-			{ /* ShortcutProvider renders a real <div>; class it so fullscreen
-			     height/scroll can target that shell (providers otherwise break
-			     grid/flex on the frame itself). */ }
-			<ShortcutProvider className="acfw-block-editor__shell">
+		<div className="acfw-be">
+			<ShortcutProvider>
 				<SlotFillProvider>
 					<BlockEditorProvider
 						value={ blocks }
-						onInput={ handleInput }
-						onChange={ handleChange }
-						settings={ settings }
+						onInput={ sync }
+						onChange={ sync }
+						settings={ editorSettings }
 					>
-						<div className="acfw-block-editor__header">
-							<div className="acfw-block-editor__header-left">
-								{ isExpanded ? (
+						<div className="acfw-be__toolbar">
+							<Inserter
+								rootClientId={ null }
+								position="bottom right"
+								showInserterHelpPanel
+								onSelectOrClose={ () => clearSelectedBlock() }
+								renderToggle={ ( { onToggle, disabled, isOpen } ) => (
 									<Button
-										className="acfw-block-editor__inserter-toggle"
+										className="acfw-be__insert"
 										variant="primary"
-										icon={ plusIcon }
-										label={ __(
-											'Toggle block inserter',
-											'customize-my-account-page-for-woocommerce'
-										) }
-										isPressed={ showInserter }
-										onClick={ () => {
-											if ( showInserter ) {
-												setShowInserter( false );
-												return;
-											}
-											openInserterAtRoot( true );
-										} }
-									/>
-								) : (
-									// Compact preview: the block library needs room,
-									// so "+" opens the full-screen editor instead of
-									// the cramped inline inserter.
-									<Button
-										className="acfw-block-editor__inserter-toggle"
-										variant="primary"
-										icon={ plusIcon }
-										label={ __(
-											'Add block',
-											'customize-my-account-page-for-woocommerce'
-										) }
-										onClick={ () => {
-											clearSelectedBlock();
-											openExpandedEditor( {
-												openInserter: true,
-											} );
-										} }
-									/>
-								) }
-								<Button
-									icon={ undoIcon }
-									label={ __(
-										'Undo',
-										'customize-my-account-page-for-woocommerce'
-									) }
-									onClick={ undo }
-									disabled={ ! canUndo }
-								/>
-								<Button
-									icon={ redoIcon }
-									label={ __(
-										'Redo',
-										'customize-my-account-page-for-woocommerce'
-									) }
-									onClick={ redo }
-									disabled={ ! canRedo }
-								/>
-								{ ListView && (
-									<Button
-										icon={ listViewIcon }
-										label={ __(
-											'List View',
-											'customize-my-account-page-for-woocommerce'
-										) }
-										isPressed={ showListView }
-										onClick={ () => {
-											// Compact preview: open full-screen with list view.
-											if ( ! isExpanded ) {
-												openExpandedEditor( {
-													openListView: true,
-												} );
-												return;
-											}
-											const next = ! showListView;
-											setShowListView( next );
-											if ( next ) {
-												setShowInserter( false );
-											}
-										} }
-									/>
-								) }
-							</div>
-							<div className="acfw-block-editor__header-right">
-								{ isExpanded ? (
-									<Button
-										className="acfw-block-editor__done"
-										variant="primary"
-										onClick={ closeExpandedEditor }
+										onClick={ onToggle }
+										disabled={ disabled }
+										aria-expanded={ isOpen }
 									>
-										{ __(
-											'Done',
-											'customize-my-account-page-for-woocommerce'
-										) }
-									</Button>
-								) : (
-									<Button
-										className="acfw-block-editor__edit"
-										variant="primary"
-										icon={ fullscreen }
-										onClick={ () =>
-											openExpandedEditor( {
-												openInserter: true,
-											} )
-										}
-									>
-										{ __(
-											'Edit content',
-											'customize-my-account-page-for-woocommerce'
-										) }
+										{ __( 'Add block', 'account-customizer-for-woocommerce' ) }
 									</Button>
 								) }
-								<Button
-									icon={ cogIcon }
-									label={ __(
-										'Settings',
-										'customize-my-account-page-for-woocommerce'
-									) }
-									isPressed={ showInspector }
-									onClick={ () => {
-										// From the compact preview, open settings in
-										// the full-screen editor where there's room.
-										if ( ! isExpanded ) {
-											openExpandedEditor( {
-												openInspector: true,
-											} );
-										} else {
-											setShowInspector( ! showInspector );
-										}
-									} }
-								/>
-							</div>
+							/>
+							<Button
+								className="acfw-be__settings"
+								isPressed={ sidebar === 'inspector' }
+								onClick={ toggleInspector }
+							>
+								{ __( 'Block settings', 'account-customizer-for-woocommerce' ) }
+							</Button>
 						</div>
 
-						<div className="acfw-block-editor__body">
-							{ isExpanded && showInserter && (
-								<div className="editor-inserter-sidebar acfw-block-editor__inserter-sidebar">
-									<div className="editor-inserter-sidebar__content">
-										<InserterLibrary
-											ref={ inserterLibraryRef }
-											showInserterHelpPanel
-											showMostUsedBlocks
-											onClose={ () =>
-												setShowInserter( false )
-											}
-										/>
-									</div>
-								</div>
-							) }
-							{ showListView && ListView && (
-								<div className="acfw-block-editor__list-view-sidebar">
-									<div className="acfw-block-editor__list-view-header">
-										<strong>
-											{ __(
-												'List View',
-												'customize-my-account-page-for-woocommerce'
-											) }
-										</strong>
-										<Button
-											icon="no-alt"
-											label={ __(
-												'Close',
-												'customize-my-account-page-for-woocommerce'
-											) }
-											onClick={ () =>
-												setShowListView( false )
-											}
-										/>
-									</div>
-									<div className="acfw-block-editor__list-view">
-										<ListView />
-									</div>
-								</div>
-							) }
-							<div className="acfw-block-editor__content">
-								<BlockTools __unstableContentRef={ contentRef }>
-									<div
-										className="editor-styles-wrapper"
-										ref={ contentRef }
-									>
-										{ EditorStyles && settings.styles && (
-											<EditorStyles
-												styles={ settings.styles }
-												scope=":where(.editor-styles-wrapper)"
-											/>
+						<div className="acfw-be__body">
+							<div className="acfw-be__canvas" ref={ canvasRef }>
+								<BlockTools __unstableContentRef={ canvasRef }>
+									<div className="editor-styles-wrapper">
+										{ EditorStyles && editorSettings.styles && (
+											<EditorStyles styles={ editorSettings.styles } />
 										) }
 										<WritingFlow>
 											<ObserveTyping>
-												{ /* Always show a trailing root "+" so users can
-												     insert AFTER Details / Group / etc. Core hides
-												     the default appender once the canvas has blocks. */ }
-												<BlockList
-													renderAppender={
-														ButtonBlockAppender
-													}
-												/>
+												<BlockList renderAppender={ ButtonBlockAppender } />
 											</ObserveTyping>
 										</WritingFlow>
 									</div>
 								</BlockTools>
 							</div>
-							{ showInspector && (
-								<div className="acfw-block-editor__sidebar">
+
+							{ sidebar === 'inspector' && (
+								<aside className="acfw-be__sidebar">
 									<BlockInspector />
-								</div>
+								</aside>
 							) }
 						</div>
-						{ /* Keep popovers out of the flex/grid height chain. */ }
-						<div className="acfw-block-editor__popover-slot">
-							<Popover.Slot />
-						</div>
+
+						<Popover.Slot />
 					</BlockEditorProvider>
 				</SlotFillProvider>
 			</ShortcutProvider>
@@ -564,64 +177,110 @@ function Editor( { textarea } ) {
 	);
 }
 
-/**
- * Initialize the block editor inside a given container element.
- *
- * @param {HTMLElement} container The `.acfw_block_editor` container.
- */
-function init( container ) {
-	if ( ! container || '1' === container.dataset.acfwInit ) {
-		return;
-	}
+/* -------------------------------------------------------------------------
+ * Mounting + the Classic/Block switch controller.
+ * ---------------------------------------------------------------------- */
 
-	const textareaId = container.getAttribute( 'data-textarea' );
-	const textarea = textareaId ? document.getElementById( textareaId ) : null;
-
-	if ( ! textarea ) {
-		return;
-	}
-
-	registerBlocksOnce();
-	installFormSubmitGuard();
-
-	container.dataset.acfwInit = '1';
-	const root = createRoot( container );
-	container.__acfwRoot = root;
-	root.render( <Editor textarea={ textarea } /> );
+/* Resolve the DOM pieces for one endpoint from the PHP-rendered markup. */
+function pieces( endpoint ) {
+	const at = '[data-endpoint="' + endpoint + '"]';
+	return {
+		classic: document.querySelector( '.acfw_classic_editor_wrapper' + at ),
+		block: document.querySelector( '.acfw_block_editor_wrapper' + at ),
+		classicField: document.getElementById( 'acfw_content_' + endpoint ),
+		blockField: document.getElementById( 'acfw_block_content_' + endpoint ),
+		mount: document.querySelector( '.acfw_block_editor' + at ),
+	};
 }
 
-let submitGuardInstalled = false;
-
-/**
- * Stop the settings form from submitting when the submit originates inside the
- * block editor. Block UI buttons (e.g. the Accordion "+" add-item and "×"
- * remove-item) are <button> without an explicit type, so they default to
- * type="submit" and would reload the page. The real Save button lives outside
- * the editor frame and is unaffected.
- */
-function installFormSubmitGuard() {
-	if ( submitGuardInstalled ) {
+/* Mount the React editor into a container once. */
+function mount( container ) {
+	if ( ! container || container.dataset.acfwMounted === '1' ) {
+		return;
+	}
+	const fieldId = container.getAttribute( 'data-textarea' );
+	const field = fieldId ? document.getElementById( fieldId ) : null;
+	if ( ! field ) {
 		return;
 	}
 
+	bootOnce();
+	container.dataset.acfwMounted = '1';
+	createRoot( container ).render( <EndpointEditor field={ field } /> );
+}
+
+/* Read the current Classic (TinyMCE-aware) content for carry-over. */
+function classicValue( endpoint ) {
+	const id = 'acfw_content_' + endpoint;
+	const tiny = window.tinymce && window.tinymce.get( id );
+	if ( tiny && ! tiny.isHidden() ) {
+		return tiny.getContent();
+	}
+	const el = document.getElementById( id );
+	return el ? el.value : '';
+}
+
+/* Show one editor mode for an endpoint; only the visible field stays enabled so
+ * a single value is submitted. On first switch to Block, seed from Classic. */
+function showMode( endpoint, mode, seed ) {
+	const p = pieces( endpoint );
+	if ( ! p.classic || ! p.block ) {
+		return;
+	}
+
+	// Reflect the choice on the chip UI.
+	document
+		.querySelectorAll( '.acfw_editor_type_radio[data-endpoint="' + endpoint + '"]' )
+		.forEach( ( radio ) => {
+			const chip = radio.closest( '.acfw_choose_icon_type_inner_wrapper' );
+			if ( chip ) {
+				chip.classList.toggle( 'active', radio.checked );
+			}
+		} );
+
+	const useBlock = mode === 'block';
+	p.classic.classList.toggle( 'acfw_hidden', useBlock );
+	p.block.classList.toggle( 'acfw_hidden', ! useBlock );
+	if ( p.classicField ) {
+		p.classicField.disabled = useBlock;
+	}
+	if ( p.blockField ) {
+		p.blockField.disabled = ! useBlock;
+	}
+
+	if ( ! useBlock ) {
+		return;
+	}
+
+	const already = p.mount && p.mount.dataset.acfwMounted === '1';
+	if ( already ) {
+		return;
+	}
+
+	// Carry Classic content over the first time the Block editor opens empty.
+	if ( seed && p.blockField && ! p.blockField.value.trim() ) {
+		const carried = classicValue( endpoint );
+		if ( carried && carried.trim() !== '<p></p>' ) {
+			p.blockField.value = carried;
+		}
+	}
+
+	mount( p.mount );
+}
+
+/* Block toolbar buttons default to type="submit"; stop them reloading the
+ * settings form. The real Save button lives outside the editor frame. */
+function guardForm() {
 	const form = document.querySelector( 'form.acfw-items-form' );
-
-	if ( ! form ) {
+	if ( ! form || form.dataset.acfwGuarded === '1' ) {
 		return;
 	}
-
-	submitGuardInstalled = true;
-
-	const fromEditor = ( el ) =>
-		el && el.closest && el.closest( '.acfw-block-editor__frame' );
-
+	form.dataset.acfwGuarded = '1';
 	form.addEventListener(
 		'submit',
 		( event ) => {
-			if (
-				fromEditor( event.submitter ) ||
-				fromEditor( document.activeElement )
-			) {
+			const from = ( el ) => el && el.closest && el.closest( '.acfw-be' );
+			if ( from( event.submitter ) || from( document.activeElement ) ) {
 				event.preventDefault();
 			}
 		},
@@ -629,204 +288,36 @@ function installFormSubmitGuard() {
 	);
 }
 
-/**
- * Get the related editor elements for an endpoint.
- *
- * @param {string} endpoint Endpoint slug.
- * @return {Object} Related DOM elements.
- */
-function getScope( endpoint ) {
-	const selector = '[data-endpoint="' + endpoint + '"]';
-
-	return {
-		classicWrap: document.querySelector(
-			'.acfw_classic_editor_wrapper' + selector
-		),
-		blockWrap: document.querySelector(
-			'.acfw_block_editor_wrapper' + selector
-		),
-		classicTextarea: document.getElementById(
-			'acfw_content_' + endpoint
-		),
-		blockInput: document.getElementById(
-			'acfw_block_content_' + endpoint
-		),
-		blockContainer: document.querySelector(
-			'.acfw_block_editor' + selector
-		),
-	};
-}
-
-/**
- * Read the current classic editor content (TinyMCE aware).
- *
- * @param {string} endpoint Endpoint slug.
- * @return {string} Content HTML.
- */
-function getClassicContent( endpoint ) {
-	const editorId = 'acfw_content_' + endpoint;
-
-	if (
-		window.tinymce &&
-		window.tinymce.get( editorId ) &&
-		! window.tinymce.get( editorId ).isHidden()
-	) {
-		return window.tinymce.get( editorId ).getContent();
-	}
-
-	const textarea = document.getElementById( editorId );
-	return textarea ? textarea.value : '';
-}
-
-/**
- * Toggle between the classic and block editor for an endpoint.
- *
- * Content handling is "live one-way carry-over" on first open only:
- * - First switch Classic → Block: carry classic HTML into the block editor
- *   (via rawHandler, so images/HTML do not become "Attempt Recovery" blocks).
- * - Later toggles: keep the block editor mounted so image/heading blocks stay
- *   intact when switching away to Classic and back.
- * - Block → Classic never rewrites classic content.
- * - Only the active editor's field is submitted.
- *
- * @param {string}  endpoint Endpoint slug.
- * @param {string}  type     Editor type: 'classic' or 'block'.
- * @param {boolean} reseed   Whether to carry classic content into the block
- *                           editor on first init. True for user switches;
- *                           false for the initial page-load sync.
- */
-function applyEditorType( endpoint, type, reseed = false ) {
-	const scope = getScope( endpoint );
-
-	if ( ! scope.classicWrap || ! scope.blockWrap ) {
-		return;
-	}
-
-	// Highlight the selected chip (reuses the Endpoint Icon control markup).
-	document
-		.querySelectorAll(
-			'.acfw_editor_type_radio[data-endpoint="' + endpoint + '"]'
-		)
-		.forEach( ( radio ) => {
-			const chip = radio.closest( '.acfw_choose_icon_type_inner_wrapper' );
-
-			if ( chip ) {
-				chip.classList.toggle( 'active', radio.checked );
-			}
-		} );
-
-	if ( 'block' === type ) {
-		scope.classicWrap.classList.add( 'acfw_hidden' );
-		scope.blockWrap.classList.remove( 'acfw_hidden' );
-
-		if ( scope.classicTextarea ) {
-			scope.classicTextarea.disabled = true;
-		}
-
-		if ( scope.blockInput ) {
-			scope.blockInput.disabled = false;
-		}
-
-		const initialized =
-			scope.blockContainer &&
-			'1' === scope.blockContainer.dataset.acfwInit;
-
-		// Already mounted: just show it. Remounting/reseeding would destroy
-		// image blocks and can trigger "Attempt Recovery".
-		if ( initialized ) {
-			return;
-		}
-
-		if ( reseed && scope.blockInput ) {
-			const current = getClassicContent( endpoint );
-			const carriedHtml =
-				current && '<p></p>' !== current.trim() ? current : '';
-
-			// Only seed from classic when the block field is still empty.
-			if ( ! scope.blockInput.value.trim() && carriedHtml ) {
-				scope.blockInput.value = carriedHtml;
-			}
-		}
-
-		init( scope.blockContainer );
-	} else {
-		scope.blockWrap.classList.add( 'acfw_hidden' );
-		scope.classicWrap.classList.remove( 'acfw_hidden' );
-
-		if ( scope.classicTextarea ) {
-			scope.classicTextarea.disabled = false;
-		}
-
-		if ( scope.blockInput ) {
-			scope.blockInput.disabled = true;
-		}
-	}
-}
-
-/**
- * Sync every endpoint editor to its currently selected editor type.
- */
+/* Apply each endpoint's currently-checked mode on load. */
 function syncAll() {
 	document
 		.querySelectorAll( '.acfw_editor_type_radio:checked' )
-		.forEach( ( radio ) => {
-			applyEditorType(
-				radio.getAttribute( 'data-endpoint' ),
-				radio.value
-			);
-		} );
+		.forEach( ( radio ) => showMode( radio.getAttribute( 'data-endpoint' ), radio.value, false ) );
 }
 
-// Toggle editor when the radio selection changes (direct radio interaction).
+/* Radio change (native). */
 document.addEventListener( 'change', ( event ) => {
-	const target = event.target;
-
-	if (
-		target &&
-		target.classList &&
-		target.classList.contains( 'acfw_editor_type_radio' ) &&
-		target.checked
-	) {
-		applyEditorType(
-			target.getAttribute( 'data-endpoint' ),
-			target.value,
-			true
-		);
+	const el = event.target;
+	if ( el && el.classList && el.classList.contains( 'acfw_editor_type_radio' ) && el.checked ) {
+		showMode( el.getAttribute( 'data-endpoint' ), el.value, true );
 	}
 } );
 
-// The control reuses the Endpoint Icon chip markup: clicking the chip text
-// checks the radio through jQuery (`.trigger('change')`), which does NOT fire a
-// native `change` event. Handle the click natively so the editor still swaps.
+/* Chip click ( the reused icon-chip markup checks the radio via jQuery, which
+ * doesn't emit a native change event ). */
 document.addEventListener( 'click', ( event ) => {
-	const chip = event.target.closest(
-		'.acfw_choose_icon_type_inner_wrapper'
-	);
-
-	if ( ! chip ) {
-		return;
+	const chip = event.target.closest( '.acfw_choose_icon_type_inner_wrapper' );
+	const radio = chip && chip.querySelector( '.acfw_editor_type_radio' );
+	if ( radio ) {
+		radio.checked = true;
+		showMode( radio.getAttribute( 'data-endpoint' ), radio.value, true );
 	}
-
-	const radio = chip.querySelector( '.acfw_editor_type_radio' );
-
-	// Ignore the Endpoint Icon chips (they have no editor-type radio).
-	if ( ! radio ) {
-		return;
-	}
-
-	radio.checked = true;
-	applyEditorType( radio.getAttribute( 'data-endpoint' ), radio.value, true );
 } );
 
-// Public API for other scripts (e.g. dynamically added endpoints).
-window.acfwBlockEditor = {
-	init,
-	applyEditorType,
-	syncAll,
-};
+// Public handle for other scripts.
+window.acfwBlockEditor = { mount, showMode, syncAll };
 
-if ( 'loading' !== document.readyState ) {
+domReady( () => {
+	guardForm();
 	syncAll();
-} else {
-	document.addEventListener( 'DOMContentLoaded', syncAll );
-}
+} );

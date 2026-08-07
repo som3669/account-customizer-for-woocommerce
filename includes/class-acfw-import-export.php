@@ -42,10 +42,10 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 			}
 
 			return array(
-				'plugin'    => 'account-customizer-for-woocommerce',
-				'version'   => defined( 'ACFW_VERSION' ) ? ACFW_VERSION : '',
-				'exported'  => gmdate( 'c' ),
-				'options'   => $data,
+				'plugin'   => 'account-customizer-for-woocommerce',
+				'version'  => defined( 'ACFW_VERSION' ) ? ACFW_VERSION : '',
+				'exported' => gmdate( 'c' ),
+				'options'  => $data,
 			);
 		}
 

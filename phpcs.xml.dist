@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<ruleset name="Account Customizer for WooCommerce">
+	<description>WordPress Coding Standards for the plugin (WooCommerce.com submission ruleset).</description>
+
+	<file>.</file>
+
+	<!-- Only scan our PHP. -->
+	<arg name="extensions" value="php"/>
+	<arg value="ps"/>
+	<arg name="parallel" value="8"/>
+	<arg name="colors"/>
+
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/assets/*</exclude-pattern>
+	<exclude-pattern>*/dist/*</exclude-pattern>
+	<exclude-pattern>*/build/*</exclude-pattern>
+
+	<!-- WordPress-Extra = Core + best practices ( what WooCommerce submission expects ). -->
+	<rule ref="WordPress-Extra"/>
+
+	<config name="minimum_supported_wp_version" value="6.0"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<!-- WooCommerce capabilities the WP core sniff doesn't know about. -->
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="manage_woocommerce"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="account-customizer-for-woocommerce"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="acfw"/>
+				<element value="ACFW"/>
+			</property>
+		</properties>
+		<!-- Template files receive their variables from the template loader
+		     ( acfw_get_template() uses extract() ), so their locals are not
+		     truly global. Same convention WooCommerce uses for its templates. -->
+		<exclude-pattern>*/templates/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.GlobalVariablesOverride">
+		<exclude-pattern>*/templates/*</exclude-pattern>
+	</rule>
+
+	<!-- Intentional structure: small custom Customizer control classes are grouped
+	     in one file, and the bootstrap file mixes helper functions with the widget
+	     class. These are architectural choices, not defects. -->
+	<rule ref="Generic.Files.OneObjectStructurePerFile.MultipleFound">
+		<severity>0</severity>
+	</rule>
+	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<severity>0</severity>
+	</rule>
+</ruleset>
