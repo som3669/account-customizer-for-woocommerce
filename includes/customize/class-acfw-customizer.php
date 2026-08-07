@@ -75,7 +75,7 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 		 */
 		public function register( $wp_customize ) {
 
-			require_once ACFW_DIR . 'includes/class-acfw-customize-controls.php';
+			require_once ACFW_DIR . 'includes/customize/class-acfw-customize-controls.php';
 
 			$wp_customize->register_control_type( 'ACFW_Customize_Toggle' );
 			$wp_customize->register_control_type( 'ACFW_Customize_Slider' );

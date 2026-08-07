@@ -62,7 +62,7 @@ function acfw_init() {
 		return;
 	}
 
-	require_once ACFW_DIR . 'includes/functions-acfw.php';
+	require_once ACFW_DIR . 'includes/helper/functions-acfw.php';
 	require_once ACFW_DIR . 'includes/class-acfw-items.php';
 	require_once ACFW_DIR . 'includes/class-acfw.php';
 
@@ -94,7 +94,7 @@ function acfw_account_menu_render() {
 	}
 	$frontend = ( isset( ACFW()->frontend ) && ACFW()->frontend instanceof ACFW_Frontend ) ? ACFW()->frontend : null;
 	if ( ! $frontend ) {
-		require_once ACFW_DIR . 'includes/class-acfw-frontend.php';
+		require_once ACFW_DIR . 'includes/frontend/class-acfw-frontend.php';
 		$frontend = new ACFW_Frontend();
 	}
 	return $frontend->menu_markup();

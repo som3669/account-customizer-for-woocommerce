@@ -222,7 +222,7 @@ function acfw_design_option_defaults() {
  * @return array
  */
 function acfw_icon_list() {
-	$list = include ACFW_DIR . 'includes/icon-list.php';
+	$list = include ACFW_DIR . 'includes/helper/icon-list.php';
 	return is_array( $list ) ? $list : array();
 }
 

@@ -1,0 +1,93 @@
+<?php
+/**
+ * Import / Export tab.
+ *
+ * @package AccountCustomizerForWooCommerce
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+if ( ! class_exists( 'ACFW_Tab_Tools' ) ) {
+
+	/**
+	 * Renders the Import / Export tab and handles its actions.
+	 */
+	class ACFW_Tab_Tools extends ACFW_Admin_Tab {
+
+		/**
+		 * Handle POST actions for the tools tab.
+		 *
+		 * @param string     $action Sanitized action slug.
+		 * @param ACFW_Items $items  Menu items manager.
+		 */
+		public function handle( $action, $items ) {
+			// Nonce is verified in ACFW_Admin::handle_actions() before dispatch.
+			// phpcs:disable WordPress.Security.NonceVerification.Missing
+			switch ( $action ) {
+
+				case 'export':
+					$json = ACFW_Import_Export::export_json();
+					nocache_headers();
+					header( 'Content-Type: application/json; charset=utf-8' );
+					header( 'Content-Disposition: attachment; filename=account-customizer-' . gmdate( 'Y-m-d' ) . '.json' );
+					header( 'Content-Length: ' . strlen( $json ) );
+					echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
+					exit;
+
+				case 'import':
+					$json = '';
+					if ( ! empty( $_FILES['acfw_import_file']['tmp_name'] ) && is_uploaded_file( $_FILES['acfw_import_file']['tmp_name'] ) ) {
+						$json = file_get_contents( $_FILES['acfw_import_file']['tmp_name'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+					} elseif ( ! empty( $_POST['acfw_import_json'] ) ) {
+						$json = wp_unslash( $_POST['acfw_import_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated as JSON in importer.
+					}
+					$result = ACFW_Import_Export::import( (string) $json );
+					set_transient( 'acfw_import_notice', is_wp_error( $result ) ? $result->get_error_message() : 'success', 30 );
+					break;
+			}
+			// phpcs:enable WordPress.Security.NonceVerification.Missing
+		}
+
+		/**
+		 * Render the Import / Export tab.
+		 */
+		public function render() {
+			?>
+			<div class="acfw-card">
+				<h2 class="acfw-section-title"><?php esc_html_e( 'Export', 'account-customizer-for-woocommerce' ); ?></h2>
+				<p class="acfw-hint"><?php esc_html_e( 'Download all endpoints, design settings and banners as a JSON file.', 'account-customizer-for-woocommerce' ); ?></p>
+				<form method="post">
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="export" />
+					<div class="acfw-form-footer" style="justify-content:flex-start;border-top:0;padding-top:0;margin-top:8px;">
+						<button type="submit" class="button button-primary">
+							<span class="dashicons dashicons-download" style="vertical-align:text-bottom;"></span>
+							<?php esc_html_e( 'Export configuration', 'account-customizer-for-woocommerce' ); ?>
+						</button>
+					</div>
+				</form>
+			</div>
+
+			<div class="acfw-card">
+				<h2 class="acfw-section-title"><?php esc_html_e( 'Import', 'account-customizer-for-woocommerce' ); ?></h2>
+				<p class="acfw-hint"><?php esc_html_e( 'Upload a JSON file, or paste its contents. This overwrites your current configuration.', 'account-customizer-for-woocommerce' ); ?></p>
+				<form method="post" enctype="multipart/form-data">
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="import" />
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'JSON file', 'account-customizer-for-woocommerce' ); ?></label>
+						<input type="file" name="acfw_import_file" accept="application/json,.json" />
+					</div>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Or paste JSON', 'account-customizer-for-woocommerce' ); ?></label>
+						<textarea name="acfw_import_json" rows="6" placeholder="{ &quot;plugin&quot;: &quot;account-customizer-for-woocommerce&quot;, … }"></textarea>
+					</div>
+					<div class="acfw-form-footer">
+						<button type="submit" class="button button-primary"><?php esc_html_e( 'Import configuration', 'account-customizer-for-woocommerce' ); ?></button>
+					</div>
+				</form>
+			</div>
+			<?php
+		}
+	}
+}
