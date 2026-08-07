@@ -174,10 +174,33 @@
 
 		var $details = $( '.acfw-builder-detail' );
 
-		/* ---- Add item ---- */
+		/* ---- Add item ( split-button dropdown ) ---- */
 		var $addForm = $( '.acfw-add-form' );
 
-		$( '.acfw-add-btn' ).on( 'click', function () {
+		function closeAddMenu() {
+			$( '.acfw-add-dropdown' ).prop( 'hidden', true );
+			$( '.acfw-add-toggle' ).attr( 'aria-expanded', 'false' ).removeClass( 'is-open' );
+		}
+
+		$( document ).on( 'click', '.acfw-add-toggle', function ( e ) {
+			e.stopPropagation();
+			var $dd = $( this ).siblings( '.acfw-add-dropdown' );
+			var wasHidden = $dd.prop( 'hidden' );
+			closeAddMenu();
+			if ( wasHidden ) {
+				$dd.prop( 'hidden', false );
+				$( this ).attr( 'aria-expanded', 'true' ).addClass( 'is-open' );
+			}
+		} );
+
+		$( document ).on( 'click', function ( e ) {
+			if ( ! $( e.target ).closest( '.acfw-add-menu' ).length ) {
+				closeAddMenu();
+			}
+		} );
+
+		$( document ).on( 'click', '.acfw-add-btn', function () {
+			closeAddMenu();
 			$addForm.find( '.acfw-add-type' ).val( $( this ).data( 'type' ) );
 			$addForm.show().find( '.acfw-add-label' ).val( '' ).focus();
 		} );

@@ -76,13 +76,44 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 		 * Render the General / Style settings tab.
 		 */
 		public function render() {
-			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			// Inner section of the Settings page ( defaults to General ).
+			$section  = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$sections = array(
+				'general' => array(
+					'label' => __( 'General', 'account-customizer-for-woocommerce' ),
+					'icon'  => 'admin-settings',
+				),
+				'presets' => array(
+					'label' => __( 'Presets & Reset', 'account-customizer-for-woocommerce' ),
+					'icon'  => 'art',
+				),
+				'tools'   => array(
+					'label' => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
+					'icon'  => 'migrate',
+				),
+			);
+			if ( ! isset( $sections[ $section ] ) ) {
+				$section = 'general';
+			}
+			$base = admin_url( 'admin.php?page=' . self::PAGE . '&tab=general' );
 			?>
+			<div class="acfw-subnav-layout">
+			<nav class="acfw-subnav">
+				<?php foreach ( $sections as $sslug => $smeta ) : ?>
+					<a href="<?php echo esc_url( $base . '&section=' . $sslug ); ?>" class="acfw-subnav-item <?php echo $section === $sslug ? 'is-active' : ''; ?>">
+						<span class="acfw-subnav-icon dashicons dashicons-<?php echo esc_attr( $smeta['icon'] ); ?>"></span>
+						<span class="acfw-subnav-label"><?php echo esc_html( $smeta['label'] ); ?></span>
+						<span class="acfw-subnav-caret dashicons dashicons-arrow-right-alt2"></span>
+					</a>
+				<?php endforeach; ?>
+			</nav>
+			<div class="acfw-subnav-body">
+
+			<?php if ( 'general' === $section ) : ?>
 			<div class="acfw-card">
 			<form method="post" action="options.php">
 				<?php settings_fields( 'acfw_settings' ); ?>
 				<table class="form-table" role="presentation">
-					<?php if ( 'general' === $tab ) : ?>
 
 						<tr>
 							<th scope="row"><?php esc_html_e( 'AJAX navigation', 'account-customizer-for-woocommerce' ); ?></th>
@@ -221,201 +252,16 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 							</td>
 						</tr>
 
-					<?php elseif ( 'style' === $tab ) : // style. ?>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Menu position', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<?php
-								$this->image_radio(
-									'acfw_menu_position',
-									get_option( 'acfw_menu_position', 'vertical-left' ),
-									array(
-										'vertical-left'  => array(
-											'label' => __( 'Left', 'account-customizer-for-woocommerce' ),
-											'img'   => 'vertical-left.svg',
-										),
-										'vertical-right' => array(
-											'label' => __( 'Right', 'account-customizer-for-woocommerce' ),
-											'img'   => 'vertical-right.svg',
-										),
-										'horizontal'     => array(
-											'label' => __( 'Top', 'account-customizer-for-woocommerce' ),
-											'img'   => 'top-horizontal.svg',
-										),
-									),
-									'vertical-left'
-								);
-								?>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Menu layout', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<?php
-								$this->buttonset(
-									'acfw_menu_layout',
-									get_option( 'acfw_menu_layout', 'simple' ),
-									array(
-										'simple'     => __( 'Simple', 'account-customizer-for-woocommerce' ),
-										'classic'    => __( 'Classic', 'account-customizer-for-woocommerce' ),
-										'modern'     => __( 'Modern', 'account-customizer-for-woocommerce' ),
-										'no-borders' => __( 'No borders', 'account-customizer-for-woocommerce' ),
-									),
-									'simple'
-								);
-								?>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Accent color', 'account-customizer-for-woocommerce' ); ?></th>
-							<td><input type="text" name="acfw_accent_color" value="<?php echo esc_attr( get_option( 'acfw_accent_color', '#2271b1' ) ); ?>" class="acfw-color" /></td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Text color', 'account-customizer-for-woocommerce' ); ?></th>
-							<td><input type="text" name="acfw_text_color" value="<?php echo esc_attr( get_option( 'acfw_text_color', '#333333' ) ); ?>" class="acfw-color" /></td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Corner radius', 'account-customizer-for-woocommerce' ); ?></th>
-							<td><?php $this->slider( 'acfw_menu_radius', get_option( 'acfw_menu_radius', 8 ), 0, 24 ); ?></td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Item spacing', 'account-customizer-for-woocommerce' ); ?></th>
-							<td><?php $this->slider( 'acfw_menu_gap', get_option( 'acfw_menu_gap', 4 ), 0, 24 ); ?></td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Item padding', 'account-customizer-for-woocommerce' ); ?></th>
-							<td><?php $this->slider( 'acfw_item_padding', get_option( 'acfw_item_padding', 11 ), 4, 28 ); ?></td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Font size', 'account-customizer-for-woocommerce' ); ?></th>
-							<td><?php $this->slider( 'acfw_font_size', get_option( 'acfw_font_size', 15 ), 11, 22 ); ?></td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Font weight', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<?php
-								$this->buttonset(
-									'acfw_font_weight',
-									get_option( 'acfw_font_weight', '500' ),
-									array(
-										'400' => __( 'Normal', 'account-customizer-for-woocommerce' ),
-										'500' => __( 'Medium', 'account-customizer-for-woocommerce' ),
-										'600' => __( 'Bold', 'account-customizer-for-woocommerce' ),
-									),
-									'500'
-								);
-								?>
-							</td>
-						</tr>
-
-					<?php else : // avatar. ?>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Show avatar', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<label class="acfw-switch acfw-switch-lg">
-									<input type="checkbox" name="acfw_avatar_enable" value="yes"
-										<?php checked( 'yes', get_option( 'acfw_avatar_enable', 'no' ) ); ?> />
-									<span class="acfw-switch-slider"></span>
-								</label>
-								<span class="acfw-control-hint"><?php esc_html_e( 'Display the customer avatar above the account menu.', 'account-customizer-for-woocommerce' ); ?></span>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Avatar shape', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<?php
-								$this->image_radio(
-									'acfw_avatar_shape',
-									get_option( 'acfw_avatar_shape', 'circle' ),
-									array(
-										'circle' => array(
-											'label' => __( 'Circle', 'account-customizer-for-woocommerce' ),
-											'img'   => 'circle-profile.svg',
-										),
-										'square' => array(
-											'label' => __( 'Square', 'account-customizer-for-woocommerce' ),
-											'img'   => 'square-profile.svg',
-										),
-									),
-									'circle'
-								);
-								?>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Avatar alignment', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<?php
-								$this->image_radio(
-									'acfw_avatar_align',
-									get_option( 'acfw_avatar_align', 'center' ),
-									array(
-										'left'   => array(
-											'label' => __( 'Left', 'account-customizer-for-woocommerce' ),
-											'img'   => 'align-left.svg',
-										),
-										'center' => array(
-											'label' => __( 'Center', 'account-customizer-for-woocommerce' ),
-											'img'   => 'align-center.svg',
-										),
-										'right'  => array(
-											'label' => __( 'Right', 'account-customizer-for-woocommerce' ),
-											'img'   => 'align-right.svg',
-										),
-									),
-									'center'
-								);
-								?>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Avatar size', 'account-customizer-for-woocommerce' ); ?></th>
-							<td><?php $this->slider( 'acfw_avatar_size', get_option( 'acfw_avatar_size', 72 ), 32, 160 ); ?></td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Show display name', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<label class="acfw-switch acfw-switch-lg">
-									<input type="checkbox" name="acfw_avatar_show_name" value="yes"
-										<?php checked( 'yes', get_option( 'acfw_avatar_show_name', 'yes' ) ); ?> />
-									<span class="acfw-switch-slider"></span>
-								</label>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Show user role', 'account-customizer-for-woocommerce' ); ?></th>
-							<td>
-								<label class="acfw-switch acfw-switch-lg">
-									<input type="checkbox" name="acfw_avatar_show_role" value="yes"
-										<?php checked( 'yes', get_option( 'acfw_avatar_show_role', 'no' ) ); ?> />
-									<span class="acfw-switch-slider"></span>
-								</label>
-							</td>
-						</tr>
-
-					<?php endif; ?>
 				</table>
 				<div class="acfw-form-footer">
 					<?php submit_button( __( 'Save changes', 'account-customizer-for-woocommerce' ), 'primary', 'submit', false ); ?>
 				</div>
 			</form>
+			</div><!-- .acfw-card -->
+			<?php endif; // General section. ?>
 
-			<?php if ( 'general' === $tab ) : ?>
+			<?php if ( 'presets' === $section ) : ?>
+			<div class="acfw-card">
 				<div class="acfw-presets">
 					<h2 class="acfw-section-title"><?php esc_html_e( 'Design presets', 'account-customizer-for-woocommerce' ); ?></h2>
 					<p class="acfw-hint"><?php esc_html_e( 'Save the current design as a named preset, then apply it anytime.', 'account-customizer-for-woocommerce' ); ?></p>
@@ -447,8 +293,17 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					<button type="submit" class="button acfw-reset-btn"><span class="dashicons dashicons-image-rotate"></span> <?php esc_html_e( 'Reset all settings', 'account-customizer-for-woocommerce' ); ?></button>
 					<span class="acfw-hint"><?php esc_html_e( 'Restore endpoints, design and banners to defaults. Cannot be undone.', 'account-customizer-for-woocommerce' ); ?></span>
 				</form>
-			<?php endif; ?>
-			</div>
+			</div><!-- .acfw-card -->
+			<?php endif; // Presets section. ?>
+
+			<?php
+			if ( 'tools' === $section && class_exists( 'ACFW_Tab_Tools' ) ) {
+				$acfw_tools = new ACFW_Tab_Tools();
+				$acfw_tools->render();
+			}
+			?>
+			</div><!-- .acfw-subnav-body -->
+			</div><!-- .acfw-subnav-layout -->
 			<?php
 		}
 	}

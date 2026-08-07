@@ -80,7 +80,6 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				$base . '&tab=general'   => __( 'Settings', 'account-customizer-for-woocommerce' ),
 				ACFW_Customizer::url()   => __( 'Customizer', 'account-customizer-for-woocommerce' ),
 				$base . '&tab=banners'   => __( 'Banners', 'account-customizer-for-woocommerce' ),
-				$base . '&tab=tools'     => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
 			);
 			foreach ( $subs as $slug => $title ) {
 				add_submenu_page(
@@ -369,7 +368,6 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'general'    => __( 'Settings', 'account-customizer-for-woocommerce' ),
 				'customizer' => __( 'Customizer', 'account-customizer-for-woocommerce' ),
 				'banners'    => __( 'Banners', 'account-customizer-for-woocommerce' ),
-				'tools'      => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
 			);
 			?>
 			<div class="wrap acfw-wrap">
