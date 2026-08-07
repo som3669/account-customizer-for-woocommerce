@@ -72,11 +72,23 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 				return new WP_Error( 'acfw_import_invalid', __( 'The file is not a valid My Account Customizer export.', 'account-customizer-for-woocommerce' ) );
 			}
 
+			// A user who cannot post unfiltered HTML must not be able to smuggle
+			// scripts into endpoint content via an import file ( the normal save
+			// path runs the same content through wp_kses_post ).
+			$allow_raw_html = current_user_can( 'unfiltered_html' );
+
 			foreach ( $parsed['options'] as $name => $value ) {
 				// Only restore our own, safely-prefixed options.
 				if ( 0 !== strpos( (string) $name, 'acfw_' ) || in_array( $name, self::SKIP, true ) ) {
 					continue;
 				}
+
+				// Endpoint records ( acfw_item_* ) carry rich content that is echoed
+				// on the front end; sanitise it unless the importer may post raw HTML.
+				if ( ! $allow_raw_html && 0 === strpos( $name, 'acfw_item_' ) && is_array( $value ) && isset( $value['content'] ) ) {
+					$value['content'] = wp_kses_post( (string) $value['content'] );
+				}
+
 				update_option( $name, $value );
 			}
 
