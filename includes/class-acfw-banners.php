@@ -266,9 +266,9 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 						<?php echo self::icon_markup( $banner ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<div class="acfw-banner-body">
 							<?php if ( $banner['title'] ) : ?>
-								<h3 class="acfw-banner-title"><?php echo esc_html( acfw_apply_smart_tags( $banner['title'] ) ); ?> <?php echo $count; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h3>
+								<h3 class="acfw-banner-title"><?php echo esc_html( acfw_apply_smart_tags( ACFW_I18n::translate( 'banner_' . $slug . '_title', $banner['title'] ) ) ); ?> <?php echo $count; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h3>
 							<?php endif; ?>
-							<div class="acfw-banner-content"><?php echo wp_kses_post( wpautop( acfw_apply_smart_tags( $banner['content'] ) ) ); ?></div>
+							<div class="acfw-banner-content"><?php echo wp_kses_post( wpautop( acfw_apply_smart_tags( ACFW_I18n::translate( 'banner_' . $slug . '_content', $banner['content'] ) ) ) ); ?></div>
 							<?php if ( $link ) : ?>
 								<a class="acfw-banner-link" href="<?php echo esc_url( $link ); ?>"><?php esc_html_e( 'Learn more', 'account-customizer-for-woocommerce' ); ?></a>
 							<?php endif; ?>

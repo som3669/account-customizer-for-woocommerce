@@ -95,6 +95,73 @@
 			}
 		} );
 
+		// Customer avatar upload.
+		$( '.acfw-avatar-uploadable' ).each( function () {
+			var $block   = $( this );
+			var $file    = $block.find( '.acfw-avatar-file' );
+			var $img     = $block.find( '.acfw-avatar-img' );
+			var $remove  = $block.find( '.acfw-avatar-remove' );
+			var $spinner = $block.find( '.acfw-avatar-spinner' );
+
+			function busy( on ) {
+				$block.toggleClass( 'is-busy', on );
+				$spinner.prop( 'hidden', ! on );
+			}
+
+			$block.on( 'click', '.acfw-avatar-edit', function () {
+				$file.trigger( 'click' );
+			} );
+
+			$file.on( 'change', function () {
+				if ( ! this.files || ! this.files.length ) {
+					return;
+				}
+				var data = new FormData();
+				data.append( 'action', 'acfw_avatar_upload' );
+				data.append( 'nonce', acfw.avatarNonce );
+				data.append( 'avatar', this.files[ 0 ] );
+				this.value = '';
+
+				busy( true );
+				$.ajax( {
+					url: acfw.ajaxUrl,
+					method: 'POST',
+					data: data,
+					processData: false,
+					contentType: false
+				} ).done( function ( res ) {
+					if ( res && res.success && res.data && res.data.url ) {
+						$img.find( 'img' ).attr( 'srcset', '' ).attr( 'src', res.data.url );
+						$remove.prop( 'hidden', false );
+					} else {
+						window.alert( ( res && res.data && res.data.message ) || acfw.avatarErrorMsg );
+					}
+				} ).fail( function () {
+					window.alert( acfw.avatarErrorMsg );
+				} ).always( function () {
+					busy( false );
+				} );
+			} );
+
+			$remove.on( 'click', function () {
+				if ( ! window.confirm( acfw.avatarRemoveMsg ) ) {
+					return;
+				}
+				busy( true );
+				$.post( acfw.ajaxUrl, {
+					action: 'acfw_avatar_remove',
+					nonce: acfw.avatarNonce
+				} ).done( function ( res ) {
+					if ( res && res.success && res.data && res.data.url ) {
+						$img.find( 'img' ).attr( 'srcset', '' ).attr( 'src', res.data.url );
+						$remove.prop( 'hidden', true );
+					}
+				} ).always( function () {
+					busy( false );
+				} );
+			} );
+		} );
+
 		// AJAX navigation between endpoints.
 		if ( ! acfw || ! acfw.ajaxNavigation ) {
 			return;

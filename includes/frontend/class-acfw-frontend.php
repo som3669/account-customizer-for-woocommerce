@@ -232,6 +232,10 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'logoutConfirm'     => 'yes' === get_option( 'acfw_logout_confirm', 'no' ),
 					'logoutMsg'         => __( 'Are you sure you want to log out?', 'account-customizer-for-woocommerce' ),
 					'searchPlaceholder' => __( 'Search…', 'account-customizer-for-woocommerce' ),
+					'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
+					'avatarNonce'       => wp_create_nonce( ACFW_Avatar::NONCE ),
+					'avatarRemoveMsg'   => __( 'Remove your profile picture?', 'account-customizer-for-woocommerce' ),
+					'avatarErrorMsg'    => __( 'Upload failed. Please try again.', 'account-customizer-for-woocommerce' ),
 				)
 			);
 		}
@@ -386,6 +390,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			if ( '' === $title ) {
 				return;
 			}
+			$title = ACFW_I18n::translate( 'dashboard_title', $title );
 			$title = acfw_apply_smart_tags( $title );
 			echo '<h2 class="acfw-dashboard-title">' . wp_kses_post( $title ) . '</h2>';
 		}
@@ -583,11 +588,18 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$size = absint( get_option( 'acfw_avatar_size', 72 ) );
 			$size = $size ? $size : 72;
 
-			// Custom avatar image overrides the gravatar when set.
-			$custom = get_option( 'acfw_avatar_image', '' );
-			$avatar = $custom
-				? sprintf( '<img src="%s" alt="" width="%2$d" height="%2$d" />', esc_url( $custom ), $size )
-				: get_avatar( $user->ID, $size );
+			// Precedence: customer upload → admin default image → gravatar.
+			$uploaded  = class_exists( 'ACFW_Avatar' ) ? ACFW_Avatar::url( $user->ID, $size > 150 ? 'medium' : 'thumbnail' ) : '';
+			$custom    = get_option( 'acfw_avatar_image', '' );
+			$can_upload = class_exists( 'ACFW_Avatar' ) && ACFW_Avatar::enabled();
+
+			if ( '' !== $uploaded ) {
+				$avatar = sprintf( '<img src="%s" alt="" width="%2$d" height="%2$d" />', esc_url( $uploaded ), $size );
+			} elseif ( $custom ) {
+				$avatar = sprintf( '<img src="%s" alt="" width="%2$d" height="%2$d" />', esc_url( $custom ), $size );
+			} else {
+				$avatar = get_avatar( $user->ID, $size );
+			}
 
 			$role_label = '';
 			if ( ! empty( $user->roles[0] ) ) {
@@ -598,13 +610,15 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			acfw_get_template(
 				'myaccount-avatar.php',
 				array(
-					'user'       => $user,
-					'avatar'     => $avatar,
-					'shape'      => get_option( 'acfw_avatar_shape', 'circle' ),
-					'align'      => get_option( 'acfw_avatar_align', 'center' ),
-					'show_name'  => 'yes' === get_option( 'acfw_avatar_show_name', 'yes' ),
-					'show_role'  => 'yes' === get_option( 'acfw_avatar_show_role', 'no' ),
-					'role_label' => $role_label,
+					'user'         => $user,
+					'avatar'       => $avatar,
+					'shape'        => get_option( 'acfw_avatar_shape', 'circle' ),
+					'align'        => get_option( 'acfw_avatar_align', 'center' ),
+					'show_name'    => 'yes' === get_option( 'acfw_avatar_show_name', 'yes' ),
+					'show_role'    => 'yes' === get_option( 'acfw_avatar_show_role', 'no' ),
+					'role_label'   => $role_label,
+					'can_upload'   => $can_upload,
+					'has_uploaded' => '' !== $uploaded,
 				)
 			);
 		}
@@ -677,6 +691,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		public function guest_message() {
 			$msg = get_option( 'acfw_guest_message', '' );
 			if ( $msg ) {
+				$msg = ACFW_I18n::translate( 'guest_message', $msg );
 				echo '<div class="acfw-guest-message">' . wp_kses_post( wpautop( $msg ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 		}

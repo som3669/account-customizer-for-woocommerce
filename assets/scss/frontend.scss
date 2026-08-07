@@ -1044,6 +1044,84 @@
 	color: var(--acfw-muted, #8a9099);
 }
 
+/* Customer avatar upload */
+.acfw-avatar-block .acfw-avatar-img {
+	position: relative;
+	display: inline-block;
+	line-height: 0;
+}
+
+.acfw-avatar-edit {
+	position: absolute;
+	right: -2px;
+	bottom: -2px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 2px solid var(--acfw-surface, #fff);
+	border-radius: 50%;
+	background: var(--acfw-accent, #2563eb);
+	color: #fff;
+	cursor: pointer;
+	opacity: 0;
+	transform: scale(0.85);
+	transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.acfw-avatar-block:hover .acfw-avatar-edit,
+.acfw-avatar-edit:focus-visible {
+	opacity: 1;
+	transform: scale(1);
+}
+
+.acfw-avatar-edit .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	line-height: 1;
+}
+
+.acfw-avatar-remove {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--acfw-muted, #8a9099);
+	font-size: 12px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.acfw-avatar-remove:hover {
+	color: var(--acfw-accent, #2563eb);
+}
+
+.acfw-avatar-block.is-busy {
+	pointer-events: none;
+	opacity: 0.6;
+}
+
+.acfw-avatar-spinner {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 22px;
+	height: 22px;
+	margin: -11px 0 0 -11px;
+	border: 2px solid rgba(255, 255, 255, 0.5);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: acfw-avatar-spin 0.7s linear infinite;
+}
+
+@keyframes acfw-avatar-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 /* =========================================================================
    Layout: classic – bordered list with divider rows (reference "classic")
    ========================================================================= */

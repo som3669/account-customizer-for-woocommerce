@@ -277,6 +277,8 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$this->add_slider( $wp_customize, 'acfw_avatar_size', 72, __( 'Avatar size', 'account-customizer-for-woocommerce' ), 32, 160 );
 			$this->add_toggle( $wp_customize, 'acfw_avatar_show_name', 'yes', __( 'Show display name', 'account-customizer-for-woocommerce' ) );
 			$this->add_toggle( $wp_customize, 'acfw_avatar_show_role', 'no', __( 'Show user role', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_avatar_upload', 'no', __( 'Let customers upload their own picture', 'account-customizer-for-woocommerce' ) );
+			$this->add_slider( $wp_customize, 'acfw_avatar_upload_max', 2048, __( 'Maximum upload size (KB)', 'account-customizer-for-woocommerce' ), 256, 8192 );
 
 			// Show avatar sub-options only when the avatar is enabled.
 			$avatar_deps = array(
@@ -286,6 +288,8 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				'acfw_avatar_size',
 				'acfw_avatar_show_name',
 				'acfw_avatar_show_role',
+				'acfw_avatar_upload',
+				'acfw_avatar_upload_max',
 			);
 			foreach ( $avatar_deps as $dep ) {
 				$ctrl = $wp_customize->get_control( $dep );
