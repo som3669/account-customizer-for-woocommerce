@@ -1,30 +1,79 @@
 <?php
 /**
- * Uninstall cleanup.
+ * Uninstall cleanup: removes every trace of the plugin.
+ *
+ * Deleting the plugin drops all `acfw_` options, the two user meta keys the
+ * plugin writes, and the avatar images customers uploaded through it. Nothing
+ * is removed on deactivation.
  *
  * @package AccountCustomizerForWooCommerce
  */
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-global $wpdb;
+/**
+ * User meta keys written by the plugin ( global: shared across a network ).
+ *
+ * @var array
+ */
+$acfw_user_meta = array( 'acfw_avatar_id', 'acfw_last_login' );
 
-// Remove global options.
-$acfw_options = array(
-	'acfw_items_order',
-	'acfw_flush_rewrite_rules',
-	'acfw_menu_position',
-	'acfw_menu_layout',
-	'acfw_ajax_navigation',
-	'acfw_default_endpoint',
-	'acfw_accent_color',
-	'acfw_text_color',
-	'acfw_menu_radius',
-);
+/**
+ * Delete the plugin's per-site data: options, transients and avatar files.
+ *
+ * User meta is network-wide, so it is purged once after every site is done.
+ *
+ * @return void
+ */
+function acfw_uninstall_site() {
 
-foreach ( $acfw_options as $acfw_option ) {
-	delete_option( $acfw_option );
+	global $wpdb;
+
+	// Delete the attachments behind customer-uploaded avatars. The IDs are
+	// network-wide; get_post_type() filters out those belonging to other sites.
+	$acfw_avatar_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->prepare(
+			"SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s",
+			'acfw_avatar_id'
+		)
+	);
+
+	foreach ( (array) $acfw_avatar_ids as $acfw_avatar_id ) {
+		$acfw_avatar_id = (int) $acfw_avatar_id;
+		if ( $acfw_avatar_id && 'attachment' === get_post_type( $acfw_avatar_id ) ) {
+			wp_delete_attachment( $acfw_avatar_id, true );
+		}
+	}
+
+	// Every plugin option is prefixed `acfw_`; presets, banners, items and
+	// design settings are all covered by the one pattern.
+	$acfw_like = $wpdb->esc_like( 'acfw_' ) . '%';
+	$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $acfw_like )
+	);
+
+	// Transients live under a prefixed option name, so delete them by hand.
+	delete_transient( 'acfw_import_notice' );
+
+	wp_cache_flush();
 }
 
-// Remove per-item options (acfw_item_*).
-$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'acfw\\_item\\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+if ( is_multisite() ) {
+	$acfw_site_ids = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
+	foreach ( $acfw_site_ids as $acfw_site_id ) {
+		switch_to_blog( $acfw_site_id );
+		acfw_uninstall_site();
+		restore_current_blog();
+	}
+} else {
+	acfw_uninstall_site();
+}
+
+foreach ( $acfw_user_meta as $acfw_meta_key ) {
+	delete_metadata( 'user', 0, $acfw_meta_key, '', true );
+}

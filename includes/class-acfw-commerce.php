@@ -545,7 +545,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 		 * @return string
 		 */
 		protected function status_timeline( $status ) {
-			$steps = array(
+			$steps      = array(
 				'processing' => __( 'Processing', 'account-customizer-for-woocommerce' ),
 				'on-hold'    => __( 'On hold', 'account-customizer-for-woocommerce' ),
 				'completed'  => __( 'Completed', 'account-customizer-for-woocommerce' ),

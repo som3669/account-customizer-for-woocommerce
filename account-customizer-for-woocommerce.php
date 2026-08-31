@@ -1,17 +1,18 @@
 <?php
 /**
  * Plugin Name: My Account Customizer for WooCommerce
- * Plugin URI:  https://example.com/account-customizer-for-woocommerce
+ * Plugin URI:  https://rube.thulo.eu.org/account-customizer-for-woocommerce
  * Description: Customize the WooCommerce "My Account" page: reorder the menu, add custom endpoints, groups and links, set per-endpoint content, control visibility by user role and restyle the whole area.
- * Version:     0.1.0
- * Author:      Your Name
- * Author URI:  https://example.com
+ * Version:     1.0.0
+ * Author:      Rcube
+ * Author URI:  https://rube.thulo.eu.org
  * Text Domain: account-customizer-for-woocommerce
  * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 7.4
+ * Requires Plugins: woocommerce
  * WC requires at least: 6.0
- * WC tested up to: 9.9
+ * WC tested up to: 11.0
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -20,7 +21,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ACFW_VERSION', '0.1.0' );
+define( 'ACFW_VERSION', '1.0.0' );
 define( 'ACFW_FILE', __FILE__ );
 define( 'ACFW_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ACFW_URL', plugin_dir_url( __FILE__ ) );
