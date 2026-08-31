@@ -15,6 +15,10 @@
 	<exclude-pattern>*/assets/*</exclude-pattern>
 	<exclude-pattern>*/dist/*</exclude-pattern>
 	<exclude-pattern>*/build/*</exclude-pattern>
+	<!-- PHPUnit's own conventions (namespaced classes, camelCase methods, one
+	     class per file named after the class) conflict with WPCS naming. -->
+	<exclude-pattern>*/tests/*</exclude-pattern>
+	<exclude-pattern>*/submission/*</exclude-pattern>
 
 	<!-- WordPress-Extra = Core + best practices ( what WooCommerce submission expects ). -->
 	<rule ref="WordPress-Extra"/>

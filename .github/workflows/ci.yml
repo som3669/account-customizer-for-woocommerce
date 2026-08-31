@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The plugin declares "Requires PHP: 7.4", so every supported version
+        # has to parse the whole tree.
+        php: [ '7.4', '8.0', '8.1', '8.2', '8.3' ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Lint every PHP file
+        run: |
+          find . -path ./vendor -prune -o -path ./node_modules -prune -o -name '*.php' -print0 \
+            | xargs -0 -n1 -P4 php -l
+
+  coding-standards:
+    name: Coding standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: cs2pr
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run PHPCS
+        run: vendor/bin/phpcs --standard=phpcs.xml.dist --report-full --report-checkstyle=phpcs-report.xml
+
+      - name: Annotate the diff with any violations
+        if: ${{ failure() }}
+        run: cs2pr phpcs-report.xml
+
+  unit-tests:
+    name: Unit tests, PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4', '8.1', '8.3' ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --colors=never
+
+  i18n:
+    name: Translations are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: wp-cli
+
+      - name: Regenerate the POT file
+        run: |
+          wp i18n make-pot . /tmp/regenerated.pot \
+            --domain=account-customizer-for-woocommerce \
+            --exclude=node_modules,dist,submission,vendor,tests,assets/src \
+            --skip-audit
+
+      - name: Fail if strings changed without regenerating languages/*.pot
+        run: |
+          # Headers (creation date, generator version) always differ, so compare
+          # only the strings and their code references.
+          strip() { grep -E '^(msgid|msgctxt|#:)' "$1"; }
+          if ! diff <(strip languages/account-customizer-for-woocommerce.pot) <(strip /tmp/regenerated.pot) > /tmp/pot.diff; then
+            echo "::error::languages/*.pot is stale. Run: wp i18n make-pot . languages/account-customizer-for-woocommerce.pot"
+            head -40 /tmp/pot.diff
+            exit 1
+          fi
+
+  build:
+    name: Build the release zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install the toolchain
+        run: pnpm install --frozen-lockfile
+
+      - name: Build assets and package
+        run: pnpm zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: account-customizer-for-woocommerce
+          path: dist/account-customizer-for-woocommerce.zip
+          if-no-files-found: error
