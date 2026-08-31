@@ -83,10 +83,10 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 					continue;
 				}
 
-				// Endpoint records ( acfw_item_* ) carry rich content that is echoed
-				// on the front end; sanitise it unless the importer may post raw HTML.
-				if ( ! $allow_raw_html && 0 === strpos( $name, 'acfw_item_' ) && is_array( $value ) && isset( $value['content'] ) ) {
-					$value['content'] = wp_kses_post( (string) $value['content'] );
+				// Rich, front-end-echoed fields must pass the same sanitisers the
+				// normal save path applies, unless the importer may post raw HTML.
+				if ( ! $allow_raw_html ) {
+					$value = self::sanitize_imported( $name, $value );
 				}
 
 				update_option( $name, $value );
@@ -99,6 +99,49 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 			}
 
 			return true;
+		}
+
+		/**
+		 * Re-apply the save-path sanitisers to one imported option value.
+		 *
+		 * Only used for importers who cannot post unfiltered HTML: the admin save
+		 * handlers run these same filters, so an import must not be a way around
+		 * them.
+		 *
+		 * @param string $name  Option name.
+		 * @param mixed  $value Imported value.
+		 * @return mixed
+		 */
+		protected static function sanitize_imported( $name, $value ) {
+
+			// Endpoint / group / link records carry per-item custom content.
+			if ( 0 === strpos( $name, 'acfw_item_' ) && is_array( $value ) && isset( $value['content'] ) ) {
+				$value['content'] = wp_kses_post( (string) $value['content'] );
+				return $value;
+			}
+
+			// Banner records: title is plain text, content is rich.
+			if ( 'acfw_banners' === $name && is_array( $value ) ) {
+				foreach ( $value as $slug => $banner ) {
+					if ( ! is_array( $banner ) ) {
+						continue;
+					}
+					if ( isset( $banner['content'] ) ) {
+						$value[ $slug ]['content'] = wp_kses_post( (string) $banner['content'] );
+					}
+					if ( isset( $banner['title'] ) ) {
+						$value[ $slug ]['title'] = sanitize_text_field( (string) $banner['title'] );
+					}
+				}
+				return $value;
+			}
+
+			// The logged-out notice is echoed through wpautop() on the front end.
+			if ( 'acfw_guest_message' === $name ) {
+				return wp_kses_post( (string) $value );
+			}
+
+			return $value;
 		}
 	}
 }

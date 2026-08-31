@@ -268,7 +268,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$active   = $active ? $active : $accent;
 
 			$vars = sprintf(
-				'.acfw-menu,.acfw-avatar-block{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;--acfw-active:%10$s;',
+				'.acfw-menu,.acfw-avatar-block,.acfw-buyagain,.acfw-recent{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;--acfw-active:%10$s;',
 				$accent,
 				$text,
 				$tint,
@@ -589,8 +589,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$size = $size ? $size : 72;
 
 			// Precedence: customer upload → admin default image → gravatar.
-			$uploaded  = class_exists( 'ACFW_Avatar' ) ? ACFW_Avatar::url( $user->ID, $size > 150 ? 'medium' : 'thumbnail' ) : '';
-			$custom    = get_option( 'acfw_avatar_image', '' );
+			$uploaded   = class_exists( 'ACFW_Avatar' ) ? ACFW_Avatar::url( $user->ID, $size > 150 ? 'medium' : 'thumbnail' ) : '';
+			$custom     = get_option( 'acfw_avatar_image', '' );
 			$can_upload = class_exists( 'ACFW_Avatar' ) && ACFW_Avatar::enabled();
 
 			if ( '' !== $uploaded ) {

@@ -124,11 +124,11 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		 *
 		 * @param string $name    Option / field name.
 		 * @param string $current Current value.
-		 * @param array  $choices value => array( 'label' => .., 'img' => file ).
-		 * @param string $default Default value.
+		 * @param array  $choices  value => array( 'label' => .., 'img' => file ).
+		 * @param string $fallback Value used when nothing is stored.
 		 */
-		protected function image_radio( $name, $current, $choices, $default = '' ) {
-			$current = ( '' === $current || null === $current ) ? $default : $current;
+		protected function image_radio( $name, $current, $choices, $fallback = '' ) {
+			$current = ( '' === $current || null === $current ) ? $fallback : $current;
 			echo '<div class="acfw-radio-group acfw-image-radio" role="radiogroup">';
 			foreach ( $choices as $value => $choice ) {
 				$id     = sanitize_html_class( $name . '-' . $value );
@@ -152,11 +152,11 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		 *
 		 * @param string $name    Option / field name.
 		 * @param string $current Current value.
-		 * @param array  $choices value => label pairs.
-		 * @param string $default Default value when none stored.
+		 * @param array  $choices  value => label pairs.
+		 * @param string $fallback Value used when nothing is stored.
 		 */
-		protected function buttonset( $name, $current, $choices, $default = '' ) {
-			$current = ( '' === $current || null === $current ) ? $default : $current;
+		protected function buttonset( $name, $current, $choices, $fallback = '' ) {
+			$current = ( '' === $current || null === $current ) ? $fallback : $current;
 			echo '<div class="acfw-radio-group" role="radiogroup">';
 			foreach ( $choices as $value => $label ) {
 				$active = (string) $current === (string) $value;
@@ -175,11 +175,11 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		/**
 		 * Build the icon markup for an item (uploaded image or dashicon).
 		 *
-		 * @param array  $item  Item options.
-		 * @param string $class Wrapper class.
+		 * @param array  $item          Item options.
+		 * @param string $wrapper_class Wrapper class.
 		 * @return string
 		 */
-		protected function icon_markup( $item, $class ) {
+		protected function icon_markup( $item, $wrapper_class ) {
 			$icon_url = $item['icon_url'] ?? '';
 			$upload   = 'upload' === ( $item['icon_source'] ?? 'choose' );
 			$icon     = ( ! $upload && ! empty( $item['icon'] ) ) ? $item['icon'] : '';
@@ -187,7 +187,7 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 				$type = $item['type'] ?? 'endpoint';
 				$icon = acfw_default_type_icon( $type );
 			}
-			return acfw_icon_markup( $icon, $icon_url, $class );
+			return acfw_icon_markup( $icon, $icon_url, $wrapper_class );
 		}
 
 		/**

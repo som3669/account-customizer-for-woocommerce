@@ -638,10 +638,9 @@ function acfw_default_endpoint_options( $key = '' ) {
 /**
  * Default option set for a group item.
  *
- * @param string $key Item key.
  * @return array
  */
-function acfw_default_group_options( $key = '' ) {
+function acfw_default_group_options() {
 	return array(
 		'type'        => 'group',
 		'label'       => '',
@@ -660,10 +659,9 @@ function acfw_default_group_options( $key = '' ) {
 /**
  * Default option set for a link item.
  *
- * @param string $key Item key.
  * @return array
  */
-function acfw_default_link_options( $key = '' ) {
+function acfw_default_link_options() {
 	return array(
 		'type'         => 'link',
 		'label'        => '',

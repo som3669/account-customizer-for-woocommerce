@@ -1461,25 +1461,164 @@ body.acfw-dash-tpl-right .woocommerce-MyAccount-content {
   padding: 5px 8px;
 }
 
-/* Buy Again endpoint table */
+/* Buy Again endpoint table.
+   Themes style .shop_table very differently, so the table is re-based here to
+   match the rest of the account area instead of inheriting theme chrome. */
 .acfw-buyagain-table {
   width: 100%;
+  margin: 0;
+  border: 1px solid var(--acfw-border, #e1e1e1);
+  border-radius: calc(var(--acfw-radius, 4px) + 4px);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+.acfw-buyagain-table th,
+.acfw-buyagain-table td {
+  padding: 12px 16px;
+  border: 0;
+  border-top: 1px solid var(--acfw-border, #e1e1e1);
+  vertical-align: middle;
+  text-align: left;
+  background: none;
+}
+
+.acfw-buyagain-table thead th {
+  border-top: 0;
+  background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--acfw-text, #383838);
+}
+
+.acfw-buyagain-table tbody tr:hover td {
+  background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+}
+
+.acfw-buyagain-table .acfw-ba-thumb {
+  width: 72px;
+  padding-right: 0;
 }
 
 .acfw-buyagain-table .acfw-ba-thumb img {
+  display: block;
   width: 56px;
-  height: auto;
-  border-radius: 6px;
+  height: 56px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border: 1px solid var(--acfw-border, #e1e1e1);
+  border-radius: calc(var(--acfw-radius, 4px) + 2px);
+  background: #f6f7f7;
+}
+
+.acfw-buyagain-table .acfw-ba-name a {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--acfw-text, #383838);
+}
+
+.acfw-buyagain-table .acfw-ba-name a:hover {
+  color: var(--acfw-accent, #2563eb);
+}
+
+.acfw-buyagain-table .acfw-ba-price {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--acfw-text, #383838);
+}
+
+.acfw-buyagain-table .acfw-ba-price del {
+  margin-right: 4px;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.acfw-buyagain-table .acfw-ba-price ins {
+  text-decoration: none;
 }
 
 .acfw-buyagain-table .acfw-ba-action {
+  width: 1%;
   text-align: right;
+  white-space: nowrap;
+}
+
+/* Reorder buttons: accent-filled for the row action, outlined for the bulk one.
+   Both override whatever the theme does to .button. */
+.acfw-buyagain .acfw-reorder-btn,
+.acfw-buyagain .acfw-reorder-order-btn {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--acfw-accent, #2563eb);
+  border-radius: var(--acfw-radius, 4px);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.acfw-buyagain .acfw-reorder-btn {
+  background: var(--acfw-accent, #2563eb);
+  color: #fff;
+}
+
+.acfw-buyagain .acfw-reorder-btn:hover,
+.acfw-buyagain .acfw-reorder-btn:focus {
+  background: var(--acfw-accent, #2563eb);
+  color: #fff;
+  filter: brightness(0.92);
+}
+
+.acfw-buyagain .acfw-reorder-order-btn {
+  background: transparent;
+  color: var(--acfw-accent, #2563eb);
+}
+
+.acfw-buyagain .acfw-reorder-order-btn:hover,
+.acfw-buyagain .acfw-reorder-order-btn:focus {
+  background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+  color: var(--acfw-accent, #2563eb);
+}
+
+.acfw-buyagain .acfw-reorder-btn:disabled,
+.acfw-buyagain .acfw-reorder-order-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+  filter: none;
 }
 
 .acfw-buyagain-bulk {
   margin-top: 16px;
 }
 
+@media (max-width: 600px) {
+  .acfw-buyagain-table th,
+  .acfw-buyagain-table td {
+    padding: 10px;
+  }
+  .acfw-buyagain-table .acfw-ba-thumb {
+    width: 56px;
+  }
+  .acfw-buyagain-table .acfw-ba-thumb img {
+    width: 40px;
+    height: 40px;
+  }
+  .acfw-buyagain-table thead .acfw-ba-price,
+  .acfw-buyagain-table tbody .acfw-ba-price {
+    display: none;
+  }
+}
 /* Order tracking */
 .acfw-track-row {
   padding: 12px 0;
