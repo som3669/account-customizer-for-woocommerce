@@ -24,7 +24,7 @@ if ( ! class_exists( 'ACFW_I18n' ) ) {
 		 *
 		 * @var string
 		 */
-		const CONTEXT = 'account-customizer-for-woocommerce';
+		const CONTEXT = 'my-account-customizer';
 
 		/**
 		 * Wire up registration and the display-time translation filters.
@@ -104,6 +104,7 @@ if ( ! class_exists( 'ACFW_I18n' ) ) {
 			// Dashboard title + guest message.
 			self::register( 'dashboard_title', get_option( 'acfw_dashboard_title', '' ) );
 			self::register( 'guest_message', get_option( 'acfw_guest_message', '' ) );
+			self::register( 'dashboard_notice', get_option( 'acfw_dashboard_notice', '' ) );
 
 			// Banner title + body content.
 			if ( class_exists( 'ACFW_Banners' ) ) {

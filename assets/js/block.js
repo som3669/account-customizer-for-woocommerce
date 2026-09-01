@@ -5,8 +5,8 @@
 
 	blocks.registerBlockType( 'acfw/account-menu', {
 		apiVersion: 3,
-		title: __( 'Account Menu', 'account-customizer-for-woocommerce' ),
-		description: __( 'The customized My Account navigation menu.', 'account-customizer-for-woocommerce' ),
+		title: __( 'Account Menu', 'my-account-customizer' ),
+		description: __( 'The customized My Account navigation menu.', 'my-account-customizer' ),
 		icon: 'menu-alt',
 		category: 'woocommerce',
 		supports: { html: false },

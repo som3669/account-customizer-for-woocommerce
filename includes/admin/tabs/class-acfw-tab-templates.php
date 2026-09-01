@@ -56,14 +56,14 @@ if ( ! class_exists( 'ACFW_Tab_Templates' ) ) {
 			?>
 			<?php $active_tpl = get_option( 'acfw_active_template', '' ); ?>
 			<div class="acfw-card acfw-templates">
-				<h2 class="acfw-section-title"><?php esc_html_e( 'Starter templates', 'account-customizer-for-woocommerce' ); ?></h2>
-				<p class="acfw-hint"><?php esc_html_e( 'One-click ready-made designs. Applying a template overwrites the related design settings.', 'account-customizer-for-woocommerce' ); ?></p>
+				<h2 class="acfw-section-title"><?php esc_html_e( 'Starter templates', 'my-account-customizer' ); ?></h2>
+				<p class="acfw-hint"><?php esc_html_e( 'One-click ready-made designs. Applying a template overwrites the related design settings.', 'my-account-customizer' ); ?></p>
 				<div class="acfw-template-grid">
 					<?php foreach ( acfw_prebuilt_templates() as $tslug => $tpl ) : ?>
 						<?php $is_applied = ( $tslug === $active_tpl ); ?>
 						<div class="acfw-template-card <?php echo $is_applied ? 'is-applied' : ''; ?>" style="--acfw-tpl-accent: <?php echo esc_attr( $tpl['accent'] ); ?>;">
 							<?php if ( $is_applied ) : ?>
-								<span class="acfw-template-badge"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Applied', 'account-customizer-for-woocommerce' ); ?></span>
+								<span class="acfw-template-badge"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Applied', 'my-account-customizer' ); ?></span>
 							<?php endif; ?>
 							<div class="acfw-template-preview acfw-tpl-<?php echo esc_attr( $tslug ); ?>">
 								<?php $this->template_preview_mock( $tpl ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
@@ -77,9 +77,9 @@ if ( ! class_exists( 'ACFW_Tab_Templates' ) ) {
 								<input type="hidden" name="acfw_action" value="apply_template" />
 								<input type="hidden" name="template_slug" value="<?php echo esc_attr( $tslug ); ?>" />
 								<?php if ( $is_applied ) : ?>
-									<button type="button" class="button acfw-tpl-applied" disabled><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Applied', 'account-customizer-for-woocommerce' ); ?></button>
+									<button type="button" class="button acfw-tpl-applied" disabled><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Applied', 'my-account-customizer' ); ?></button>
 								<?php else : ?>
-									<button type="submit" class="button button-primary"><?php esc_html_e( 'Apply template', 'account-customizer-for-woocommerce' ); ?></button>
+									<button type="submit" class="button button-primary"><?php esc_html_e( 'Apply template', 'my-account-customizer' ); ?></button>
 								<?php endif; ?>
 							</form>
 						</div>

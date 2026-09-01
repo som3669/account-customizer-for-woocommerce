@@ -2,7 +2,7 @@
 /**
  * My Account custom menu.
  *
- * Override: yourtheme/account-customizer-for-woocommerce/myaccount-menu.php
+ * Override: yourtheme/my-account-customizer/myaccount-menu.php
  *
  * @var array         $items    Visible menu items.
  * @var string        $current  Current endpoint key.
@@ -46,7 +46,7 @@ $acfw_group_open = ! empty( $group_open );
 ?>
 <button type="button" class="acfw-nav-toggle" aria-expanded="false" aria-controls="acfw-menu-list">
 	<span class="dashicons dashicons-menu-alt"></span>
-	<span class="acfw-nav-toggle-label"><?php esc_html_e( 'Account menu', 'account-customizer-for-woocommerce' ); ?></span>
+	<span class="acfw-nav-toggle-label"><?php esc_html_e( 'Account menu', 'my-account-customizer' ); ?></span>
 </button>
 <nav class="woocommerce-MyAccount-navigation <?php echo esc_attr( implode( ' ', $wrap_classes ) ); ?>">
 	<span class="acfw-nav-backdrop"></span>
@@ -56,10 +56,10 @@ $acfw_group_open = ! empty( $group_open );
 	}
 	?>
 	<?php if ( ! empty( $collapsible ) ) : ?>
-		<button type="button" class="acfw-collapse-toggle" aria-label="<?php esc_attr_e( 'Collapse menu', 'account-customizer-for-woocommerce' ); ?>"><span class="dashicons dashicons-arrow-left-alt2"></span></button>
+		<button type="button" class="acfw-collapse-toggle" aria-label="<?php esc_attr_e( 'Collapse menu', 'my-account-customizer' ); ?>"><span class="dashicons dashicons-arrow-left-alt2"></span></button>
 	<?php endif; ?>
 	<?php if ( ! empty( $search ) ) : ?>
-		<input type="search" class="acfw-menu-search" placeholder="<?php esc_attr_e( 'Search…', 'account-customizer-for-woocommerce' ); ?>" aria-label="<?php esc_attr_e( 'Search menu', 'account-customizer-for-woocommerce' ); ?>" />
+		<input type="search" class="acfw-menu-search" placeholder="<?php esc_attr_e( 'Search…', 'my-account-customizer' ); ?>" aria-label="<?php esc_attr_e( 'Search menu', 'my-account-customizer' ); ?>" />
 	<?php endif; ?>
 	<ul id="acfw-menu-list">
 		<?php

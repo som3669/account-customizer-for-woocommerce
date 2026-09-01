@@ -85,15 +85,15 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 			$wp_customize->add_panel(
 				self::PANEL,
 				array(
-					'title'    => __( 'My Account', 'account-customizer-for-woocommerce' ),
+					'title'    => __( 'My Account', 'my-account-customizer' ),
 					'priority' => 1,
 				)
 			);
 
 			$sections = array(
-				'acfw_avatar' => __( 'Avatar', 'account-customizer-for-woocommerce' ),
-				'acfw_nav'    => __( 'Navigation', 'account-customizer-for-woocommerce' ),
-				'acfw_style'  => __( 'Layout & Colors', 'account-customizer-for-woocommerce' ),
+				'acfw_avatar' => __( 'Avatar', 'my-account-customizer' ),
+				'acfw_nav'    => __( 'Navigation', 'my-account-customizer' ),
+				'acfw_style'  => __( 'Layout & Colors', 'my-account-customizer' ),
 			);
 			$priority = 10;
 			foreach ( $sections as $id => $title ) {
@@ -114,142 +114,142 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				$wp_customize,
 				'acfw_menu_position',
 				'vertical-left',
-				__( 'Menu position', 'account-customizer-for-woocommerce' ),
+				__( 'Menu position', 'my-account-customizer' ),
 				array(
 					'vertical-left'  => array(
-						'name'  => __( 'Left', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Left', 'my-account-customizer' ),
 						'image' => $this->img( 'vertical-left.svg' ),
 					),
 					'vertical-right' => array(
-						'name'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Right', 'my-account-customizer' ),
 						'image' => $this->img( 'vertical-right.svg' ),
 					),
 					'horizontal'     => array(
-						'name'  => __( 'Top', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Top', 'my-account-customizer' ),
 						'image' => $this->img( 'top-horizontal.svg' ),
 					),
 				)
 			);
-			$this->add_buttonset( $wp_customize, 'acfw_menu_style', 'simple', __( 'Menu style', 'account-customizer-for-woocommerce' ), acfw_menu_styles() );
-			$this->add_toggle( $wp_customize, 'acfw_show_icons', 'yes', __( 'Show menu icons', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_show_counts', 'yes', __( 'Show item counts', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_dashboard_tiles', 'no', __( 'Dashboard quick-link tiles', 'account-customizer-for-woocommerce' ) );
-			$this->add_text( $wp_customize, 'acfw_dashboard_title', '', __( 'Dashboard title', 'account-customizer-for-woocommerce' ) );
+			$this->add_buttonset( $wp_customize, 'acfw_menu_style', 'simple', __( 'Menu style', 'my-account-customizer' ), acfw_menu_styles() );
+			$this->add_toggle( $wp_customize, 'acfw_show_icons', 'yes', __( 'Show menu icons', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_show_counts', 'yes', __( 'Show item counts', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_dashboard_tiles', 'no', __( 'Dashboard quick-link tiles', 'my-account-customizer' ) );
+			$this->add_text( $wp_customize, 'acfw_dashboard_title', '', __( 'Dashboard title', 'my-account-customizer' ) );
 			$this->add_buttonset(
 				$wp_customize,
 				'acfw_dashboard_align',
 				'left',
-				__( 'Dashboard content position', 'account-customizer-for-woocommerce' ),
+				__( 'Dashboard content position', 'my-account-customizer' ),
 				array(
-					'left'   => __( 'Left', 'account-customizer-for-woocommerce' ),
-					'center' => __( 'Middle', 'account-customizer-for-woocommerce' ),
-					'right'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+					'left'   => __( 'Left', 'my-account-customizer' ),
+					'center' => __( 'Middle', 'my-account-customizer' ),
+					'right'  => __( 'Right', 'my-account-customizer' ),
 				)
 			);
-			$this->add_toggle( $wp_customize, 'acfw_dashboard_stats', 'no', __( 'Dashboard stat widgets', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_orders', 'yes', __( '• Total orders', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_pending', 'yes', __( '• Pending orders', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_spent', 'yes', __( '• Total spent', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_downloads', 'yes', __( '• Downloads', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_refunds', 'no', __( '• Refunds', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_points', 'no', __( '• Reward points', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_latest', 'no', __( '• Latest order', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_stat_piechart', 'no', __( '• Orders pie chart', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_menu_search', 'no', __( 'Menu search box', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_collapsible', 'no', __( 'Collapsible icon rail', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_pin_enable', 'no', __( 'Let customers pin favorites', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_profile_meter', 'no', __( 'Profile completeness meter', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_sticky_menu', 'no', __( 'Sticky menu', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_logout_confirm', 'no', __( 'Confirm before logout', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_dashboard_stats', 'no', __( 'Dashboard stat widgets', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_orders', 'yes', __( '• Total orders', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_pending', 'yes', __( '• Pending orders', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_spent', 'yes', __( '• Total spent', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_downloads', 'yes', __( '• Downloads', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_refunds', 'no', __( '• Refunds', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_points', 'no', __( '• Reward points', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_latest', 'no', __( '• Latest order', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_stat_piechart', 'no', __( '• Orders pie chart', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_menu_search', 'no', __( 'Menu search box', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_collapsible', 'no', __( 'Collapsible icon rail', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_pin_enable', 'no', __( 'Let customers pin favorites', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_profile_meter', 'no', __( 'Profile completeness meter', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_sticky_menu', 'no', __( 'Sticky menu', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_logout_confirm', 'no', __( 'Confirm before logout', 'my-account-customizer' ) );
 			$this->add_buttonset(
 				$wp_customize,
 				'acfw_active_indicator',
 				'bar',
-				__( 'Active indicator', 'account-customizer-for-woocommerce' ),
+				__( 'Active indicator', 'my-account-customizer' ),
 				array(
-					'bar'       => __( 'Bar', 'account-customizer-for-woocommerce' ),
-					'underline' => __( 'Underline', 'account-customizer-for-woocommerce' ),
-					'dot'       => __( 'Dot', 'account-customizer-for-woocommerce' ),
-					'none'      => __( 'None', 'account-customizer-for-woocommerce' ),
+					'bar'       => __( 'Bar', 'my-account-customizer' ),
+					'underline' => __( 'Underline', 'my-account-customizer' ),
+					'dot'       => __( 'Dot', 'my-account-customizer' ),
+					'none'      => __( 'None', 'my-account-customizer' ),
 				)
 			);
 			$this->add_buttonset(
 				$wp_customize,
 				'acfw_hover_anim',
 				'none',
-				__( 'Hover animation', 'account-customizer-for-woocommerce' ),
+				__( 'Hover animation', 'my-account-customizer' ),
 				array(
-					'none'  => __( 'None', 'account-customizer-for-woocommerce' ),
-					'slide' => __( 'Slide', 'account-customizer-for-woocommerce' ),
-					'grow'  => __( 'Grow', 'account-customizer-for-woocommerce' ),
+					'none'  => __( 'None', 'my-account-customizer' ),
+					'slide' => __( 'Slide', 'my-account-customizer' ),
+					'grow'  => __( 'Grow', 'my-account-customizer' ),
 				)
 			);
-			$this->add_toggle( $wp_customize, 'acfw_group_open', 'no', __( 'Expand groups by default', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_ajax_navigation', 'no', __( 'AJAX navigation', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_group_open', 'no', __( 'Expand groups by default', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_ajax_navigation', 'no', __( 'AJAX navigation', 'my-account-customizer' ) );
 
 			// ---- Layout & Colors ----
 			$this->section = 'acfw_style';
-			$this->add_color( $wp_customize, 'acfw_accent_color', '#2563eb', __( 'Accent color', 'account-customizer-for-woocommerce' ) );
-			$this->add_color( $wp_customize, 'acfw_text_color', '#383838', __( 'Text color', 'account-customizer-for-woocommerce' ) );
-			$this->add_color( $wp_customize, 'acfw_active_color', '', __( 'Active color', 'account-customizer-for-woocommerce' ) );
-			$this->add_color( $wp_customize, 'acfw_menu_bg', '', __( 'Menu item background', 'account-customizer-for-woocommerce' ) );
-			$this->add_color( $wp_customize, 'acfw_hover_bg', '', __( 'Hover background', 'account-customizer-for-woocommerce' ) );
-			$this->add_slider( $wp_customize, 'acfw_menu_radius', 8, __( 'Corner radius', 'account-customizer-for-woocommerce' ), 0, 24 );
-			$this->add_slider( $wp_customize, 'acfw_menu_gap', 4, __( 'Item spacing', 'account-customizer-for-woocommerce' ), 0, 24 );
-			$this->add_slider( $wp_customize, 'acfw_item_padding', 11, __( 'Item padding', 'account-customizer-for-woocommerce' ), 4, 28 );
-			$this->add_slider( $wp_customize, 'acfw_font_size', 15, __( 'Font size', 'account-customizer-for-woocommerce' ), 11, 22 );
+			$this->add_color( $wp_customize, 'acfw_accent_color', '#2563eb', __( 'Accent color', 'my-account-customizer' ) );
+			$this->add_color( $wp_customize, 'acfw_text_color', '#383838', __( 'Text color', 'my-account-customizer' ) );
+			$this->add_color( $wp_customize, 'acfw_active_color', '', __( 'Active color', 'my-account-customizer' ) );
+			$this->add_color( $wp_customize, 'acfw_menu_bg', '', __( 'Menu item background', 'my-account-customizer' ) );
+			$this->add_color( $wp_customize, 'acfw_hover_bg', '', __( 'Hover background', 'my-account-customizer' ) );
+			$this->add_slider( $wp_customize, 'acfw_menu_radius', 8, __( 'Corner radius', 'my-account-customizer' ), 0, 24 );
+			$this->add_slider( $wp_customize, 'acfw_menu_gap', 4, __( 'Item spacing', 'my-account-customizer' ), 0, 24 );
+			$this->add_slider( $wp_customize, 'acfw_item_padding', 11, __( 'Item padding', 'my-account-customizer' ), 4, 28 );
+			$this->add_slider( $wp_customize, 'acfw_font_size', 15, __( 'Font size', 'my-account-customizer' ), 11, 22 );
 			$this->add_buttonset(
 				$wp_customize,
 				'acfw_font_weight',
 				'500',
-				__( 'Font weight', 'account-customizer-for-woocommerce' ),
+				__( 'Font weight', 'my-account-customizer' ),
 				array(
-					'400' => __( 'Normal', 'account-customizer-for-woocommerce' ),
-					'500' => __( 'Medium', 'account-customizer-for-woocommerce' ),
-					'600' => __( 'Bold', 'account-customizer-for-woocommerce' ),
+					'400' => __( 'Normal', 'my-account-customizer' ),
+					'500' => __( 'Medium', 'my-account-customizer' ),
+					'600' => __( 'Bold', 'my-account-customizer' ),
 				)
 			);
 			$this->add_buttonset(
 				$wp_customize,
 				'acfw_font_family',
 				'inherit',
-				__( 'Font family', 'account-customizer-for-woocommerce' ),
+				__( 'Font family', 'my-account-customizer' ),
 				array(
-					'inherit' => __( 'Theme', 'account-customizer-for-woocommerce' ),
-					'system'  => __( 'System', 'account-customizer-for-woocommerce' ),
-					'serif'   => __( 'Serif', 'account-customizer-for-woocommerce' ),
-					'mono'    => __( 'Mono', 'account-customizer-for-woocommerce' ),
+					'inherit' => __( 'Theme', 'my-account-customizer' ),
+					'system'  => __( 'System', 'my-account-customizer' ),
+					'serif'   => __( 'Serif', 'my-account-customizer' ),
+					'mono'    => __( 'Mono', 'my-account-customizer' ),
 				)
 			);
 			$this->add_buttonset(
 				$wp_customize,
 				'acfw_color_scheme',
 				'light',
-				__( 'Color scheme', 'account-customizer-for-woocommerce' ),
+				__( 'Color scheme', 'my-account-customizer' ),
 				array(
-					'auto'  => __( 'Auto ( follow visitor OS )', 'account-customizer-for-woocommerce' ),
-					'light' => __( 'Light', 'account-customizer-for-woocommerce' ),
-					'dark'  => __( 'Dark', 'account-customizer-for-woocommerce' ),
+					'auto'  => __( 'Auto ( follow visitor OS )', 'my-account-customizer' ),
+					'light' => __( 'Light', 'my-account-customizer' ),
+					'dark'  => __( 'Dark', 'my-account-customizer' ),
 				)
 			);
-			$this->add_css( $wp_customize, 'acfw_custom_css', __( 'Custom CSS', 'account-customizer-for-woocommerce' ) );
+			$this->add_css( $wp_customize, 'acfw_custom_css', __( 'Custom CSS', 'my-account-customizer' ) );
 
 			// ---- Avatar ----
 			$this->section = 'acfw_avatar';
-			$this->add_toggle( $wp_customize, 'acfw_avatar_enable', 'no', __( 'Show avatar', 'account-customizer-for-woocommerce' ) );
-			$this->add_image( $wp_customize, 'acfw_avatar_image', '', __( 'Custom avatar image', 'account-customizer-for-woocommerce' ), __( 'Overrides the gravatar. Leave empty to use the customer avatar.', 'account-customizer-for-woocommerce' ) );
+			$this->add_toggle( $wp_customize, 'acfw_avatar_enable', 'no', __( 'Show avatar', 'my-account-customizer' ) );
+			$this->add_image( $wp_customize, 'acfw_avatar_image', '', __( 'Custom avatar image', 'my-account-customizer' ), __( 'Overrides the gravatar. Leave empty to use the customer avatar.', 'my-account-customizer' ) );
 			$this->add_image_radio(
 				$wp_customize,
 				'acfw_avatar_shape',
 				'circle',
-				__( 'Avatar shape', 'account-customizer-for-woocommerce' ),
+				__( 'Avatar shape', 'my-account-customizer' ),
 				array(
 					'circle' => array(
-						'name'  => __( 'Circle', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Circle', 'my-account-customizer' ),
 						'image' => $this->img( 'circle-profile.svg' ),
 					),
 					'square' => array(
-						'name'  => __( 'Square', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Square', 'my-account-customizer' ),
 						'image' => $this->img( 'square-profile.svg' ),
 					),
 				)
@@ -258,27 +258,27 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 				$wp_customize,
 				'acfw_avatar_align',
 				'center',
-				__( 'Avatar alignment', 'account-customizer-for-woocommerce' ),
+				__( 'Avatar alignment', 'my-account-customizer' ),
 				array(
 					'left'   => array(
-						'name'  => __( 'Left', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Left', 'my-account-customizer' ),
 						'image' => $this->img( 'align-left.svg' ),
 					),
 					'center' => array(
-						'name'  => __( 'Center', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Center', 'my-account-customizer' ),
 						'image' => $this->img( 'align-center.svg' ),
 					),
 					'right'  => array(
-						'name'  => __( 'Right', 'account-customizer-for-woocommerce' ),
+						'name'  => __( 'Right', 'my-account-customizer' ),
 						'image' => $this->img( 'align-right.svg' ),
 					),
 				)
 			);
-			$this->add_slider( $wp_customize, 'acfw_avatar_size', 72, __( 'Avatar size', 'account-customizer-for-woocommerce' ), 32, 160 );
-			$this->add_toggle( $wp_customize, 'acfw_avatar_show_name', 'yes', __( 'Show display name', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_avatar_show_role', 'no', __( 'Show user role', 'account-customizer-for-woocommerce' ) );
-			$this->add_toggle( $wp_customize, 'acfw_avatar_upload', 'no', __( 'Let customers upload their own picture', 'account-customizer-for-woocommerce' ) );
-			$this->add_slider( $wp_customize, 'acfw_avatar_upload_max', 2048, __( 'Maximum upload size (KB)', 'account-customizer-for-woocommerce' ), 256, 8192 );
+			$this->add_slider( $wp_customize, 'acfw_avatar_size', 72, __( 'Avatar size', 'my-account-customizer' ), 32, 160 );
+			$this->add_toggle( $wp_customize, 'acfw_avatar_show_name', 'yes', __( 'Show display name', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_avatar_show_role', 'no', __( 'Show user role', 'my-account-customizer' ) );
+			$this->add_toggle( $wp_customize, 'acfw_avatar_upload', 'no', __( 'Let customers upload their own picture', 'my-account-customizer' ) );
+			$this->add_slider( $wp_customize, 'acfw_avatar_upload_max', 2048, __( 'Maximum upload size (KB)', 'my-account-customizer' ), 256, 8192 );
 
 			// Show avatar sub-options only when the avatar is enabled.
 			$avatar_deps = array(

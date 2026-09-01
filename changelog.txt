@@ -1,0 +1,21 @@
+*** My Account Customizer Changelog ***
+
+2026-09-01 - version 1.0.0
+* First public release.
+* New - Menu builder: endpoints, pages, links and collapsible groups, drag-to-reorder, per-item icons (Font Awesome, Dashicons or uploaded).
+* New - Per-endpoint content with the Classic or the Gutenberg block editor, placed before, after or instead of the default WooCommerce output.
+* New - Visibility rules by user role, date range and purchased product.
+* New - Starter design templates applied in one click.
+* New - Customizer panel (Avatar / Navigation / Layout & Colors) with live preview, reusable presets and a Custom CSS field.
+* New - Customer avatar upload with extension, MIME and image validation, overriding the Gravatar site-wide.
+* New - Buy again tab and dashboard tile for one-click reordering of previously purchased products.
+* New - Recently viewed tab.
+* New - Order tracking summary on the dashboard, auto-detecting WooCommerce Shipment Tracking and falling back to a status timeline.
+* New - Dashboard stats, orders-by-status chart, quick-link tiles and a profile completeness meter.
+* New - Dashboard notice: an admin-authored message shown at the top of the account dashboard, with style options and optional dismissal.
+* New - Per-endpoint promotional banners with role targeting.
+* New - Smart tags for personalised labels and content ({display_name}, {first_name}, {order_count}, {last_login} and more).
+* New - Shortcode, block and widget for rendering the account menu anywhere.
+* New - Optional AJAX endpoint navigation, login and logout redirects, and a configurable landing endpoint.
+* New - JSON import / export of the whole configuration, plus a full reset tool.
+* New - WPML and Polylang string registration; HPOS and cart/checkout blocks compatibility declared.

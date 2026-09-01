@@ -79,16 +79,16 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 				<div class="acfw-uploader-box <?php echo $has ? 'has-image' : ''; ?>">
 					<div class="acfw-uploader-empty">
 						<span class="dashicons dashicons-upload"></span>
-						<p><?php esc_html_e( 'Drag & drop or', 'account-customizer-for-woocommerce' ); ?> <button type="button" class="acfw-uploader-browse acfw-media-btn"><?php esc_html_e( 'upload a file', 'account-customizer-for-woocommerce' ); ?></button></p>
+						<p><?php esc_html_e( 'Drag & drop or', 'my-account-customizer' ); ?> <button type="button" class="acfw-uploader-browse acfw-media-btn"><?php esc_html_e( 'upload a file', 'my-account-customizer' ); ?></button></p>
 					</div>
 					<div class="acfw-uploader-preview">
 						<img class="acfw-media-preview" src="<?php echo esc_url( $value ); ?>" alt="" <?php echo $has ? '' : 'hidden'; ?> />
-						<button type="button" class="acfw-uploader-remove" title="<?php esc_attr_e( 'Remove', 'account-customizer-for-woocommerce' ); ?>">&times;</button>
+						<button type="button" class="acfw-uploader-remove" title="<?php esc_attr_e( 'Remove', 'my-account-customizer' ); ?>">&times;</button>
 					</div>
 				</div>
 				<div class="acfw-media-row">
-					<input type="url" name="<?php echo esc_attr( $name ); ?>" class="acfw-media-input" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php esc_attr_e( 'Paste image URL', 'account-customizer-for-woocommerce' ); ?>" />
-					<button type="button" class="button acfw-media-btn"><span class="dashicons dashicons-admin-media"></span> <?php esc_html_e( 'Media library', 'account-customizer-for-woocommerce' ); ?></button>
+					<input type="url" name="<?php echo esc_attr( $name ); ?>" class="acfw-media-input" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php esc_attr_e( 'Paste image URL', 'my-account-customizer' ); ?>" />
+					<button type="button" class="button acfw-media-btn"><span class="dashicons dashicons-admin-media"></span> <?php esc_html_e( 'Media library', 'my-account-customizer' ); ?></button>
 				</div>
 			</div>
 			<?php
@@ -107,7 +107,7 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 			?>
 			<span class="acfw-swatch">
 				<span class="acfw-bcp-root">
-					<button type="button" class="acfw-bcp-control" aria-label="<?php echo esc_attr( $label ? $label : __( 'Select colour', 'account-customizer-for-woocommerce' ) ); ?>">
+					<button type="button" class="acfw-bcp-control" aria-label="<?php echo esc_attr( $label ? $label : __( 'Select colour', 'my-account-customizer' ) ); ?>">
 						<span class="acfw-bcp-swatch" style="--acfw-bcp-color: <?php echo esc_attr( $value ? $value : 'transparent' ); ?>;"></span>
 					</button>
 					<input type="hidden" name="<?php echo esc_attr( $name ); ?>" class="acfw-bcp-input" value="<?php echo esc_attr( $value ); ?>" />

@@ -82,14 +82,14 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 							</ul>
 						</div>
 						<button type="button" class="button acfw-add-banner-btn acfw-add-banner-below">
-							<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add banner', 'account-customizer-for-woocommerce' ); ?>
+							<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add banner', 'my-account-customizer' ); ?>
 						</button>
 					</div>
 
 					<div class="acfw-card acfw-builder-detail">
 						<div class="acfw-detail-empty">
 							<span class="dashicons dashicons-arrow-left-alt"></span>
-							<p><?php esc_html_e( 'Select a banner on the left to edit it, or click "Add banner" above to create one.', 'account-customizer-for-woocommerce' ); ?></p>
+							<p><?php esc_html_e( 'Select a banner on the left to edit it, or click "Add banner" above to create one.', 'my-account-customizer' ); ?></p>
 						</div>
 
 						<?php $this->render_banner_form( '', ACFW_Banners::defaults(), true ); ?>
@@ -117,7 +117,7 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 					<span class="acfw-node-title"><?php echo esc_html( $banner['title'] ? $banner['title'] : $slug ); ?></span>
 					<span class="acfw-node-badge acfw-badge-<?php echo esc_attr( $banner['type'] ); ?>"><?php echo esc_html( $banner['type'] ); ?></span>
 					<span class="acfw-node-spacer"></span>
-					<button type="button" class="acfw-banner-row-delete dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'account-customizer-for-woocommerce' ); ?>" data-slug="<?php echo esc_attr( $slug ); ?>"></button>
+					<button type="button" class="acfw-banner-row-delete dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'my-account-customizer' ); ?>" data-slug="<?php echo esc_attr( $slug ); ?>"></button>
 				</div>
 			</li>
 			<?php
@@ -145,26 +145,26 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 
 				<div class="acfw-detail-head">
 					<?php echo $this->icon_markup( $banner, 'acfw-detail-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<h2 class="acfw-detail-title"><?php echo esc_html( $is_new ? __( 'Add a banner', 'account-customizer-for-woocommerce' ) : ( $banner['title'] ? $banner['title'] : $slug ) ); ?></h2>
+					<h2 class="acfw-detail-title"><?php echo esc_html( $is_new ? __( 'Add a banner', 'my-account-customizer' ) : ( $banner['title'] ? $banner['title'] : $slug ) ); ?></h2>
 					<?php if ( ! $is_new ) : ?>
 						<span class="acfw-node-badge acfw-badge-<?php echo esc_attr( $banner['type'] ); ?>"><?php echo esc_html( $banner['type'] ); ?></span>
 					<?php endif; ?>
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Banner name', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner name', 'my-account-customizer' ); ?></label>
 					<input type="text" name="banner_title" value="<?php echo esc_attr( $banner['title'] ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Banner type', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner type', 'my-account-customizer' ); ?></label>
 					<?php
 					$this->buttonset(
 						'banner_type',
 						$banner['type'],
 						array(
-							'widget' => __( 'Widget', 'account-customizer-for-woocommerce' ),
-							'image'  => __( 'Image', 'account-customizer-for-woocommerce' ),
+							'widget' => __( 'Widget', 'my-account-customizer' ),
+							'image'  => __( 'Image', 'my-account-customizer' ),
 						),
 						'widget'
 					);
@@ -172,15 +172,15 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Banner icon', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner icon', 'my-account-customizer' ); ?></label>
 					<?php $b_icon_src = ( 'upload' === ( $banner['icon_source'] ?? 'choose' ) || ! empty( $banner['icon_url'] ) ) ? 'upload' : 'choose'; ?>
 					<div class="acfw-icon-source">
-						<label class="acfw-radio-card <?php echo 'choose' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="choose" <?php checked( $b_icon_src, 'choose' ); ?> /><span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'account-customizer-for-woocommerce' ); ?></label>
-						<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'account-customizer-for-woocommerce' ); ?></label>
+						<label class="acfw-radio-card <?php echo 'choose' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="choose" <?php checked( $b_icon_src, 'choose' ); ?> /><span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'my-account-customizer' ); ?></label>
+						<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'my-account-customizer' ); ?></label>
 					</div>
 					<div class="acfw-icon-choose" <?php echo 'choose' === $b_icon_src ? '' : 'hidden'; ?>>
 						<select name="banner_icon" class="acfw-icon-select">
-							<option value=""><?php esc_html_e( '— Select an icon —', 'account-customizer-for-woocommerce' ); ?></option>
+							<option value=""><?php esc_html_e( '— Select an icon —', 'my-account-customizer' ); ?></option>
 							<?php foreach ( $this->icon_choices() as $ic => $ic_label ) : ?>
 								<option value="<?php echo esc_attr( $ic ); ?>" <?php selected( $banner['icon'] ?? '', $ic ); ?>><?php echo esc_html( $ic_label ); ?></option>
 							<?php endforeach; ?>
@@ -192,27 +192,27 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Icon width (px)', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Icon width (px)', 'my-account-customizer' ); ?></label>
 					<input type="number" name="banner_icon_width" min="16" max="100" value="<?php echo esc_attr( $banner['icon_width'] ?? 40 ); ?>" />
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Widget width (px)', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Widget width (px)', 'my-account-customizer' ); ?></label>
 					<input type="number" name="banner_widget_width" min="200" max="700" value="<?php echo esc_attr( $banner['widget_width'] ?? 250 ); ?>" />
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Widget text', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Widget text', 'my-account-customizer' ); ?></label>
 					<textarea name="banner_content" rows="3"><?php echo esc_textarea( $banner['content'] ); ?></textarea>
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-image">
-					<label><?php esc_html_e( 'Image', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Image', 'my-account-customizer' ); ?></label>
 					<?php $this->uploader( 'banner_image_url', $banner['image_url'] ); ?>
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Banner colors', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner colors', 'my-account-customizer' ); ?></label>
 					<div class="acfw-swatch-row">
 						<?php foreach ( ACFW_Banners::color_fields() as $ckey => $clabel ) : ?>
 							<?php $this->color_control( 'banner_' . $ckey, $banner[ $ckey ] ?? '', $clabel ); ?>
@@ -221,20 +221,20 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Show item-count badge', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Show item-count badge', 'my-account-customizer' ); ?></label>
 					<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="banner_show_count" value="yes" <?php checked( 'yes', $banner['show_count'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Banner link', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Banner link', 'my-account-customizer' ); ?></label>
 					<?php
 					$this->buttonset(
 						'banner_link_type',
 						$banner['link_type'] ?? 'none',
 						array(
-							'none'     => __( 'None', 'account-customizer-for-woocommerce' ),
-							'endpoint' => __( 'Endpoint', 'account-customizer-for-woocommerce' ),
-							'external' => __( 'External URL', 'account-customizer-for-woocommerce' ),
+							'none'     => __( 'None', 'my-account-customizer' ),
+							'endpoint' => __( 'Endpoint', 'my-account-customizer' ),
+							'external' => __( 'External URL', 'my-account-customizer' ),
 						),
 						'none'
 					);
@@ -242,9 +242,9 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				</div>
 
 				<div class="acfw-field acfw-blink acfw-blink-endpoint">
-					<label><?php esc_html_e( 'Link endpoint', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Link endpoint', 'my-account-customizer' ); ?></label>
 					<select name="banner_link_endpoint">
-						<option value=""><?php esc_html_e( '— Select —', 'account-customizer-for-woocommerce' ); ?></option>
+						<option value=""><?php esc_html_e( '— Select —', 'my-account-customizer' ); ?></option>
 						<?php foreach ( ACFW()->items->get_items() as $ep_key => $ep ) : ?>
 							<?php
 							if ( 'endpoint' !== ( $ep['type'] ?? 'endpoint' ) ) {
@@ -256,25 +256,25 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				</div>
 
 				<div class="acfw-field acfw-blink acfw-blink-external">
-					<label><?php esc_html_e( 'External URL', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'External URL', 'my-account-customizer' ); ?></label>
 					<input type="url" name="banner_link" value="<?php echo esc_attr( $banner['link'] ); ?>" placeholder="https://…" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Show banner to', 'account-customizer-for-woocommerce' ); ?></label>
+					<label><?php esc_html_e( 'Show banner to', 'my-account-customizer' ); ?></label>
 					<select name="banner_roles[]" multiple size="4" class="acfw-roles-select">
 						<?php foreach ( $roles as $role_key => $role_label ) : ?>
 							<option value="<?php echo esc_attr( $role_key ); ?>" <?php selected( in_array( $role_key, $sel_roles, true ) ); ?>><?php echo esc_html( $role_label ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show to all users.', 'account-customizer-for-woocommerce' ); ?></p>
+					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show to all users.', 'my-account-customizer' ); ?></p>
 				</div>
 
 				<div class="acfw-form-footer">
 					<?php if ( ! $is_new ) : ?>
-						<button type="submit" class="button acfw-banner-delete" data-slug="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Delete', 'account-customizer-for-woocommerce' ); ?></button>
+						<button type="submit" class="button acfw-banner-delete" data-slug="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Delete', 'my-account-customizer' ); ?></button>
 					<?php endif; ?>
-					<button type="submit" class="button button-primary"><?php echo $is_new ? esc_html__( 'Create banner', 'account-customizer-for-woocommerce' ) : esc_html__( 'Save banner', 'account-customizer-for-woocommerce' ); ?></button>
+					<button type="submit" class="button button-primary"><?php echo $is_new ? esc_html__( 'Create banner', 'my-account-customizer' ) : esc_html__( 'Save banner', 'my-account-customizer' ); ?></button>
 				</div>
 			</form>
 			</div>

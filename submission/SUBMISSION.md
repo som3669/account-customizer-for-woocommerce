@@ -1,6 +1,6 @@
 # WooCommerce Marketplace — Submit Product form answers
 
-Zip to upload: `dist/account-customizer-for-woocommerce.zip` (291 KB)
+Zip to upload: `dist/my-account-customizer.zip` (291 KB)
 
 ---
 
@@ -8,9 +8,11 @@ Zip to upload: `dist/account-customizer-for-woocommerce.zip` (291 KB)
 
 **Name** (4–60 chars)
 ```
-Account Customizer for WooCommerce
+My Account Customizer
 ```
-(34 chars. "for WooCommerce" is descriptive use — allowed by the trademark guidelines. Does not start with "Woo/WooCommerce".)
+(21 chars. The Marketplace rejected the earlier name: product names may not contain
+"Woo" or "WooCommerce", even descriptively. The description fields may still name
+WooCommerce freely — only the name field is restricted.)
 
 **Category** (primary)
 ```
@@ -30,7 +32,7 @@ Redesign the WooCommerce My Account page: custom endpoints, block editor content
 
 **Describe your product** (3–5 sentences)
 ```
-Account Customizer for WooCommerce turns the default My Account page into a branded customer dashboard. Store owners build unlimited menu endpoints (endpoint, page, link or grouped), add custom content with either the Classic or the native Gutenberg block editor, and apply one-click design templates or fine-tune everything (layout, colours, typography, avatar, active indicators) live in the WordPress Customizer. Customers get modern touches their store previously lacked: their own uploaded profile picture, a "Buy again" one-click reorder tab, a Recently Viewed tab, an order-tracking summary, and per-endpoint promotional banners. Every design choice is visual and preview-driven, so no code or theme edits are required. It is translation-ready (WPML and Polylang), HPOS and cart/checkout-blocks compatible, and ships as a self-contained plugin with no external service calls.
+My Account Customizer turns the default My Account page into a branded customer dashboard. Store owners build unlimited menu endpoints (endpoint, page, link or grouped), add custom content with either the Classic or the native Gutenberg block editor, and apply one-click design templates or fine-tune everything (layout, colours, typography, avatar, active indicators) live in the WordPress Customizer. Customers get modern touches their store previously lacked: their own uploaded profile picture, a "Buy again" one-click reorder tab, a Recently Viewed tab, an order-tracking summary, and per-endpoint promotional banners. Every design choice is visual and preview-driven, so no code or theme edits are required. It is translation-ready (WPML and Polylang), HPOS and cart/checkout-blocks compatible, and ships as a self-contained plugin with no external service calls.
 ```
 
 **How does your product compare to existing solutions?** (2–3 sentences)
@@ -58,6 +60,20 @@ No
 ```
 (Matches the segment: KoalaApps $49, Extendons $49, ThemeGrill $59. Pick the closest tier the dropdown offers.)
 
+Monetization model, per the Marketplace expectations: a **single-site annual
+licence** under the standard paid-licence model. No SaaS backend, no per-order or
+usage fee, no external subscription, no paid add-on, and one price for the whole
+feature set. The Billing API and a partnership agreement are only needed for
+integration/SaaS plugins, so neither applies here.
+
+Two constraints to respect later:
+- **Price parity.** If the plugin is ever sold direct as well, the single-site
+  price there must match this listing.
+- **One price per listing.** No Basic/Pro tiers inside a single listing; if a
+  multi-site licence is sold elsewhere, the listing tracks the single-site fee.
+
+Revenue share is 70% to the vendor.
+
 ---
 
 ## Languages
@@ -66,7 +82,7 @@ No
 ```
 English
 ```
-(The plugin is fully translation-ready — .pot-ready text domain `account-customizer-for-woocommerce` + WPML/Polylang string registration. Add other languages only if you ship actual translation files.)
+(The plugin is fully translation-ready — .pot-ready text domain `my-account-customizer` + WPML/Polylang string registration. Add other languages only if you ship actual translation files.)
 
 ---
 
@@ -159,7 +175,7 @@ those live in wp-admin. Never publish admin credentials.
 
 **Product slug**
 ```
-account-customizer-for-woocommerce
+my-account-customizer
 ```
 (Matches the zip's top-level folder name — required.)
 
@@ -170,7 +186,7 @@ Unchecked (No)
 
 **Zip file**
 ```
-Upload: dist/account-customizer-for-woocommerce.zip
+Upload: dist/my-account-customizer.zip
 ```
 
 ---
@@ -179,13 +195,67 @@ Upload: dist/account-customizer-for-woocommerce.zip
 
 **Notes for reviewers**
 ```
-- All commerce features (Buy Again, Recently Viewed, Order Tracking) and customer avatar upload are OFF by default; enable them in Settings > General and the Customizer > Avatar section.
-- No external/third-party service calls. Google Fonts are not loaded remotely; no telemetry/analytics.
-- HPOS (custom order tables) and cart/checkout blocks compatibility are declared.
-- Security: all admin actions are gated by a single nonce + manage_woocommerce capability; front-end AJAX (avatar upload, reorder) checks nonce + login and validates ownership/purchase; uploads are MIME/size/getimagesize-validated; reorder only allows products the customer actually purchased.
-- Bundled third-party libraries with their licenses included: Font Awesome 5 Free (CC BY 4.0 / SIL OFL / MIT) and Select2 (MIT). Plugin is GPLv2+.
-- Translation-ready; registers strings for WPML and Polylang.
-- To exercise commerce features, create a customer with a Completed order containing a purchasable product (reviewer test data can be seeded on the demo site).
+Everything optional ships OFF by default, so a fresh activation changes nothing
+about the store: Buy again, Recently viewed, Order tracking, dashboard stats,
+quick-link tiles, the profile meter and customer avatar upload all start
+disabled. Enable them in "My Account > Settings > General" and under
+"Customizer > My Account > Avatar".
+
+Scope and behaviour
+- The plugin only touches the WooCommerce My Account area. It replaces the
+  account menu and endpoint output through WooCommerce's own hooks; no theme
+  template is copied or modified, and deactivating restores the stock page while
+  keeping the configuration.
+- Custom endpoints are registered as WooCommerce account endpoints, so rewrite
+  rules are flushed on activation and on save, not on every page load.
+- Orders are read only through the WooCommerce CRUD API. HPOS (custom order
+  tables) and cart/checkout blocks compatibility are both declared.
+
+No external dependencies
+- No third-party service calls, no telemetry, no analytics, no remote fonts.
+  Font Awesome 5 Free (CC BY 4.0 / SIL OFL / MIT) and Select2 (MIT) are bundled
+  locally with their licence files. The plugin is GPLv2 or later.
+- Optional integration: the order-tracking widget reads the
+  _wc_shipment_tracking_items meta written by the Shipment Tracking extension,
+  and falls back to a status timeline when that plugin is absent.
+
+Security
+- Every admin write is gated by a nonce plus the manage_woocommerce capability,
+  verified centrally before any tab handler runs.
+- Front-end AJAX (avatar upload/remove, one-click reorder) checks a nonce and
+  requires a logged-in user, and validates ownership: Buy again only offers
+  products that customer actually purchased on a completed order, re-checked at
+  add-to-cart time.
+- Avatar uploads are validated by extension, real MIME (wp_check_filetype_and_ext)
+  and getimagesize, restricted to JPG/PNG/GIF/WebP under an admin-set size limit.
+- Rich content is filtered with wp_kses_post on save, and re-filtered on import
+  for users without unfiltered_html, so an import file cannot smuggle scripts in.
+- The two direct database queries (option export and full reset) are prefix-
+  scoped and prepared; there is no user input in either.
+
+Privacy and data
+- Stores options prefixed acfw_ plus two user meta keys (acfw_avatar_id,
+  acfw_last_login). Registers a personal-data exporter and eraser for the
+  uploaded avatar.
+- Deleting the plugin removes every acfw_ option, both meta keys and the avatar
+  attachments it stored. Deactivating removes nothing.
+
+Quality
+- Translation-ready: languages/my-account-customizer.pot ships with 328 strings,
+  plus WPML and Polylang string registration for admin-entered text.
+- PHPCS (WordPress-Extra) passes with zero errors and zero warnings. 50 unit
+  tests cover the output sanitisers and the import filter. CI lints the tree on
+  PHP 7.4 through 8.3.
+- Verified against WordPress 7.0.4 and WooCommerce 11.0.1 on PHP 8.3.
+
+Monetization: a single-site annual licence sold through the Marketplace. There
+is no SaaS backend, no per-order or usage fee, no external subscription, and no
+paid add-on - every feature described is included in the one price, and the
+plugin is not sold anywhere else.
+
+Testing the commerce features needs a customer with a Completed order containing
+a purchasable product. The demo site is seeded with exactly that, and the login
+links in the Setup instructions land you straight in it.
 ```
 
 ---
@@ -200,11 +270,11 @@ Upload: dist/account-customizer-for-woocommerce.zip
       (captions match the `== Screenshots ==` block in readme.txt; more in `screenshots/extras/`).
       Still missing: the listing **banner/header** graphic, if the form asks for one.
 - [ ] Tick "I agree to the terms of the Partner Agreement".
-- [x] `qit woo:validate-zip dist/account-customizer-for-woocommerce.zip` — **passes** ("ZIP file content is valid").
+- [x] `qit woo:validate-zip dist/my-account-customizer.zip` — **passes** ("ZIP file content is valid").
 - [ ] QIT cloud tests. These cannot run until the product exists in the partner portal: with an
       unregistered slug every run fails with *"Could not find Woo Extension with slug
-      account-customizer-for-woocommerce"*. So create the product entry first, then run:
-      `qit run:security <slug> --zip=dist/account-customizer-for-woocommerce.zip` and the same for
+      my-account-customizer"*. So create the product entry first, then run:
+      `qit run:security <slug> --zip=dist/my-account-customizer.zip` and the same for
       `run:phpstan`, `run:validation`, `run:plugin-check`, `run:phpcompatibility`.
       Note `run:phpcs` no longer exists in current QIT — `run:validation` and `run:plugin-check`
       replace it. `run:activation` and any E2E run need **WSL** on Windows.

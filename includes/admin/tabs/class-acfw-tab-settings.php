@@ -80,15 +80,15 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 			$section  = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$sections = array(
 				'general' => array(
-					'label' => __( 'General', 'account-customizer-for-woocommerce' ),
+					'label' => __( 'General', 'my-account-customizer' ),
 					'icon'  => 'admin-settings',
 				),
 				'presets' => array(
-					'label' => __( 'Presets & Reset', 'account-customizer-for-woocommerce' ),
+					'label' => __( 'Presets & Reset', 'my-account-customizer' ),
 					'icon'  => 'art',
 				),
 				'tools'   => array(
-					'label' => __( 'Import / Export', 'account-customizer-for-woocommerce' ),
+					'label' => __( 'Import / Export', 'my-account-customizer' ),
 					'icon'  => 'migrate',
 				),
 			);
@@ -116,7 +116,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 				<table class="form-table" role="presentation">
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'AJAX navigation', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'AJAX navigation', 'my-account-customizer' ); ?></th>
 							<td>
 								<div class="acfw-switch-row">
 									<label class="acfw-switch acfw-switch-lg">
@@ -124,13 +124,13 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 											<?php checked( 'yes', get_option( 'acfw_ajax_navigation', 'no' ) ); ?> />
 										<span class="acfw-switch-slider"></span>
 									</label>
-									<span class="acfw-control-hint"><?php esc_html_e( 'Load endpoints without a full page reload.', 'account-customizer-for-woocommerce' ); ?></span>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Load endpoints without a full page reload.', 'my-account-customizer' ); ?></span>
 								</div>
 							</td>
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Default endpoint', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Default endpoint', 'my-account-customizer' ); ?></th>
 							<td>
 								<select name="acfw_default_endpoint">
 									<?php
@@ -152,11 +152,11 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'After-login redirect', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'After-login redirect', 'my-account-customizer' ); ?></th>
 							<td>
 								<select name="acfw_login_redirect">
 									<?php $lr = get_option( 'acfw_login_redirect', '' ); ?>
-									<option value="" <?php selected( $lr, '' ); ?>><?php esc_html_e( 'Default (dashboard)', 'account-customizer-for-woocommerce' ); ?></option>
+									<option value="" <?php selected( $lr, '' ); ?>><?php esc_html_e( 'Default (dashboard)', 'my-account-customizer' ); ?></option>
 									<?php
 									foreach ( ACFW()->items->get_items() as $key => $item ) {
 										if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) ) {
@@ -170,34 +170,70 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'After-logout redirect', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'After-logout redirect', 'my-account-customizer' ); ?></th>
 							<td>
 								<?php $lo = get_option( 'acfw_logout_redirect', 'default' ); ?>
 								<select name="acfw_logout_redirect">
-									<option value="default" <?php selected( $lo, 'default' ); ?>><?php esc_html_e( 'Default', 'account-customizer-for-woocommerce' ); ?></option>
-									<option value="home" <?php selected( $lo, 'home' ); ?>><?php esc_html_e( 'Home page', 'account-customizer-for-woocommerce' ); ?></option>
-									<option value="login" <?php selected( $lo, 'login' ); ?>><?php esc_html_e( 'My Account (login)', 'account-customizer-for-woocommerce' ); ?></option>
+									<option value="default" <?php selected( $lo, 'default' ); ?>><?php esc_html_e( 'Default', 'my-account-customizer' ); ?></option>
+									<option value="home" <?php selected( $lo, 'home' ); ?>><?php esc_html_e( 'Home page', 'my-account-customizer' ); ?></option>
+									<option value="login" <?php selected( $lo, 'login' ); ?>><?php esc_html_e( 'My Account (login)', 'my-account-customizer' ); ?></option>
 								</select>
 							</td>
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Guest message', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Guest message', 'my-account-customizer' ); ?></th>
 							<td>
 								<textarea name="acfw_guest_message" rows="3" class="large-text"><?php echo esc_textarea( get_option( 'acfw_guest_message', '' ) ); ?></textarea>
-								<p class="acfw-hint"><?php esc_html_e( 'Shown above the login form for logged-out visitors.', 'account-customizer-for-woocommerce' ); ?></p>
+								<p class="acfw-hint"><?php esc_html_e( 'Shown above the login form for logged-out visitors.', 'my-account-customizer' ); ?></p>
 							</td>
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Track endpoint views', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Dashboard notice', 'my-account-customizer' ); ?></th>
+							<td>
+								<textarea name="acfw_dashboard_notice" rows="3" class="large-text"><?php echo esc_textarea( get_option( 'acfw_dashboard_notice', '' ) ); ?></textarea>
+								<p class="acfw-hint"><?php esc_html_e( 'Shown at the top of the account dashboard for logged-in customers. Leave empty to hide it. Smart tags work here, e.g. {first_name}.', 'my-account-customizer' ); ?></p>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Notice style', 'my-account-customizer' ); ?></th>
+							<td>
+								<?php
+								$this->buttonset(
+									'acfw_notice_style',
+									get_option( 'acfw_notice_style', 'info' ),
+									array(
+										'info'    => __( 'Info', 'my-account-customizer' ),
+										'success' => __( 'Success', 'my-account-customizer' ),
+										'warning' => __( 'Warning', 'my-account-customizer' ),
+										'plain'   => __( 'Plain', 'my-account-customizer' ),
+									),
+									'info'
+								);
+								?>
+								<div class="acfw-switch-row" style="margin-top:10px;">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="hidden" name="acfw_notice_dismiss" value="no" />
+										<input type="checkbox" name="acfw_notice_dismiss" value="yes" <?php checked( get_option( 'acfw_notice_dismiss', 'no' ), 'yes' ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span><?php esc_html_e( 'Let customers dismiss it', 'my-account-customizer' ); ?></span>
+								</div>
+								<p class="acfw-hint"><?php esc_html_e( 'A dismissed notice stays hidden in that browser until you edit its text.', 'my-account-customizer' ); ?></p>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Track endpoint views', 'my-account-customizer' ); ?></th>
 							<td>
 								<div class="acfw-switch-row">
 									<label class="acfw-switch acfw-switch-lg">
 										<input type="checkbox" name="acfw_track_views" value="yes" <?php checked( 'yes', get_option( 'acfw_track_views', 'no' ) ); ?> />
 										<span class="acfw-switch-slider"></span>
 									</label>
-									<span class="acfw-control-hint"><?php esc_html_e( 'Count how often each endpoint is viewed.', 'account-customizer-for-woocommerce' ); ?></span>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Count how often each endpoint is viewed.', 'my-account-customizer' ); ?></span>
 								</div>
 								<?php
 								$views = get_option( 'acfw_endpoint_views', array() );
@@ -214,47 +250,47 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Buy Again', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Buy Again', 'my-account-customizer' ); ?></th>
 							<td>
 								<div class="acfw-switch-row">
 									<label class="acfw-switch acfw-switch-lg">
 										<input type="checkbox" name="acfw_buyagain_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_buyagain_enable', 'no' ) ); ?> />
 										<span class="acfw-switch-slider"></span>
 									</label>
-									<span class="acfw-control-hint"><?php esc_html_e( 'Add a "Buy again" menu tab and dashboard tile for one-click reordering of past products.', 'account-customizer-for-woocommerce' ); ?></span>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Add a "Buy again" menu tab and dashboard tile for one-click reordering of past products.', 'my-account-customizer' ); ?></span>
 								</div>
 							</td>
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Recently viewed', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Recently viewed', 'my-account-customizer' ); ?></th>
 							<td>
 								<div class="acfw-switch-row">
 									<label class="acfw-switch acfw-switch-lg">
 										<input type="checkbox" name="acfw_recent_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_recent_enable', 'no' ) ); ?> />
 										<span class="acfw-switch-slider"></span>
 									</label>
-									<span class="acfw-control-hint"><?php esc_html_e( 'Show a Recently Viewed products tile on the dashboard.', 'account-customizer-for-woocommerce' ); ?></span>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Show a Recently Viewed products tile on the dashboard.', 'my-account-customizer' ); ?></span>
 								</div>
 							</td>
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Order tracking', 'account-customizer-for-woocommerce' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Order tracking', 'my-account-customizer' ); ?></th>
 							<td>
 								<div class="acfw-switch-row">
 									<label class="acfw-switch acfw-switch-lg">
 										<input type="checkbox" name="acfw_tracking_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_tracking_enable', 'no' ) ); ?> />
 										<span class="acfw-switch-slider"></span>
 									</label>
-									<span class="acfw-control-hint"><?php esc_html_e( 'Show a tracking summary of recent orders on the dashboard ( auto-detects WooCommerce Shipment Tracking ).', 'account-customizer-for-woocommerce' ); ?></span>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Show a tracking summary of recent orders on the dashboard ( auto-detects WooCommerce Shipment Tracking ).', 'my-account-customizer' ); ?></span>
 								</div>
 							</td>
 						</tr>
 
 				</table>
 				<div class="acfw-form-footer">
-					<?php submit_button( __( 'Save changes', 'account-customizer-for-woocommerce' ), 'primary', 'submit', false ); ?>
+					<?php submit_button( __( 'Save changes', 'my-account-customizer' ), 'primary', 'submit', false ); ?>
 				</div>
 			</form>
 			</div><!-- .acfw-card -->
@@ -263,13 +299,13 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 			<?php if ( 'presets' === $section ) : ?>
 			<div class="acfw-card">
 				<div class="acfw-presets">
-					<h2 class="acfw-section-title"><?php esc_html_e( 'Design presets', 'account-customizer-for-woocommerce' ); ?></h2>
-					<p class="acfw-hint"><?php esc_html_e( 'Save the current design as a named preset, then apply it anytime.', 'account-customizer-for-woocommerce' ); ?></p>
+					<h2 class="acfw-section-title"><?php esc_html_e( 'Design presets', 'my-account-customizer' ); ?></h2>
+					<p class="acfw-hint"><?php esc_html_e( 'Save the current design as a named preset, then apply it anytime.', 'my-account-customizer' ); ?></p>
 					<form method="post" class="acfw-preset-save">
 						<?php wp_nonce_field( self::NONCE ); ?>
 						<input type="hidden" name="acfw_action" value="save_preset" />
-						<input type="text" name="preset_name" placeholder="<?php esc_attr_e( 'Preset name', 'account-customizer-for-woocommerce' ); ?>" required />
-						<button type="submit" class="button button-primary"><span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save current design', 'account-customizer-for-woocommerce' ); ?></button>
+						<input type="text" name="preset_name" placeholder="<?php esc_attr_e( 'Preset name', 'my-account-customizer' ); ?>" required />
+						<button type="submit" class="button button-primary"><span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save current design', 'my-account-customizer' ); ?></button>
 					</form>
 					<?php $presets = get_option( 'acfw_presets', array() ); ?>
 					<?php if ( ! empty( $presets ) && is_array( $presets ) ) : ?>
@@ -278,8 +314,8 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 								<li>
 									<span class="acfw-preset-name"><?php echo esc_html( $pdata['__label'] ?? $pslug ); ?></span>
 									<span class="acfw-preset-actions">
-										<form method="post"><?php wp_nonce_field( self::NONCE ); ?><input type="hidden" name="acfw_action" value="apply_preset" /><input type="hidden" name="preset_slug" value="<?php echo esc_attr( $pslug ); ?>" /><button type="submit" class="button"><?php esc_html_e( 'Apply', 'account-customizer-for-woocommerce' ); ?></button></form>
-										<form method="post"><?php wp_nonce_field( self::NONCE ); ?><input type="hidden" name="acfw_action" value="delete_preset" /><input type="hidden" name="preset_slug" value="<?php echo esc_attr( $pslug ); ?>" /><button type="submit" class="button acfw-preset-del"><?php esc_html_e( 'Delete', 'account-customizer-for-woocommerce' ); ?></button></form>
+										<form method="post"><?php wp_nonce_field( self::NONCE ); ?><input type="hidden" name="acfw_action" value="apply_preset" /><input type="hidden" name="preset_slug" value="<?php echo esc_attr( $pslug ); ?>" /><button type="submit" class="button"><?php esc_html_e( 'Apply', 'my-account-customizer' ); ?></button></form>
+										<form method="post"><?php wp_nonce_field( self::NONCE ); ?><input type="hidden" name="acfw_action" value="delete_preset" /><input type="hidden" name="preset_slug" value="<?php echo esc_attr( $pslug ); ?>" /><button type="submit" class="button acfw-preset-del"><?php esc_html_e( 'Delete', 'my-account-customizer' ); ?></button></form>
 									</span>
 								</li>
 							<?php endforeach; ?>
@@ -290,8 +326,8 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 				<form method="post" class="acfw-reset-form">
 					<?php wp_nonce_field( self::NONCE ); ?>
 					<input type="hidden" name="acfw_action" value="reset" />
-					<button type="submit" class="button acfw-reset-btn"><span class="dashicons dashicons-image-rotate"></span> <?php esc_html_e( 'Reset all settings', 'account-customizer-for-woocommerce' ); ?></button>
-					<span class="acfw-hint"><?php esc_html_e( 'Restore endpoints, design and banners to defaults. Cannot be undone.', 'account-customizer-for-woocommerce' ); ?></span>
+					<button type="submit" class="button acfw-reset-btn"><span class="dashicons dashicons-image-rotate"></span> <?php esc_html_e( 'Reset all settings', 'my-account-customizer' ); ?></button>
+					<span class="acfw-hint"><?php esc_html_e( 'Restore endpoints, design and banners to defaults. Cannot be undone.', 'my-account-customizer' ); ?></span>
 				</form>
 			</div><!-- .acfw-card -->
 			<?php endif; // Presets section. ?>

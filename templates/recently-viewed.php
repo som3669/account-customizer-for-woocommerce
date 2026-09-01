@@ -2,7 +2,7 @@
 /**
  * Recently Viewed endpoint: products the customer recently looked at.
  *
- * Override: yourtheme/account-customizer-for-woocommerce/recently-viewed.php
+ * Override: yourtheme/my-account-customizer/recently-viewed.php
  *
  * @var array $products List of WC_Product, newest first.
  *
@@ -12,7 +12,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( empty( $products ) ) {
-	wc_print_notice( esc_html__( 'You have not viewed any products yet.', 'account-customizer-for-woocommerce' ), 'notice' );
+	wc_print_notice( esc_html__( 'You have not viewed any products yet.', 'my-account-customizer' ), 'notice' );
 	return;
 }
 

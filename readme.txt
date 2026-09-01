@@ -1,4 +1,4 @@
-=== My Account Customizer for WooCommerce ===
+=== My Account Customizer ===
 Contributors: Rcube
 Tags: woocommerce, my account, account page, endpoints, customizer
 Requires at least: 6.0

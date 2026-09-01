@@ -16,13 +16,13 @@ function acfw_menu_styles() {
 	return apply_filters(
 		'acfw_menu_styles',
 		array(
-			'theme'   => __( 'Theme style', 'account-customizer-for-woocommerce' ),
-			'simple'  => __( 'Simple', 'account-customizer-for-woocommerce' ),
-			'classic' => __( 'Classic', 'account-customizer-for-woocommerce' ),
-			'modern'  => __( 'Modern cards', 'account-customizer-for-woocommerce' ),
-			'minimal' => __( 'Minimal', 'account-customizer-for-woocommerce' ),
-			'pill'    => __( 'Pills', 'account-customizer-for-woocommerce' ),
-			'tabs'    => __( 'Tabs', 'account-customizer-for-woocommerce' ),
+			'theme'   => __( 'Theme style', 'my-account-customizer' ),
+			'simple'  => __( 'Simple', 'my-account-customizer' ),
+			'classic' => __( 'Classic', 'my-account-customizer' ),
+			'modern'  => __( 'Modern cards', 'my-account-customizer' ),
+			'minimal' => __( 'Minimal', 'my-account-customizer' ),
+			'pill'    => __( 'Pills', 'my-account-customizer' ),
+			'tabs'    => __( 'Tabs', 'my-account-customizer' ),
 		)
 	);
 }
@@ -97,8 +97,8 @@ function acfw_design_option_keys() {
 function acfw_prebuilt_templates() {
 	$templates = array(
 		'classic-sidebar' => array(
-			'label'       => __( 'Classic Sidebar', 'account-customizer-for-woocommerce' ),
-			'description' => __( 'Left menu with a subtle active bar. The safe default.', 'account-customizer-for-woocommerce' ),
+			'label'       => __( 'Classic Sidebar', 'my-account-customizer' ),
+			'description' => __( 'Left menu with a subtle active bar. The safe default.', 'my-account-customizer' ),
 			'accent'      => '#2563eb',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -110,8 +110,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'modern-cards'    => array(
-			'label'       => __( 'Modern Cards', 'account-customizer-for-woocommerce' ),
-			'description' => __( 'Raised cards with icon chips and rounded corners.', 'account-customizer-for-woocommerce' ),
+			'label'       => __( 'Modern Cards', 'my-account-customizer' ),
+			'description' => __( 'Raised cards with icon chips and rounded corners.', 'my-account-customizer' ),
 			'accent'      => '#7c3aed',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -125,8 +125,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'rounded-pills'   => array(
-			'label'       => __( 'Rounded Pills', 'account-customizer-for-woocommerce' ),
-			'description' => __( 'Soft pill items with a coloured active state.', 'account-customizer-for-woocommerce' ),
+			'label'       => __( 'Rounded Pills', 'my-account-customizer' ),
+			'description' => __( 'Soft pill items with a coloured active state.', 'my-account-customizer' ),
 			'accent'      => '#0ea5e9',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -138,8 +138,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'tabbed-top'      => array(
-			'label'       => __( 'Tabbed Top', 'account-customizer-for-woocommerce' ),
-			'description' => __( 'Horizontal tab bar above the content.', 'account-customizer-for-woocommerce' ),
+			'label'       => __( 'Tabbed Top', 'my-account-customizer' ),
+			'description' => __( 'Horizontal tab bar above the content.', 'my-account-customizer' ),
 			'accent'      => '#16a34a',
 			'options'     => array(
 				'acfw_menu_position'    => 'horizontal',
@@ -150,8 +150,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'minimal'         => array(
-			'label'       => __( 'Minimal', 'account-customizer-for-woocommerce' ),
-			'description' => __( 'Flat, borderless list. Quiet and compact.', 'account-customizer-for-woocommerce' ),
+			'label'       => __( 'Minimal', 'my-account-customizer' ),
+			'description' => __( 'Flat, borderless list. Quiet and compact.', 'my-account-customizer' ),
 			'accent'      => '#111827',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -163,8 +163,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'theme-native'    => array(
-			'label'       => __( 'Theme Native', 'account-customizer-for-woocommerce' ),
-			'description' => __( 'Drops plugin styling and inherits your theme.', 'account-customizer-for-woocommerce' ),
+			'label'       => __( 'Theme Native', 'my-account-customizer' ),
+			'description' => __( 'Drops plugin styling and inherits your theme.', 'my-account-customizer' ),
 			'accent'      => '#64748b',
 			'options'     => array(
 				'acfw_menu_position' => 'vertical-left',
@@ -497,7 +497,7 @@ function acfw_get_current_endpoint() {
  * Locate a template, allowing theme overrides.
  *
  * Themes can override by placing files in
- * yourtheme/account-customizer-for-woocommerce/{template}.
+ * yourtheme/my-account-customizer/{template}.
  *
  * @param string $template Template filename.
  * @param array  $args     Variables passed to the template.
@@ -510,7 +510,7 @@ function acfw_get_template( $template, $args = array() ) {
 
 	$override = locate_template(
 		array(
-			'account-customizer-for-woocommerce/' . $template,
+			'my-account-customizer/' . $template,
 		)
 	);
 
@@ -530,17 +530,17 @@ function acfw_smart_tags() {
 	return apply_filters(
 		'acfw_smart_tags',
 		array(
-			'{display_name}'    => __( 'Display name', 'account-customizer-for-woocommerce' ),
-			'{first_name}'      => __( 'First name', 'account-customizer-for-woocommerce' ),
-			'{last_name}'       => __( 'Last name', 'account-customizer-for-woocommerce' ),
-			'{username}'        => __( 'Username', 'account-customizer-for-woocommerce' ),
-			'{user_email}'      => __( 'Email address', 'account-customizer-for-woocommerce' ),
-			'{site_title}'      => __( 'Site title', 'account-customizer-for-woocommerce' ),
-			'{order_count}'     => __( 'Order count', 'account-customizer-for-woocommerce' ),
-			'{download_count}'  => __( 'Download count', 'account-customizer-for-woocommerce' ),
-			'{last_login}'      => __( 'Last login date', 'account-customizer-for-woocommerce' ),
-			'{points_balance}'  => __( 'Points balance', 'account-customizer-for-woocommerce' ),
-			'{membership_plan}' => __( 'Membership plan', 'account-customizer-for-woocommerce' ),
+			'{display_name}'    => __( 'Display name', 'my-account-customizer' ),
+			'{first_name}'      => __( 'First name', 'my-account-customizer' ),
+			'{last_name}'       => __( 'Last name', 'my-account-customizer' ),
+			'{username}'        => __( 'Username', 'my-account-customizer' ),
+			'{user_email}'      => __( 'Email address', 'my-account-customizer' ),
+			'{site_title}'      => __( 'Site title', 'my-account-customizer' ),
+			'{order_count}'     => __( 'Order count', 'my-account-customizer' ),
+			'{download_count}'  => __( 'Download count', 'my-account-customizer' ),
+			'{last_login}'      => __( 'Last login date', 'my-account-customizer' ),
+			'{points_balance}'  => __( 'Points balance', 'my-account-customizer' ),
+			'{membership_plan}' => __( 'Membership plan', 'my-account-customizer' ),
 		)
 	);
 }

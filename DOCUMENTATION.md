@@ -1,6 +1,6 @@
 # How to Customize the WooCommerce My Account Page
 
-**Account Customizer for WooCommerce** lets you completely rebuild the WooCommerce
+**My Account Customizer** lets you completely rebuild the WooCommerce
 **My Account** page — reorder and add menu items, create custom endpoints, links,
 pages and groups, style everything live in the Customizer, apply one‑click starter
 templates, add banners, and enrich the dashboard.
@@ -13,7 +13,7 @@ style Customizer, settings, and third‑party compatibility.
 ## Installation
 
 1. In WordPress admin, go to **Plugins → Add New → Upload Plugin**.
-2. Upload the plugin ZIP (`account-customizer-for-woocommerce.zip`) and click **Install Now**.
+2. Upload the plugin ZIP (`my-account-customizer.zip`) and click **Install Now**.
 3. Click **Activate**. WooCommerce must be installed and active.
 4. A new top‑level **My Account** menu appears in the admin sidebar. Open it to start.
 
@@ -247,7 +247,7 @@ pnpm zip              # build + package the distributable ZIP
 
 - Edit `assets/scss/*.scss` and `assets/js/*.js` sources — not the compiled `assets/css/*.css`.
 - Assets enqueue minified with a filemtime cache‑buster; define `SCRIPT_DEBUG` for unminified.
-- **Template overrides:** copy files from `templates/` into `yourtheme/account-customizer-for-woocommerce/`.
+- **Template overrides:** copy files from `templates/` into `yourtheme/my-account-customizer/`.
 - **Filters:** `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_item_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`.
 
 **Embedding the menu elsewhere:**

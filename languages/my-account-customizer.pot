@@ -2,58 +2,43 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: My Account Customizer for WooCommerce 1.0.0\n"
+"Project-Id-Version: My Account Customizer 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/account-customizer-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-31T16:04:33+00:00\n"
+"POT-Creation-Date: 2026-09-01T06:16:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
-"X-Domain: account-customizer-for-woocommerce\n"
+"X-Domain: my-account-customizer\n"
 
 #. Plugin Name of the plugin
-#: account-customizer-for-woocommerce.php
-msgid "My Account Customizer for WooCommerce"
+#: my-account-customizer.php
+#: includes/admin/class-acfw-admin.php:67
+#: includes/admin/class-acfw-admin.php:380
+msgid "My Account Customizer"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: account-customizer-for-woocommerce.php
-msgid "https://rube.thulo.eu.org/account-customizer-for-woocommerce"
+#: my-account-customizer.php
+msgid "https://rube.thulo.eu.org/my-account-customizer"
 msgstr ""
 
 #. Description of the plugin
-#: account-customizer-for-woocommerce.php
+#: my-account-customizer.php
 msgid "Customize the WooCommerce \"My Account\" page: reorder the menu, add custom endpoints, groups and links, set per-endpoint content, control visibility by user role and restyle the whole area."
 msgstr ""
 
 #. Author of the plugin
-#: account-customizer-for-woocommerce.php
+#: my-account-customizer.php
 msgid "Rcube"
 msgstr ""
 
 #. Author URI of the plugin
-#: account-customizer-for-woocommerce.php
+#: my-account-customizer.php
 msgid "https://rube.thulo.eu.org"
-msgstr ""
-
-#: account-customizer-for-woocommerce.php:40
-msgid "My Account Customizer for WooCommerce is enabled but requires WooCommerce to be installed and active."
-msgstr ""
-
-#: account-customizer-for-woocommerce.php:144
-#: assets/js/block.js:8
-msgid "Account Menu"
-msgstr ""
-
-#: account-customizer-for-woocommerce.php:145
-msgid "The customized WooCommerce My Account menu."
-msgstr ""
-
-#: account-customizer-for-woocommerce.php:169
-msgid "Title"
 msgstr ""
 
 #: includes/admin/class-acfw-admin-tab.php:82
@@ -80,98 +65,93 @@ msgstr ""
 msgid "Select colour"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:67
-#: includes/admin/class-acfw-admin.php:377
-msgid "My Account Customizer"
-msgstr ""
-
 #: includes/admin/class-acfw-admin.php:68
 #: includes/customize/class-acfw-customizer.php:88
 msgid "My Account"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:78
-#: includes/admin/class-acfw-admin.php:366
+#: includes/admin/class-acfw-admin.php:369
 msgid "Menu Items"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:79
-#: includes/admin/class-acfw-admin.php:367
+#: includes/admin/class-acfw-admin.php:370
 msgid "Templates"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:80
 #: includes/admin/class-acfw-admin.php:104
-#: includes/admin/class-acfw-admin.php:368
+#: includes/admin/class-acfw-admin.php:371
 msgid "Settings"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:81
-#: includes/admin/class-acfw-admin.php:369
+#: includes/admin/class-acfw-admin.php:372
 msgid "Customizer"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:82
-#: includes/admin/class-acfw-admin.php:370
+#: includes/admin/class-acfw-admin.php:373
 msgid "Banners"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:197
+#: includes/admin/class-acfw-admin.php:200
 msgid "Delete this item? This cannot be undone."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:198
+#: includes/admin/class-acfw-admin.php:201
 msgid "Select an icon image"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:199
+#: includes/admin/class-acfw-admin.php:202
 msgid "Use this image"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:396
+#: includes/admin/class-acfw-admin.php:399
 msgid "Add endpoint"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:399
+#: includes/admin/class-acfw-admin.php:402
 msgid "Add group"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:402
+#: includes/admin/class-acfw-admin.php:405
 msgid "Add link"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:405
+#: includes/admin/class-acfw-admin.php:408
 msgid "Add page"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:410
+#: includes/admin/class-acfw-admin.php:413
 #: includes/admin/tabs/class-acfw-tab-banners.php:85
 msgid "Add banner"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:414
-#: includes/admin/class-acfw-admin.php:416
+#: includes/admin/class-acfw-admin.php:417
+#: includes/admin/class-acfw-admin.php:419
 msgid "Preview"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:418
-#: includes/admin/class-acfw-admin.php:420
+#: includes/admin/class-acfw-admin.php:421
+#: includes/admin/class-acfw-admin.php:423
 msgid "View My Account"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:432
+#: includes/admin/class-acfw-admin.php:435
 msgid "Changes saved."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:441
+#: includes/admin/class-acfw-admin.php:444
 msgid "Configuration imported."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:451
+#: includes/admin/class-acfw-admin.php:454
 msgid "Dismiss"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:478
+#: includes/admin/class-acfw-admin.php:481
 msgid "Add smart tags"
 msgstr ""
 
@@ -186,7 +166,7 @@ msgstr ""
 #: includes/admin/tabs/class-acfw-tab-banners.php:120
 #: includes/admin/tabs/class-acfw-tab-banners.php:275
 #: includes/admin/tabs/class-acfw-tab-items.php:287
-#: includes/admin/tabs/class-acfw-tab-settings.php:282
+#: includes/admin/tabs/class-acfw-tab-settings.php:318
 msgid "Delete"
 msgstr ""
 
@@ -311,7 +291,7 @@ msgid "Select a menu item on the left to edit its options."
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-items.php:238
-#: includes/admin/tabs/class-acfw-tab-settings.php:257
+#: includes/admin/tabs/class-acfw-tab-settings.php:293
 msgid "Save changes"
 msgstr ""
 
@@ -557,64 +537,100 @@ msgid "Shown above the login form for logged-out visitors."
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-settings.php:193
-msgid "Track endpoint views"
+msgid "Dashboard notice"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:200
-msgid "Count how often each endpoint is viewed."
+#: includes/admin/tabs/class-acfw-tab-settings.php:196
+msgid "Shown at the top of the account dashboard for logged-in customers. Leave empty to hide it. Smart tags work here, e.g. {first_name}."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:217
-msgid "Buy Again"
+#: includes/admin/tabs/class-acfw-tab-settings.php:201
+msgid "Notice style"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:208
+msgid "Info"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:209
+msgid "Success"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:210
+msgid "Warning"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:211
+msgid "Plain"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:222
+msgid "Let customers dismiss it"
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-settings.php:224
+msgid "A dismissed notice stays hidden in that browser until you edit its text."
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:229
+msgid "Track endpoint views"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:236
+msgid "Count how often each endpoint is viewed."
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:253
+msgid "Buy Again"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-settings.php:260
 msgid "Add a \"Buy again\" menu tab and dashboard tile for one-click reordering of past products."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:230
+#: includes/admin/tabs/class-acfw-tab-settings.php:266
 #: includes/class-acfw-commerce.php:115
 msgid "Recently viewed"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:237
+#: includes/admin/tabs/class-acfw-tab-settings.php:273
 msgid "Show a Recently Viewed products tile on the dashboard."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:243
+#: includes/admin/tabs/class-acfw-tab-settings.php:279
 #: includes/class-acfw-commerce.php:504
 msgid "Order tracking"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:250
+#: includes/admin/tabs/class-acfw-tab-settings.php:286
 msgid "Show a tracking summary of recent orders on the dashboard ( auto-detects WooCommerce Shipment Tracking )."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:266
+#: includes/admin/tabs/class-acfw-tab-settings.php:302
 msgid "Design presets"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:267
+#: includes/admin/tabs/class-acfw-tab-settings.php:303
 msgid "Save the current design as a named preset, then apply it anytime."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:271
+#: includes/admin/tabs/class-acfw-tab-settings.php:307
 msgid "Preset name"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:272
+#: includes/admin/tabs/class-acfw-tab-settings.php:308
 msgid "Save current design"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:281
+#: includes/admin/tabs/class-acfw-tab-settings.php:317
 msgid "Apply"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:293
+#: includes/admin/tabs/class-acfw-tab-settings.php:329
 msgid "Reset all settings"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-settings.php:294
+#: includes/admin/tabs/class-acfw-tab-settings.php:330
 msgid "Restore endpoints, design and banners to defaults. Cannot be undone."
 msgstr ""
 
@@ -807,7 +823,7 @@ msgid "Orders"
 msgstr ""
 
 #: includes/class-acfw-items.php:92
-#: includes/frontend/class-acfw-frontend.php:444
+#: includes/frontend/class-acfw-frontend.php:490
 msgid "Downloads"
 msgstr ""
 
@@ -1119,52 +1135,56 @@ msgstr ""
 msgid "Maximum upload size (KB)"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:233
+#: includes/frontend/class-acfw-frontend.php:236
 msgid "Are you sure you want to log out?"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:234
+#: includes/frontend/class-acfw-frontend.php:237
 #: templates/myaccount-menu.php:62
 msgid "Search…"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:237
+#: includes/frontend/class-acfw-frontend.php:240
 msgid "Remove your profile picture?"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:238
+#: includes/frontend/class-acfw-frontend.php:241
 msgid "Upload failed. Please try again."
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:431
+#: includes/frontend/class-acfw-frontend.php:426
+msgid "Dismiss this notice"
+msgstr ""
+
+#: includes/frontend/class-acfw-frontend.php:477
 msgid "Total orders"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:435
+#: includes/frontend/class-acfw-frontend.php:481
 msgid "Pending orders"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:438
+#: includes/frontend/class-acfw-frontend.php:484
 msgid "Total spent"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:441
+#: includes/frontend/class-acfw-frontend.php:487
 msgid "Refunds"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:447
+#: includes/frontend/class-acfw-frontend.php:493
 msgid "Reward points"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:460
+#: includes/frontend/class-acfw-frontend.php:506
 msgid "Latest order"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:535
+#: includes/frontend/class-acfw-frontend.php:581
 msgid "Orders by status"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:724
+#: includes/frontend/class-acfw-frontend.php:770
 msgid "Profile completeness"
 msgstr ""
 
@@ -1279,6 +1299,23 @@ msgstr ""
 
 #: includes/helper/functions-acfw.php:543
 msgid "Membership plan"
+msgstr ""
+
+#: my-account-customizer.php:40
+msgid "My Account Customizer is enabled but requires WooCommerce to be installed and active."
+msgstr ""
+
+#: my-account-customizer.php:144
+#: assets/js/block.js:8
+msgid "Account Menu"
+msgstr ""
+
+#: my-account-customizer.php:145
+msgid "The customized WooCommerce My Account menu."
+msgstr ""
+
+#: my-account-customizer.php:169
+msgid "Title"
 msgstr ""
 
 #: templates/buy-again.php:16

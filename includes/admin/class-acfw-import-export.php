@@ -42,7 +42,7 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 			}
 
 			return array(
-				'plugin'   => 'account-customizer-for-woocommerce',
+				'plugin'   => 'my-account-customizer',
 				'version'  => defined( 'ACFW_VERSION' ) ? ACFW_VERSION : '',
 				'exported' => gmdate( 'c' ),
 				'options'  => $data,
@@ -69,7 +69,7 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 			$parsed = json_decode( $json, true );
 
 			if ( ! is_array( $parsed ) || empty( $parsed['options'] ) || ! is_array( $parsed['options'] ) ) {
-				return new WP_Error( 'acfw_import_invalid', __( 'The file is not a valid My Account Customizer export.', 'account-customizer-for-woocommerce' ) );
+				return new WP_Error( 'acfw_import_invalid', __( 'The file is not a valid My Account Customizer export.', 'my-account-customizer' ) );
 			}
 
 			// A user who cannot post unfiltered HTML must not be able to smuggle
@@ -136,8 +136,9 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 				return $value;
 			}
 
-			// The logged-out notice is echoed through wpautop() on the front end.
-			if ( 'acfw_guest_message' === $name ) {
+			// The logged-out notice and the dashboard notice are both echoed
+			// through wpautop() on the front end.
+			if ( 'acfw_guest_message' === $name || 'acfw_dashboard_notice' === $name ) {
 				return wp_kses_post( (string) $value );
 			}
 

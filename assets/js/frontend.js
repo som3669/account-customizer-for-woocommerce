@@ -4,6 +4,35 @@
 
 	$( function () {
 
+		// Dashboard notice: remember dismissal per browser, keyed on the notice
+		// text, so editing it shows the new one to everyone again.
+		var $notice = $( '.acfw-dashboard-notice.is-dismissible' );
+		if ( $notice.length ) {
+			$notice.each( function () {
+				var $el = $( this );
+				var key = 'acfw_notice_' + $el.data( 'acfw-notice' );
+				try {
+					if ( window.localStorage && window.localStorage.getItem( key ) ) {
+						$el.hide();
+					}
+				} catch ( e ) {
+					// Private mode or storage disabled: just leave the notice visible.
+				}
+			} );
+
+			$notice.on( 'click', '.acfw-notice-close', function () {
+				var $el = $( this ).closest( '.acfw-dashboard-notice' );
+				$el.slideUp( 150 );
+				try {
+					if ( window.localStorage ) {
+						window.localStorage.setItem( 'acfw_notice_' + $el.data( 'acfw-notice' ), '1' );
+					}
+				} catch ( e ) {
+					// Nothing to remember it with; it reappears next visit.
+				}
+			} );
+		}
+
 		// Group expand/collapse ( click the title again to close ).
 		$( '.acfw-menu' ).on( 'click', '.acfw-group-toggle', function () {
 			$( this ).closest( '.acfw-type-group' ).toggleClass( 'is-open' );

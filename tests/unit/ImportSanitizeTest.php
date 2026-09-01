@@ -66,6 +66,12 @@ class ImportSanitizeTest extends TestCase {
 		$this->assertSame( 'Please log in', $clean );
 	}
 
+	public function test_it_filters_the_dashboard_notice(): void {
+		$clean = $this->sanitize( 'acfw_dashboard_notice', 'Free shipping<script>alert(1)</script>' );
+
+		$this->assertSame( 'Free shipping', $clean );
+	}
+
 	public function test_it_leaves_plain_options_alone(): void {
 		$this->assertSame( 'yes', $this->sanitize( 'acfw_buyagain_enable', 'yes' ) );
 		$this->assertSame( '#2563eb', $this->sanitize( 'acfw_accent_color', '#2563eb' ) );

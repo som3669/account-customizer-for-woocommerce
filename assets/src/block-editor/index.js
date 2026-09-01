@@ -133,7 +133,7 @@ function EndpointEditor( { field } ) {
 										disabled={ disabled }
 										aria-expanded={ isOpen }
 									>
-										{ __( 'Add block', 'account-customizer-for-woocommerce' ) }
+										{ __( 'Add block', 'my-account-customizer' ) }
 									</Button>
 								) }
 							/>
@@ -142,7 +142,7 @@ function EndpointEditor( { field } ) {
 								isPressed={ sidebar === 'inspector' }
 								onClick={ toggleInspector }
 							>
-								{ __( 'Block settings', 'account-customizer-for-woocommerce' ) }
+								{ __( 'Block settings', 'my-account-customizer' ) }
 							</Button>
 						</div>
 

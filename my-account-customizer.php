@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: My Account Customizer for WooCommerce
- * Plugin URI:  https://rube.thulo.eu.org/account-customizer-for-woocommerce
+ * Plugin Name: My Account Customizer
+ * Plugin URI:  https://rube.thulo.eu.org/my-account-customizer
  * Description: Customize the WooCommerce "My Account" page: reorder the menu, add custom endpoints, groups and links, set per-endpoint content, control visibility by user role and restyle the whole area.
  * Version:     1.0.0
  * Author:      Rcube
  * Author URI:  https://rube.thulo.eu.org
- * Text Domain: account-customizer-for-woocommerce
+ * Text Domain: my-account-customizer
  * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -27,7 +27,7 @@ define( 'ACFW_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ACFW_URL', plugin_dir_url( __FILE__ ) );
 define( 'ACFW_ASSETS_URL', ACFW_URL . 'assets' );
 define( 'ACFW_TEMPLATE_PATH', ACFW_DIR . 'templates' );
-define( 'ACFW_SLUG', 'account-customizer-for-woocommerce' );
+define( 'ACFW_SLUG', 'my-account-customizer' );
 
 /**
  * Admin notice shown when WooCommerce is not active.
@@ -38,8 +38,8 @@ function acfw_missing_wc_notice() {
 		<p>
 			<?php
 			esc_html_e(
-				'My Account Customizer for WooCommerce is enabled but requires WooCommerce to be installed and active.',
-				'account-customizer-for-woocommerce'
+				'My Account Customizer is enabled but requires WooCommerce to be installed and active.',
+				'my-account-customizer'
 			);
 			?>
 		</p>
@@ -53,7 +53,7 @@ function acfw_missing_wc_notice() {
 function acfw_init() {
 
 	load_plugin_textdomain(
-		'account-customizer-for-woocommerce',
+		'my-account-customizer',
 		false,
 		dirname( plugin_basename( __FILE__ ) ) . '/languages'
 	);
@@ -141,8 +141,8 @@ if ( class_exists( 'WP_Widget' ) ) {
 		public function __construct() {
 			parent::__construct(
 				'acfw_menu_widget',
-				__( 'Account Menu', 'account-customizer-for-woocommerce' ),
-				array( 'description' => __( 'The customized WooCommerce My Account menu.', 'account-customizer-for-woocommerce' ) )
+				__( 'Account Menu', 'my-account-customizer' ),
+				array( 'description' => __( 'The customized WooCommerce My Account menu.', 'my-account-customizer' ) )
 			);
 		}
 
@@ -166,7 +166,7 @@ if ( class_exists( 'WP_Widget' ) ) {
 			$title = isset( $instance['title'] ) ? $instance['title'] : '';
 			printf(
 				'<p><label>%s <input class="widefat" name="%s" value="%s" /></label></p>',
-				esc_html__( 'Title', 'account-customizer-for-woocommerce' ),
+				esc_html__( 'Title', 'my-account-customizer' ),
 				esc_attr( $this->get_field_name( 'title' ) ),
 				esc_attr( $title )
 			);

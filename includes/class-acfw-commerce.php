@@ -109,10 +109,10 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 
 			$extras = array();
 			if ( self::enabled( 'buyagain' ) && ! isset( $items[ self::BUYAGAIN ] ) ) {
-				$extras[ self::BUYAGAIN ] = __( 'Buy again', 'account-customizer-for-woocommerce' );
+				$extras[ self::BUYAGAIN ] = __( 'Buy again', 'my-account-customizer' );
 			}
 			if ( self::enabled( 'recent' ) && ! isset( $items[ self::RECENT ] ) ) {
-				$extras[ self::RECENT ] = __( 'Recently viewed', 'account-customizer-for-woocommerce' );
+				$extras[ self::RECENT ] = __( 'Recently viewed', 'my-account-customizer' );
 			}
 			if ( empty( $extras ) ) {
 				return $items;
@@ -230,7 +230,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 		public function ajax_reorder_add() {
 
 			if ( ! self::enabled( 'buyagain' ) || ! is_user_logged_in() ) {
-				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'account-customizer-for-woocommerce' ) ), 403 );
+				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'my-account-customizer' ) ), 403 );
 			}
 			check_ajax_referer( self::NONCE, 'nonce' );
 
@@ -238,17 +238,17 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			$qty        = isset( $_POST['quantity'] ) ? max( 1, absint( $_POST['quantity'] ) ) : 1;
 
 			if ( ! $product_id || ! $this->customer_bought( $product_id ) ) {
-				wp_send_json_error( array( 'message' => __( 'That product is not available to reorder.', 'account-customizer-for-woocommerce' ) ) );
+				wp_send_json_error( array( 'message' => __( 'That product is not available to reorder.', 'my-account-customizer' ) ) );
 			}
 
 			$added = $this->add_to_cart( $product_id, $qty );
 			if ( ! $added ) {
-				wp_send_json_error( array( 'message' => __( 'Sorry, this product cannot be added to the cart.', 'account-customizer-for-woocommerce' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Sorry, this product cannot be added to the cart.', 'my-account-customizer' ) ) );
 			}
 
 			wp_send_json_success(
 				array(
-					'message'  => __( 'Added to cart.', 'account-customizer-for-woocommerce' ),
+					'message'  => __( 'Added to cart.', 'my-account-customizer' ),
 					'cart_url' => wc_get_cart_url(),
 				)
 			);
@@ -260,7 +260,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 		public function ajax_reorder_order() {
 
 			if ( ! self::enabled( 'buyagain' ) || ! is_user_logged_in() ) {
-				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'account-customizer-for-woocommerce' ) ), 403 );
+				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'my-account-customizer' ) ), 403 );
 			}
 			check_ajax_referer( self::NONCE, 'nonce' );
 
@@ -268,7 +268,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			$order    = $order_id ? wc_get_order( $order_id ) : false;
 
 			if ( ! $order || (int) $order->get_customer_id() !== get_current_user_id() ) {
-				wp_send_json_error( array( 'message' => __( 'Order not found.', 'account-customizer-for-woocommerce' ) ), 403 );
+				wp_send_json_error( array( 'message' => __( 'Order not found.', 'my-account-customizer' ) ), 403 );
 			}
 
 			$added = 0;
@@ -281,13 +281,13 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			}
 
 			if ( ! $added ) {
-				wp_send_json_error( array( 'message' => __( 'None of the items in that order could be added.', 'account-customizer-for-woocommerce' ) ) );
+				wp_send_json_error( array( 'message' => __( 'None of the items in that order could be added.', 'my-account-customizer' ) ) );
 			}
 
 			wp_send_json_success(
 				array(
 					/* translators: %d: number of items added. */
-					'message'  => sprintf( _n( '%d item added to cart.', '%d items added to cart.', $added, 'account-customizer-for-woocommerce' ), $added ),
+					'message'  => sprintf( _n( '%d item added to cart.', '%d items added to cart.', $added, 'my-account-customizer' ), $added ),
 					'cart_url' => wc_get_cart_url(),
 				)
 			);
@@ -449,14 +449,14 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			$url   = wc_get_account_endpoint_url( self::BUYAGAIN );
 
 			echo '<div class="acfw-commerce-widget acfw-buyagain-tile">';
-			echo '<div class="acfw-cw-head"><h3>' . esc_html__( 'Buy again', 'account-customizer-for-woocommerce' ) . '</h3><a href="' . esc_url( $url ) . '">' . esc_html__( 'View all', 'account-customizer-for-woocommerce' ) . '</a></div>';
+			echo '<div class="acfw-cw-head"><h3>' . esc_html__( 'Buy again', 'my-account-customizer' ) . '</h3><a href="' . esc_url( $url ) . '">' . esc_html__( 'View all', 'my-account-customizer' ) . '</a></div>';
 			echo '<div class="acfw-cw-grid">';
 			foreach ( $products as $row ) {
 				$product = $row['product'];
 				echo '<div class="acfw-cw-card">';
 				echo '<a href="' . esc_url( $product->get_permalink() ) . '" class="acfw-cw-thumb">' . wp_kses_post( $product->get_image( 'woocommerce_thumbnail' ) ) . '</a>';
 				echo '<span class="acfw-cw-name">' . esc_html( $product->get_name() ) . '</span>';
-				echo '<button type="button" class="button acfw-reorder-btn" data-product="' . esc_attr( $product->get_id() ) . '" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html__( 'Add to cart', 'account-customizer-for-woocommerce' ) . '</button>';
+				echo '<button type="button" class="button acfw-reorder-btn" data-product="' . esc_attr( $product->get_id() ) . '" data-nonce="' . esc_attr( $nonce ) . '">' . esc_html__( 'Add to cart', 'my-account-customizer' ) . '</button>';
 				echo '</div>';
 			}
 			echo '</div></div>';
@@ -501,7 +501,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			}
 
 			echo '<div class="acfw-commerce-widget acfw-tracking-widget">';
-			echo '<div class="acfw-cw-head"><h3>' . esc_html__( 'Order tracking', 'account-customizer-for-woocommerce' ) . '</h3></div>';
+			echo '<div class="acfw-cw-head"><h3>' . esc_html__( 'Order tracking', 'my-account-customizer' ) . '</h3></div>';
 
 			foreach ( $orders as $order ) {
 				$tracking = self::tracking_items( $order );
@@ -512,7 +512,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 					'<div class="acfw-track-head"><a href="%1$s">%2$s</a><span class="acfw-track-status acfw-status-%3$s">%4$s</span></div>',
 					esc_url( $order->get_view_order_url() ),
 					/* translators: %s: order number. */
-					esc_html( sprintf( __( 'Order #%s', 'account-customizer-for-woocommerce' ), $order->get_order_number() ) ),
+					esc_html( sprintf( __( 'Order #%s', 'my-account-customizer' ), $order->get_order_number() ) ),
 					esc_attr( $order->get_status() ),
 					esc_html( $status )
 				);
@@ -546,9 +546,9 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 		 */
 		protected function status_timeline( $status ) {
 			$steps      = array(
-				'processing' => __( 'Processing', 'account-customizer-for-woocommerce' ),
-				'on-hold'    => __( 'On hold', 'account-customizer-for-woocommerce' ),
-				'completed'  => __( 'Completed', 'account-customizer-for-woocommerce' ),
+				'processing' => __( 'Processing', 'my-account-customizer' ),
+				'on-hold'    => __( 'On hold', 'my-account-customizer' ),
+				'completed'  => __( 'Completed', 'my-account-customizer' ),
 			);
 			$order_flow = array( 'processing', 'completed' );
 			$current    = in_array( $status, $order_flow, true ) ? array_search( $status, $order_flow, true ) : 0;

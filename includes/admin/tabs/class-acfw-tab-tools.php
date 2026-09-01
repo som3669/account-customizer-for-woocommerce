@@ -54,36 +54,36 @@ if ( ! class_exists( 'ACFW_Tab_Tools' ) ) {
 		public function render() {
 			?>
 			<div class="acfw-card">
-				<h2 class="acfw-section-title"><?php esc_html_e( 'Export', 'account-customizer-for-woocommerce' ); ?></h2>
-				<p class="acfw-hint"><?php esc_html_e( 'Download all endpoints, design settings and banners as a JSON file.', 'account-customizer-for-woocommerce' ); ?></p>
+				<h2 class="acfw-section-title"><?php esc_html_e( 'Export', 'my-account-customizer' ); ?></h2>
+				<p class="acfw-hint"><?php esc_html_e( 'Download all endpoints, design settings and banners as a JSON file.', 'my-account-customizer' ); ?></p>
 				<form method="post">
 					<?php wp_nonce_field( self::NONCE ); ?>
 					<input type="hidden" name="acfw_action" value="export" />
 					<div class="acfw-form-footer" style="justify-content:flex-start;border-top:0;padding-top:0;margin-top:8px;">
 						<button type="submit" class="button button-primary">
 							<span class="dashicons dashicons-download" style="vertical-align:text-bottom;"></span>
-							<?php esc_html_e( 'Export configuration', 'account-customizer-for-woocommerce' ); ?>
+							<?php esc_html_e( 'Export configuration', 'my-account-customizer' ); ?>
 						</button>
 					</div>
 				</form>
 			</div>
 
 			<div class="acfw-card">
-				<h2 class="acfw-section-title"><?php esc_html_e( 'Import', 'account-customizer-for-woocommerce' ); ?></h2>
-				<p class="acfw-hint"><?php esc_html_e( 'Upload a JSON file, or paste its contents. This overwrites your current configuration.', 'account-customizer-for-woocommerce' ); ?></p>
+				<h2 class="acfw-section-title"><?php esc_html_e( 'Import', 'my-account-customizer' ); ?></h2>
+				<p class="acfw-hint"><?php esc_html_e( 'Upload a JSON file, or paste its contents. This overwrites your current configuration.', 'my-account-customizer' ); ?></p>
 				<form method="post" enctype="multipart/form-data">
 					<?php wp_nonce_field( self::NONCE ); ?>
 					<input type="hidden" name="acfw_action" value="import" />
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'JSON file', 'account-customizer-for-woocommerce' ); ?></label>
+						<label><?php esc_html_e( 'JSON file', 'my-account-customizer' ); ?></label>
 						<input type="file" name="acfw_import_file" accept="application/json,.json" />
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Or paste JSON', 'account-customizer-for-woocommerce' ); ?></label>
-						<textarea name="acfw_import_json" rows="6" placeholder="{ &quot;plugin&quot;: &quot;account-customizer-for-woocommerce&quot;, … }"></textarea>
+						<label><?php esc_html_e( 'Or paste JSON', 'my-account-customizer' ); ?></label>
+						<textarea name="acfw_import_json" rows="6" placeholder="{ &quot;plugin&quot;: &quot;my-account-customizer&quot;, … }"></textarea>
 					</div>
 					<div class="acfw-form-footer">
-						<button type="submit" class="button button-primary"><?php esc_html_e( 'Import configuration', 'account-customizer-for-woocommerce' ); ?></button>
+						<button type="submit" class="button button-primary"><?php esc_html_e( 'Import configuration', 'my-account-customizer' ); ?></button>
 					</div>
 				</form>
 			</div>

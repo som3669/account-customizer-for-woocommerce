@@ -28,4 +28,4 @@ files normally.
 Copyright (c) Fonticons, Inc. (https://fontawesome.com)
 
 This directory bundles a subset of the Font Awesome Free release for use by the
-Account Customizer for WooCommerce plugin.
+My Account Customizer plugin.

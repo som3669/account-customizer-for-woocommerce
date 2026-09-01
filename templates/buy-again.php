@@ -2,7 +2,7 @@
 /**
  * Buy Again endpoint: previously purchased products with a reorder button.
  *
- * Override: yourtheme/account-customizer-for-woocommerce/buy-again.php
+ * Override: yourtheme/my-account-customizer/buy-again.php
  *
  * @var array  $products List of array{ product, variation_id, quantity, order_id }.
  * @var string $nonce    Reorder AJAX nonce.
@@ -13,7 +13,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( empty( $products ) ) {
-	wc_print_notice( esc_html__( 'You have no past orders to reorder from yet.', 'account-customizer-for-woocommerce' ), 'notice' );
+	wc_print_notice( esc_html__( 'You have no past orders to reorder from yet.', 'my-account-customizer' ), 'notice' );
 	return;
 }
 
@@ -23,8 +23,8 @@ $acfw_seen_orders = array();
 	<table class="acfw-buyagain-table shop_table">
 		<thead>
 			<tr>
-				<th class="acfw-ba-product" colspan="2"><?php esc_html_e( 'Product', 'account-customizer-for-woocommerce' ); ?></th>
-				<th class="acfw-ba-price"><?php esc_html_e( 'Price', 'account-customizer-for-woocommerce' ); ?></th>
+				<th class="acfw-ba-product" colspan="2"><?php esc_html_e( 'Product', 'my-account-customizer' ); ?></th>
+				<th class="acfw-ba-price"><?php esc_html_e( 'Price', 'my-account-customizer' ); ?></th>
 				<th class="acfw-ba-action">&nbsp;</th>
 			</tr>
 		</thead>
@@ -44,7 +44,7 @@ $acfw_seen_orders = array();
 							data-product="<?php echo esc_attr( $acfw_product->get_id() ); ?>"
 							data-qty="<?php echo esc_attr( max( 1, (int) $acfw_row['quantity'] ) ); ?>"
 							data-nonce="<?php echo esc_attr( $nonce ); ?>">
-							<?php esc_html_e( 'Add to cart', 'account-customizer-for-woocommerce' ); ?>
+							<?php esc_html_e( 'Add to cart', 'my-account-customizer' ); ?>
 						</button>
 					</td>
 				</tr>
@@ -68,7 +68,7 @@ $acfw_seen_orders = array();
 			<button type="button" class="button alt acfw-reorder-order-btn"
 				data-order="<?php echo esc_attr( $acfw_last_order ); ?>"
 				data-nonce="<?php echo esc_attr( $nonce ); ?>">
-				<?php esc_html_e( 'Reorder my last order', 'account-customizer-for-woocommerce' ); ?>
+				<?php esc_html_e( 'Reorder my last order', 'my-account-customizer' ); ?>
 			</button>
 		</div>
 	<?php endif; ?>

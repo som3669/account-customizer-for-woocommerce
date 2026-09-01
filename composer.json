@@ -1,9 +1,9 @@
 {
-	"name": "rcube/account-customizer-for-woocommerce",
+	"name": "rcube/my-account-customizer",
 	"description": "Customize the WooCommerce My Account page: endpoints, content, design and commerce widgets.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
-	"homepage": "https://rube.thulo.eu.org/account-customizer-for-woocommerce",
+	"homepage": "https://rube.thulo.eu.org/my-account-customizer",
 	"require": {
 		"php": ">=7.4"
 	},

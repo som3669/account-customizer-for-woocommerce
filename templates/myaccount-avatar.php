@@ -2,7 +2,7 @@
 /**
  * My Account customer avatar block.
  *
- * Override: yourtheme/account-customizer-for-woocommerce/myaccount-avatar.php
+ * Override: yourtheme/my-account-customizer/myaccount-avatar.php
  *
  * @var WP_User $user       Current user.
  * @var string  $avatar     Avatar <img> markup.
@@ -35,7 +35,7 @@ if ( $acfw_can_upload ) {
 	<div class="acfw-avatar-img">
 		<?php echo $avatar; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_avatar() output. ?>
 		<?php if ( $acfw_can_upload ) : ?>
-			<button type="button" class="acfw-avatar-edit" aria-label="<?php esc_attr_e( 'Change profile picture', 'account-customizer-for-woocommerce' ); ?>">
+			<button type="button" class="acfw-avatar-edit" aria-label="<?php esc_attr_e( 'Change profile picture', 'my-account-customizer' ); ?>">
 				<span class="dashicons dashicons-camera"></span>
 			</button>
 			<span class="acfw-avatar-spinner" hidden></span>
@@ -43,7 +43,7 @@ if ( $acfw_can_upload ) {
 	</div>
 	<?php if ( $acfw_can_upload ) : ?>
 		<input type="file" class="acfw-avatar-file" accept="image/jpeg,image/png,image/gif,image/webp" hidden />
-		<button type="button" class="acfw-avatar-remove"<?php echo $acfw_has_uploaded ? '' : ' hidden'; ?>><?php esc_html_e( 'Remove picture', 'account-customizer-for-woocommerce' ); ?></button>
+		<button type="button" class="acfw-avatar-remove"<?php echo $acfw_has_uploaded ? '' : ' hidden'; ?>><?php esc_html_e( 'Remove picture', 'my-account-customizer' ); ?></button>
 	<?php endif; ?>
 	<?php if ( $show_name ) : ?>
 		<div class="acfw-avatar-name"><?php echo esc_html( $user->display_name ); ?></div>
