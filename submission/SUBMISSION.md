@@ -113,9 +113,23 @@ Test login (reviewer): provided in the Demo site URL below / on request.
 
 **Demo site URL**
 ```
-https://ADD-YOUR-PUBLIC-DEMO-URL-HERE/my-account/
+https://rcube.thulo.eu.org/my-account/
 ```
-> ACTION NEEDED: a public, reachable demo is required. Your local `mas.test` won't work for reviewers. Stand up a staging site (or a free demo host), install the plugin, enable the features, seed a demo customer + a completed order, and put that URL + a reviewer login here.
+Host is live and WooCommerce is already active there. Before submitting, that
+site still needs:
+
+1. This plugin installed and activated (`dist/account-customizer-for-woocommerce.zip`).
+2. Products — the shop is currently empty, and Buy again needs purchasable items.
+3. `demo-seed.php` from this folder: set its token, upload it to the WordPress
+   root, load it once in a browser, then delete it. It creates the `reviewer`
+   customer, a completed order, a processing order, and switches every optional
+   feature on.
+4. The reviewer login (`reviewer` + the password set in the seeder) written into
+   the Setup instructions above.
+
+> Note: the host answers non-browser clients with a JavaScript cookie challenge.
+> Reviewers browsing normally are unaffected, but plain HTTP clients get an empty
+> response — a failed `curl` against this URL is not an outage.
 
 ---
 
