@@ -113,8 +113,15 @@ Test login (reviewer): provided in the Demo site URL below / on request.
 
 **Demo site URL**
 ```
-https://rcube.thulo.eu.org/account-customizer/my-account/
+https://rcube.thulo.eu.org/account-customizer/
 ```
+That home page introduces the product and links straight to the customer demo
+(`/my-account/`) and to the plugin's admin screen
+(`/wp-admin/admin.php?page=acfw-settings`), so a reviewer can reach either from
+one URL. Its block markup is in `demo-home-page.html` in this folder — paste it
+into a new page via the editor's Code editor view, publish, then set it as the
+homepage under Settings > Reading.
+
 WordPress lives in the /account-customizer/ subdirectory. WooCommerce and this
 plugin are both installed and active — the account page enqueues the plugin's
 stylesheet and inline design tokens. Two things are still missing before a
@@ -128,8 +135,8 @@ reviewer can use it:
    creates the `reviewer` customer, a completed order, a processing order, and
    switches every optional feature on.
 
-Right now the URL above shows the WooCommerce login form, because the visitor is
-logged out. Two ways to fix that, and they are not exclusive:
+The account page itself still shows the WooCommerce login form to a logged-out
+visitor. Two ways to fix that, and they are not exclusive:
 
 - Install `acfw-demo-autologin.zip` from this folder (Plugins > Add New >
   Upload). Any logged-out visitor to the account page is then signed in as the
