@@ -33,6 +33,13 @@ defined( 'ABSPATH' ) || exit;
 define( 'ACFW_DEMO_USER', 'reviewer' );
 
 /**
+ * Why the last acfw_demo_user() call refused, for the ?acfw_demo_debug=1 report.
+ *
+ * @var string
+ */
+$GLOBALS['acfw_demo_reason'] = '';
+
+/**
  * The demo account, but only when it is safe to hand to the public.
  *
  * @return WP_User|null
@@ -42,6 +49,7 @@ function acfw_demo_user() {
 	$user = get_user_by( 'login', ACFW_DEMO_USER );
 
 	if ( ! $user instanceof WP_User ) {
+		$GLOBALS['acfw_demo_reason'] = 'No user with the login "' . ACFW_DEMO_USER . '" exists. Run demo-seed.php first — that is what creates it.';
 		return null;
 	}
 
@@ -50,14 +58,17 @@ function acfw_demo_user() {
 	$forbidden = array( 'edit_posts', 'manage_options', 'manage_woocommerce', 'upload_files', 'edit_users', 'install_plugins' );
 	foreach ( $forbidden as $cap ) {
 		if ( user_can( $user, $cap ) ) {
+			$GLOBALS['acfw_demo_reason'] = 'The "' . ACFW_DEMO_USER . '" account can "' . $cap . '". Auto-login refuses any account that can edit content or settings — give it the plain Customer role.';
 			return null;
 		}
 	}
 
 	if ( ! in_array( 'customer', (array) $user->roles, true ) ) {
+		$GLOBALS['acfw_demo_reason'] = 'The "' . ACFW_DEMO_USER . '" account does not hold the Customer role ( roles: ' . implode( ', ', (array) $user->roles ) . ' ).';
 		return null;
 	}
 
+	$GLOBALS['acfw_demo_reason'] = '';
 	return $user;
 }
 
@@ -77,9 +88,28 @@ function acfw_demo_autologin() {
 		return;
 	}
 
-	$user = acfw_demo_user();
+	$user  = acfw_demo_user();
+	$debug = isset( $_GET['acfw_demo_debug'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
 	if ( ! $user ) {
+		// Silence is unhelpful when the demo "does nothing", so let the site
+		// owner ask why: /my-account/?acfw_demo=1&acfw_demo_debug=1
+		if ( $debug ) {
+			wp_die(
+				'<h1>ACFW demo auto-login</h1><p><strong>Active, but standing down.</strong></p><p>' . esc_html( $GLOBALS['acfw_demo_reason'] ) . '</p>',
+				'ACFW demo auto-login',
+				array( 'response' => 200 )
+			);
+		}
 		return;
+	}
+
+	if ( $debug ) {
+		wp_die(
+			'<h1>ACFW demo auto-login</h1><p><strong>Ready.</strong> Signing visitors in as "' . esc_html( ACFW_DEMO_USER ) . '" (user ID ' . (int) $user->ID . ').</p><p>Remove acfw_demo_debug from the URL to use the demo.</p>',
+			'ACFW demo auto-login',
+			array( 'response' => 200 )
+		);
 	}
 
 	// A browser that refuses cookies would otherwise bounce between the redirect
