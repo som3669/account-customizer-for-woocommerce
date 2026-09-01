@@ -918,11 +918,19 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$current = acfw_get_current_endpoint();
 			$classes = array( 'acfw-menu-item', 'acfw-type-' . $type );
 
+			// Keep WooCommerce's own item classes on every row. Core templates
+			// emit woocommerce-MyAccount-navigation-link--{endpoint}, and themes,
+			// third-party plugins and WooCommerce's E2E suite select on them, so
+			// replacing the menu must not drop them.
+			$classes[] = 'woocommerce-MyAccount-navigation-link';
+			$classes[] = 'woocommerce-MyAccount-navigation-link--' . sanitize_html_class( $key );
+
 			if ( ! empty( $item['class'] ) ) {
 				$classes[] = sanitize_html_class( $item['class'] );
 			}
 			if ( $key === $current ) {
 				$classes[] = 'is-active';
+				$classes[] = 'woocommerce-MyAccount-navigation-link--active';
 			}
 
 			if ( 'link' === $type ) {

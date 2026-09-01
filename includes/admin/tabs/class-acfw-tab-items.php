@@ -107,7 +107,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					break;
 
 				case 'remove_item':
-					$key = isset( $_POST['item_key'] ) ? acfw_sanitize_key( wp_unslash( $_POST['item_key'] ) ) : '';
+					$key = isset( $_POST['item_key'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['item_key'] ) ) ) : '';
 					if ( '' !== $key ) {
 						$items->remove_item( $key );
 						$order = json_decode( get_option( 'acfw_items_order', '[]' ), true );
@@ -127,7 +127,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					break;
 
 				case 'duplicate_item':
-					$src = isset( $_POST['item_key'] ) ? acfw_sanitize_key( wp_unslash( $_POST['item_key'] ) ) : '';
+					$src = isset( $_POST['item_key'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['item_key'] ) ) ) : '';
 					if ( '' !== $src ) {
 						$all    = $items->get_items();
 						$source = $all[ $src ] ?? null;

@@ -26,7 +26,7 @@ if ( ! class_exists( 'ACFW_Tab_Templates' ) ) {
 			switch ( $action ) {
 
 				case 'apply_template':
-					$tslug     = isset( $_POST['template_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['template_slug'] ) ) : '';
+					$tslug     = isset( $_POST['template_slug'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['template_slug'] ) ) ) : '';
 					$templates = acfw_prebuilt_templates();
 					if ( ! empty( $templates[ $tslug ]['options'] ) ) {
 						// Reset the whole design to defaults first so the result is

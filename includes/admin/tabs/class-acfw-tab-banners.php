@@ -33,19 +33,19 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						'title'         => isset( $_POST['banner_title'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_title'] ) ) : '',
 						'content'       => isset( $_POST['banner_content'] ) ? wp_kses_post( wp_unslash( $_POST['banner_content'] ) ) : '',
 						'image_url'     => isset( $_POST['banner_image_url'] ) ? esc_url_raw( wp_unslash( $_POST['banner_image_url'] ) ) : '',
-						'icon'          => ( 'upload' !== $icon_source && isset( $_POST['banner_icon'] ) ) ? acfw_sanitize_icon( wp_unslash( $_POST['banner_icon'] ) ) : '',
+						'icon'          => ( 'upload' !== $icon_source && isset( $_POST['banner_icon'] ) ) ? acfw_sanitize_icon( sanitize_text_field( wp_unslash( $_POST['banner_icon'] ) ) ) : '',
 						'icon_source'   => 'upload' === $icon_source ? 'upload' : 'choose',
 						'icon_url'      => ( 'upload' === $icon_source && isset( $_POST['banner_icon_url'] ) ) ? esc_url_raw( wp_unslash( $_POST['banner_icon_url'] ) ) : '',
 						'icon_width'    => isset( $_POST['banner_icon_width'] ) ? absint( wp_unslash( $_POST['banner_icon_width'] ) ) : 40,
 						'widget_width'  => isset( $_POST['banner_widget_width'] ) ? absint( wp_unslash( $_POST['banner_widget_width'] ) ) : 250,
 						'show_count'    => ! empty( $_POST['banner_show_count'] ) ? 'yes' : 'no',
 						'link_type'     => isset( $_POST['banner_link_type'] ) ? sanitize_key( wp_unslash( $_POST['banner_link_type'] ) ) : 'none',
-						'link_endpoint' => isset( $_POST['banner_link_endpoint'] ) ? acfw_sanitize_key( wp_unslash( $_POST['banner_link_endpoint'] ) ) : '',
+						'link_endpoint' => isset( $_POST['banner_link_endpoint'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['banner_link_endpoint'] ) ) ) : '',
 						'link'          => isset( $_POST['banner_link'] ) ? esc_url_raw( wp_unslash( $_POST['banner_link'] ) ) : '',
 						'roles'         => $roles,
 					);
 					foreach ( array_keys( ACFW_Banners::color_fields() ) as $ckey ) {
-						$bdata[ $ckey ] = isset( $_POST[ 'banner_' . $ckey ] ) ? acfw_sanitize_color( wp_unslash( $_POST[ 'banner_' . $ckey ] ) ) : '';
+						$bdata[ $ckey ] = isset( $_POST[ 'banner_' . $ckey ] ) ? acfw_sanitize_color( sanitize_text_field( wp_unslash( $_POST[ 'banner_' . $ckey ] ) ) ) : '';
 					}
 					ACFW_Banners::save(
 						isset( $_POST['banner_key'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_key'] ) ) : '',
@@ -54,7 +54,7 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 					break;
 
 				case 'remove_banner':
-					$bkey = isset( $_POST['banner_key'] ) ? acfw_sanitize_key( wp_unslash( $_POST['banner_key'] ) ) : '';
+					$bkey = isset( $_POST['banner_key'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['banner_key'] ) ) ) : '';
 					if ( '' !== $bkey ) {
 						ACFW_Banners::remove( $bkey );
 					}

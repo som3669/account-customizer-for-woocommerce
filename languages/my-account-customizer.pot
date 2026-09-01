@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-01T06:16:47+00:00\n"
+"POT-Creation-Date: 2026-09-01T09:02:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: my-account-customizer\n"
@@ -651,35 +651,35 @@ msgstr ""
 msgid "Apply template"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:57
+#: includes/admin/tabs/class-acfw-tab-tools.php:63
 msgid "Export"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:58
+#: includes/admin/tabs/class-acfw-tab-tools.php:64
 msgid "Download all endpoints, design settings and banners as a JSON file."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:65
+#: includes/admin/tabs/class-acfw-tab-tools.php:71
 msgid "Export configuration"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:72
+#: includes/admin/tabs/class-acfw-tab-tools.php:78
 msgid "Import"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:73
+#: includes/admin/tabs/class-acfw-tab-tools.php:79
 msgid "Upload a JSON file, or paste its contents. This overwrites your current configuration."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:78
+#: includes/admin/tabs/class-acfw-tab-tools.php:84
 msgid "JSON file"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:82
+#: includes/admin/tabs/class-acfw-tab-tools.php:88
 msgid "Or paste JSON"
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-tools.php:86
+#: includes/admin/tabs/class-acfw-tab-tools.php:92
 msgid "Import configuration"
 msgstr ""
 
@@ -1140,7 +1140,7 @@ msgid "Are you sure you want to log out?"
 msgstr ""
 
 #: includes/frontend/class-acfw-frontend.php:237
-#: templates/myaccount-menu.php:62
+#: templates/myaccount-menu.php:70
 msgid "Search…"
 msgstr ""
 
@@ -1257,47 +1257,47 @@ msgstr ""
 msgid "Drops plugin styling and inherits your theme."
 msgstr ""
 
-#: includes/helper/functions-acfw.php:533
+#: includes/helper/functions-acfw.php:559
 msgid "Display name"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:534
+#: includes/helper/functions-acfw.php:560
 msgid "First name"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:535
+#: includes/helper/functions-acfw.php:561
 msgid "Last name"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:536
+#: includes/helper/functions-acfw.php:562
 msgid "Username"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:537
+#: includes/helper/functions-acfw.php:563
 msgid "Email address"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:538
+#: includes/helper/functions-acfw.php:564
 msgid "Site title"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:539
+#: includes/helper/functions-acfw.php:565
 msgid "Order count"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:540
+#: includes/helper/functions-acfw.php:566
 msgid "Download count"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:541
+#: includes/helper/functions-acfw.php:567
 msgid "Last login date"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:542
+#: includes/helper/functions-acfw.php:568
 msgid "Points balance"
 msgstr ""
 
-#: includes/helper/functions-acfw.php:543
+#: includes/helper/functions-acfw.php:569
 msgid "Membership plan"
 msgstr ""
 
@@ -1350,11 +1350,15 @@ msgstr ""
 msgid "Account menu"
 msgstr ""
 
-#: templates/myaccount-menu.php:59
+#: templates/myaccount-menu.php:57
+msgid "Account pages"
+msgstr ""
+
+#: templates/myaccount-menu.php:67
 msgid "Collapse menu"
 msgstr ""
 
-#: templates/myaccount-menu.php:62
+#: templates/myaccount-menu.php:70
 msgid "Search menu"
 msgstr ""
 

@@ -504,6 +504,14 @@ function acfw_get_current_endpoint() {
  */
 function acfw_get_template( $template, $args = array() ) {
 
+	// Every caller passes a literal file name. Enforce that structurally so a
+	// variable can never reach the include: bare name, .php only, no traversal.
+	$template = basename( (string) $template );
+
+	if ( '' === $template || '.php' !== substr( $template, -4 ) || false !== strpos( $template, '..' ) ) {
+		return;
+	}
+
 	if ( is_array( $args ) ) {
 		extract( $args ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- template variables.
 	}
@@ -515,9 +523,27 @@ function acfw_get_template( $template, $args = array() ) {
 	);
 
 	$path = $override ? $override : ACFW_TEMPLATE_PATH . '/' . $template;
+	$real = realpath( $path );
 
-	if ( file_exists( $path ) ) {
-		include $path;
+	if ( ! $real || ! is_file( $real ) ) {
+		return;
+	}
+
+	// The resolved file must live in the plugin's template directory or in the
+	// active theme ( where an override legitimately lives ).
+	$roots = array_filter(
+		array(
+			realpath( ACFW_TEMPLATE_PATH ),
+			realpath( get_stylesheet_directory() ),
+			realpath( get_template_directory() ),
+		)
+	);
+
+	foreach ( $roots as $root ) {
+		if ( 0 === strpos( $real, $root . DIRECTORY_SEPARATOR ) ) {
+			include $real; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- validated against an allowlist of roots above.
+			return;
+		}
 	}
 }
 

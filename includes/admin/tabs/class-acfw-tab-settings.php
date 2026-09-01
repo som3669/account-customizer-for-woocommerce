@@ -41,7 +41,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					break;
 
 				case 'apply_preset':
-					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['preset_slug'] ) ) : '';
+					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['preset_slug'] ) ) ) : '';
 					$presets = get_option( 'acfw_presets', array() );
 					if ( ! empty( $presets[ $pslug ] ) ) {
 						$keys = acfw_design_option_keys();
@@ -54,7 +54,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					break;
 
 				case 'delete_preset':
-					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( wp_unslash( $_POST['preset_slug'] ) ) : '';
+					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['preset_slug'] ) ) ) : '';
 					$presets = get_option( 'acfw_presets', array() );
 					if ( is_array( $presets ) ) {
 						unset( $presets[ $pslug ] );

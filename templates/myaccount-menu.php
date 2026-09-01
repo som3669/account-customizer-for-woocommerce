@@ -48,7 +48,15 @@ $acfw_group_open = ! empty( $group_open );
 	<span class="dashicons dashicons-menu-alt"></span>
 	<span class="acfw-nav-toggle-label"><?php esc_html_e( 'Account menu', 'my-account-customizer' ); ?></span>
 </button>
-<nav class="woocommerce-MyAccount-navigation <?php echo esc_attr( implode( ' ', $wrap_classes ) ); ?>">
+<?php
+/*
+ * Same accessible name WooCommerce core gives this landmark. Assistive tech and
+ * WooCommerce's own end-to-end tests both find the menu by it, so replacing the
+ * navigation must keep it.
+ */
+$acfw_nav_label = apply_filters( 'acfw_menu_aria_label', __( 'Account pages', 'my-account-customizer' ) );
+?>
+<nav class="woocommerce-MyAccount-navigation <?php echo esc_attr( implode( ' ', $wrap_classes ) ); ?>" aria-label="<?php echo esc_attr( $acfw_nav_label ); ?>">
 	<span class="acfw-nav-backdrop"></span>
 	<?php
 	if ( ! empty( $avatar_html ) ) {

@@ -36,8 +36,14 @@ if ( ! class_exists( 'ACFW_Tab_Tools' ) ) {
 
 				case 'import':
 					$json = '';
-					if ( ! empty( $_FILES['acfw_import_file']['tmp_name'] ) && is_uploaded_file( $_FILES['acfw_import_file']['tmp_name'] ) ) {
-						$json = file_get_contents( $_FILES['acfw_import_file']['tmp_name'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+					// Not unslashed on purpose: a PHP upload path on Windows contains
+					// backslashes that wp_unslash() would strip, breaking the read.
+					$tmp = isset( $_FILES['acfw_import_file']['tmp_name'] )
+						? sanitize_text_field( $_FILES['acfw_import_file']['tmp_name'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+						: '';
+
+					if ( '' !== $tmp && is_uploaded_file( $tmp ) ) {
+						$json = file_get_contents( $tmp ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 					} elseif ( ! empty( $_POST['acfw_import_json'] ) ) {
 						$json = wp_unslash( $_POST['acfw_import_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated as JSON in importer.
 					}
