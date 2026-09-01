@@ -113,19 +113,34 @@ Test login (reviewer): provided in the Demo site URL below / on request.
 
 **Demo site URL**
 ```
-https://rcube.thulo.eu.org/my-account/
+https://rcube.thulo.eu.org/account-customizer/my-account/
 ```
-Host is live and WooCommerce is already active there. Before submitting, that
-site still needs:
+WordPress lives in the /account-customizer/ subdirectory. WooCommerce and this
+plugin are both installed and active — the account page enqueues the plugin's
+stylesheet and inline design tokens. Two things are still missing before a
+reviewer can use it:
 
-1. This plugin installed and activated (`dist/account-customizer-for-woocommerce.zip`).
-2. Products — the shop is currently empty, and Buy again needs purchasable items.
-3. `demo-seed.php` from this folder: set its token, upload it to the WordPress
-   root, load it once in a browser, then delete it. It creates the `reviewer`
-   customer, a completed order, a processing order, and switches every optional
-   feature on.
-4. The reviewer login (`reviewer` + the password set in the seeder) written into
-   the Setup instructions above.
+1. Products. The shop is empty, and Buy again has nothing to list without
+   purchasable items. Products > Import with WooCommerce's own
+   `sample-data/sample_products.csv` is the quickest fill.
+2. Demo data and access. Run `demo-seed.php` from this folder (set its token and
+   a real password first, upload to the WordPress root, load once, delete). It
+   creates the `reviewer` customer, a completed order, a processing order, and
+   switches every optional feature on.
+
+Right now the URL above shows the WooCommerce login form, because the visitor is
+logged out. Two ways to fix that, and they are not exclusive:
+
+- Install `acfw-demo-autologin.zip` from this folder (Plugins > Add New >
+  Upload). Any logged-out visitor to the account page is then signed in as the
+  demo customer automatically, so the demo needs no password at all. Deactivate
+  it to switch the demo off.
+- And/or write the reviewer login (`reviewer` + the seeder's password) into the
+  Setup instructions field above. That field is private to the review team.
+
+Give the reviewers an admin login through the Setup instructions field too — the
+Menu Items builder, Templates and Customizer are most of what they assess, and
+those live in wp-admin. Never publish admin credentials.
 
 > Note: the host answers non-browser clients with a JavaScript cookie challenge.
 > Reviewers browsing normally are unaffected, but plain HTTP clients get an empty
