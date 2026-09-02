@@ -215,6 +215,58 @@
 			$( '.acfw-detail[data-key="__new__"]' ).find( 'input[name="banner_title"]' ).focus();
 		} );
 
+		/* Bring a Classic editor back to life after its container was hidden.
+		 *
+		 * wp_editor() runs while the detail pane ( and, for Block-mode items, the
+		 * whole Classic wrapper ) is display:none, so TinyMCE builds its iframe
+		 * with no height and never recovers on its own. Re-initialising is the
+		 * only reliable repaint; hide()/show() alone leaves a 0px body.
+		 *
+		 * @param {string} ukey Item key with dashes already turned into underscores.
+		 */
+		function repaintClassicEditor( ukey ) {
+			var id = 'acfw_content_' + ukey;
+			var el = document.getElementById( id );
+
+			if ( ! el || ! $( el ).closest( '.acfw_classic_editor_wrapper' ).length ) {
+				return;
+			}
+			// Nothing to do while the wrapper is still hidden.
+			if ( $( el ).closest( '.acfw_classic_editor_wrapper' ).hasClass( 'acfw_hidden' ) ) {
+				return;
+			}
+
+			var ed = window.tinymce && window.tinymce.get( id );
+
+			if ( ed && ! ed.isHidden() ) {
+				// Push the current content back to the textarea before tearing down.
+				ed.save();
+			}
+
+			if ( window.wp && window.wp.editor && window.wp.editor.initialize ) {
+				if ( ed ) {
+					window.wp.editor.remove( id );
+				}
+				window.wp.editor.initialize( id, {
+					tinymce: {
+						wpautop: true,
+						toolbar1: 'bold,italic,bullist,numlist,link,undo,redo',
+					},
+					quicktags: true,
+					mediaButtons: true,
+				} );
+				return;
+			}
+
+			// No wp.editor API: fall back to the old repaint.
+			if ( ed ) {
+				ed.hide();
+				ed.show();
+			}
+		}
+
+		window.acfwRepaintClassic = repaintClassicEditor;
+
 		/* ---- Select a row → show its detail form ---- */
 		function selectItem( key ) {
 			$( '.acfw-node' ).removeClass( 'is-selected' );
@@ -222,17 +274,9 @@
 
 			$details.find( '.acfw-detail-empty' ).hide();
 			$details.find( '.acfw-detail' ).attr( 'hidden', 'hidden' );
-			var $form = $details.find( '.acfw-detail[data-key="' + key + '"]' ).removeAttr( 'hidden' );
+			$details.find( '.acfw-detail[data-key="' + key + '"]' ).removeAttr( 'hidden' );
 
-			// The editor is rendered server-side (wp_editor) inside a hidden form;
-			// repaint TinyMCE now it is visible so the iframe sizes correctly.
-			if ( window.tinymce ) {
-				var ed = window.tinymce.get( 'acfw_content_' + String( key ).replace( /-/g, '_' ) );
-				if ( ed ) {
-					ed.hide();
-					ed.show();
-				}
-			}
+			repaintClassicEditor( String( key ).replace( /-/g, '_' ) );
 		}
 
 		$( document ).on( 'click', '.acfw-node-head', function ( e ) {

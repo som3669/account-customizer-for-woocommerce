@@ -249,6 +249,11 @@ function showMode( endpoint, mode, seed ) {
 	}
 
 	if ( ! useBlock ) {
+		// TinyMCE was built while this wrapper was display:none, so it has no
+		// height until something repaints it. admin.js owns that logic.
+		if ( typeof window.acfwRepaintClassic === 'function' ) {
+			window.acfwRepaintClassic( endpoint );
+		}
 		return;
 	}
 

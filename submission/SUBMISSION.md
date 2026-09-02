@@ -10,8 +10,10 @@ Zip to upload: `dist/my-account-dashboard-builder.zip` (291 KB)
 ```
 My Account Dashboard Builder
 ```
-(21 chars. The Marketplace rejected the earlier name: product names may not contain
-"Woo" or "WooCommerce", even descriptively. The description fields may still name
+(28 chars. Two rejections shaped this name. First: product names may not contain
+"Woo" or "WooCommerce", even descriptively. Second: "My Account Customizer" was
+too close to an existing WordPress.org plugin by another author, so a
+distinguishing descriptor was required. The description fields may still name
 WooCommerce freely — only the name field is restricted.)
 
 **Category** (primary)
@@ -22,9 +24,9 @@ Fallback if that option isn't present: **Store Management**.
 
 **Product short description** (≤140 chars)
 ```
-Redesign the WooCommerce My Account page: custom endpoints, block editor content, avatar uploads, reorder, and one-click design templates.
+Redesign the WooCommerce My Account page: custom endpoints, block editor content, avatar uploads, one-click reorder and design templates.
 ```
-(139 chars.)
+(137 chars.)
 
 ---
 
@@ -37,7 +39,7 @@ My Account Dashboard Builder turns the default My Account page into a branded cu
 
 **How does your product compare to existing solutions?** (2–3 sentences)
 ```
-Unlike other My Account customizers which mostly restyle the page, this plugin adds a native Gutenberg block editor for endpoint content, ready-made design templates, and dashboard widgets that actually drive revenue — Buy Again / one-click reorder, Recently Viewed, and order tracking. It also matches their strongest paid features (customer avatar upload, per-role/date/purchase visibility rules, WPML/Polylang) while remaining a single self-contained plugin with zero external dependencies.
+Most My Account customizers restyle the page and stop there. My Account Dashboard Builder adds a native Gutenberg block editor for endpoint content, ready-made design templates, and dashboard widgets that drive repeat revenue — Buy again one-click reorder, Recently viewed, and order tracking. It matches the strongest paid features of competitors like YITH Customize My Account Page and ThemeGrill's Customize My Account Page (customer avatar upload, per-role and per-purchase visibility, WPML/Polylang) while staying a single self-contained plugin with zero external dependencies.
 ```
 
 ---

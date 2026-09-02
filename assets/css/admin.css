@@ -2020,3 +2020,27 @@
   font-style: normal;
   color: var(--acfw-muted);
 }
+
+/* Classic editor inside the item detail pane.
+   wp_editor() is rendered while the pane is hidden, so give the container a
+   floor height: even a mis-sized TinyMCE iframe stays usable, and the Code
+   (textarea) view never collapses to a single line. */
+.acfw-content-wrap {
+  width: 100%;
+}
+
+.acfw-content-wrap .wp-editor-wrap,
+.acfw-content-wrap .wp-editor-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.acfw-content-wrap .wp-editor-container iframe {
+  min-height: 240px;
+}
+
+.acfw-content-wrap textarea.wp-editor-area {
+  width: 100%;
+  min-height: 240px;
+  box-sizing: border-box;
+}
