@@ -24,7 +24,7 @@ if ( ! class_exists( 'ACFW_I18n' ) ) {
 		 *
 		 * @var string
 		 */
-		const CONTEXT = 'my-account-customizer';
+		const CONTEXT = 'my-account-dashboard-builder';
 
 		/**
 		 * Wire up registration and the display-time translation filters.

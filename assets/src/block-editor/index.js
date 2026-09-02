@@ -133,7 +133,7 @@ function EndpointEditor( { field } ) {
 										disabled={ disabled }
 										aria-expanded={ isOpen }
 									>
-										{ __( 'Add block', 'my-account-customizer' ) }
+										{ __( 'Add block', 'my-account-dashboard-builder' ) }
 									</Button>
 								) }
 							/>
@@ -142,7 +142,7 @@ function EndpointEditor( { field } ) {
 								isPressed={ sidebar === 'inspector' }
 								onClick={ toggleInspector }
 							>
-								{ __( 'Block settings', 'my-account-customizer' ) }
+								{ __( 'Block settings', 'my-account-dashboard-builder' ) }
 							</Button>
 						</div>
 

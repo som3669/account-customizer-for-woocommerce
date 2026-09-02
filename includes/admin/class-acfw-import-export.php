@@ -42,7 +42,7 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 			}
 
 			return array(
-				'plugin'   => 'my-account-customizer',
+				'plugin'   => 'my-account-dashboard-builder',
 				'version'  => defined( 'ACFW_VERSION' ) ? ACFW_VERSION : '',
 				'exported' => gmdate( 'c' ),
 				'options'  => $data,
@@ -69,7 +69,7 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 			$parsed = json_decode( $json, true );
 
 			if ( ! is_array( $parsed ) || empty( $parsed['options'] ) || ! is_array( $parsed['options'] ) ) {
-				return new WP_Error( 'acfw_import_invalid', __( 'The file is not a valid My Account Customizer export.', 'my-account-customizer' ) );
+				return new WP_Error( 'acfw_import_invalid', __( 'The file is not a valid My Account Dashboard Builder export.', 'my-account-dashboard-builder' ) );
 			}
 
 			// A user who cannot post unfiltered HTML must not be able to smuggle

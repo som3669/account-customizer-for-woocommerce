@@ -191,9 +191,9 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 						<?php wp_nonce_field( self::NONCE ); ?>
 						<input type="hidden" name="acfw_action" value="add_item" />
 						<input type="hidden" name="item_type" class="acfw-add-type" value="endpoint" />
-						<input type="text" name="item_label" class="acfw-add-label" placeholder="<?php esc_attr_e( 'New item label', 'my-account-customizer' ); ?>" required />
-						<button type="submit" class="button button-primary"><?php esc_html_e( 'Create', 'my-account-customizer' ); ?></button>
-						<button type="button" class="button acfw-add-cancel"><?php esc_html_e( 'Cancel', 'my-account-customizer' ); ?></button>
+						<input type="text" name="item_label" class="acfw-add-label" placeholder="<?php esc_attr_e( 'New item label', 'my-account-dashboard-builder' ); ?>" required />
+						<button type="submit" class="button button-primary"><?php esc_html_e( 'Create', 'my-account-dashboard-builder' ); ?></button>
+						<button type="button" class="button acfw-add-cancel"><?php esc_html_e( 'Cancel', 'my-account-dashboard-builder' ); ?></button>
 					</form>
 				</div>
 
@@ -217,7 +217,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 						<div class="acfw-card acfw-builder-detail">
 							<div class="acfw-detail-empty">
 								<span class="dashicons dashicons-arrow-left-alt"></span>
-								<p><?php esc_html_e( 'Select a menu item on the left to edit its options.', 'my-account-customizer' ); ?></p>
+								<p><?php esc_html_e( 'Select a menu item on the left to edit its options.', 'my-account-dashboard-builder' ); ?></p>
 							</div>
 							<?php
 							$render_details = function ( $list ) use ( &$render_details ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.listFound -- retained from original.
@@ -235,7 +235,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 
 					<div class="acfw-form-footer">
 						<button type="submit" class="button button-primary acfw-save-all">
-							<span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save changes', 'my-account-customizer' ); ?>
+							<span class="dashicons dashicons-saved"></span> <?php esc_html_e( 'Save changes', 'my-account-dashboard-builder' ); ?>
 						</button>
 					</div>
 				</form>
@@ -272,19 +272,19 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 				data-key="<?php echo esc_attr( $key ); ?>" data-type="<?php echo esc_attr( $type ); ?>">
 
 				<div class="acfw-node-head">
-					<span class="acfw-drag dashicons dashicons-menu" title="<?php esc_attr_e( 'Drag', 'my-account-customizer' ); ?>"></span>
+					<span class="acfw-drag dashicons dashicons-menu" title="<?php esc_attr_e( 'Drag', 'my-account-dashboard-builder' ); ?>"></span>
 					<?php echo $this->icon_markup( $item, 'acfw-node-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<span class="acfw-node-title"><?php echo esc_html( $item['label'] ); ?></span>
 					<span class="acfw-node-spacer"></span>
-					<label class="acfw-switch" title="<?php esc_attr_e( 'Enable / disable', 'my-account-customizer' ); ?>">
+					<label class="acfw-switch" title="<?php esc_attr_e( 'Enable / disable', 'my-account-dashboard-builder' ); ?>">
 						<input type="checkbox" class="acfw-active-proxy" data-key="<?php echo esc_attr( $key ); ?>" <?php checked( $active ); ?> />
 						<span class="acfw-switch-slider"></span>
 					</label>
-					<button type="button" class="acfw-node-duplicate dashicons dashicons-admin-page" title="<?php esc_attr_e( 'Duplicate', 'my-account-customizer' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
+					<button type="button" class="acfw-node-duplicate dashicons dashicons-admin-page" title="<?php esc_attr_e( 'Duplicate', 'my-account-dashboard-builder' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
 					<?php if ( $is_default ) : ?>
-						<button type="button" class="acfw-node-remove is-disabled dashicons dashicons-trash" title="<?php esc_attr_e( 'Default items cannot be deleted', 'my-account-customizer' ); ?>" disabled aria-disabled="true"></button>
+						<button type="button" class="acfw-node-remove is-disabled dashicons dashicons-trash" title="<?php esc_attr_e( 'Default items cannot be deleted', 'my-account-dashboard-builder' ); ?>" disabled aria-disabled="true"></button>
 					<?php else : ?>
-						<button type="button" class="acfw-node-remove dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'my-account-customizer' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
+						<button type="button" class="acfw-node-remove dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'my-account-dashboard-builder' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
 					<?php endif; ?>
 				</div>
 
@@ -317,10 +317,10 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 			$icon_source = ( ! empty( $item['icon_url'] ) || ( isset( $item['icon_source'] ) && 'upload' === $item['icon_source'] ) ) ? 'upload' : 'choose';
 			$sel_roles   = (array) ( $item['usr_roles'] ?? array() );
 			$type_labels = array(
-				'endpoint' => __( 'Endpoint', 'my-account-customizer' ),
-				'group'    => __( 'Group', 'my-account-customizer' ),
-				'link'     => __( 'Link', 'my-account-customizer' ),
-				'page'     => __( 'Page', 'my-account-customizer' ),
+				'endpoint' => __( 'Endpoint', 'my-account-dashboard-builder' ),
+				'group'    => __( 'Group', 'my-account-dashboard-builder' ),
+				'link'     => __( 'Link', 'my-account-dashboard-builder' ),
+				'page'     => __( 'Page', 'my-account-dashboard-builder' ),
 			);
 			?>
 			<div class="acfw-detail acfw-item-form" data-key="<?php echo esc_attr( $key ); ?>" data-type="<?php echo esc_attr( $type ); ?>" hidden>
@@ -334,29 +334,29 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Endpoint label', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'The menu label shown to customers.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<label><?php esc_html_e( 'Endpoint label', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'The menu label shown to customers.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 					<input type="text" name="items[<?php echo esc_attr( $key ); ?>][label]" value="<?php echo esc_attr( $item['label'] ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Endpoint icon', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Choose a FontAwesome icon or upload your own image.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<label><?php esc_html_e( 'Endpoint icon', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Choose a FontAwesome icon or upload your own image.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 					<div class="acfw-icon-source">
 						<label class="acfw-radio-card <?php echo 'choose' === $icon_source ? 'is-active' : ''; ?>">
 							<input type="radio" name="items[<?php echo esc_attr( $key ); ?>][icon_source]" value="choose" <?php checked( $icon_source, 'choose' ); ?> />
-							<span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'my-account-customizer' ); ?>
+							<span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'my-account-dashboard-builder' ); ?>
 						</label>
 						<label class="acfw-radio-card <?php echo 'upload' === $icon_source ? 'is-active' : ''; ?>">
 							<input type="radio" name="items[<?php echo esc_attr( $key ); ?>][icon_source]" value="upload" <?php checked( $icon_source, 'upload' ); ?> />
-							<span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'my-account-customizer' ); ?>
+							<span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?>
 						</label>
 					</div>
 
 				</div>
 
 				<div class="acfw-field acfw-icon-choose" <?php echo 'choose' === $icon_source ? '' : 'hidden'; ?>>
-					<label><?php esc_html_e( 'Select an icon', 'my-account-customizer' ); ?></label>
+					<label><?php esc_html_e( 'Select an icon', 'my-account-dashboard-builder' ); ?></label>
 					<select name="items[<?php echo esc_attr( $key ); ?>][icon]" class="acfw-icon-select">
-						<option value=""><?php esc_html_e( '— Select an icon —', 'my-account-customizer' ); ?></option>
+						<option value=""><?php esc_html_e( '— Select an icon —', 'my-account-dashboard-builder' ); ?></option>
 						<?php foreach ( $this->icon_choices() as $ic => $label ) : ?>
 							<option value="<?php echo esc_attr( $ic ); ?>" <?php selected( $item['icon'] ?? '', $ic ); ?>><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
@@ -364,65 +364,65 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 				</div>
 
 				<div class="acfw-field acfw-icon-upload" <?php echo 'upload' === $icon_source ? '' : 'hidden'; ?>>
-					<label><?php esc_html_e( 'Upload an image', 'my-account-customizer' ); ?></label>
+					<label><?php esc_html_e( 'Upload an image', 'my-account-dashboard-builder' ); ?></label>
 					<?php $this->uploader( 'items[' . $key . '][icon_url]', $item['icon_url'] ?? '' ); ?>
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'CSS class', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Optional extra CSS class for this menu item.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<label><?php esc_html_e( 'CSS class', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Optional extra CSS class for this menu item.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 					<input type="text" name="items[<?php echo esc_attr( $key ); ?>][class]" value="<?php echo esc_attr( $item['class'] ?? '' ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'User roles', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Show only to selected roles. Empty = everyone.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<label><?php esc_html_e( 'User roles', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Show only to selected roles. Empty = everyone.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 					<select name="items[<?php echo esc_attr( $key ); ?>][usr_roles][]" multiple size="4" class="acfw-roles-select">
 						<?php foreach ( $roles as $role_key => $role_label ) : ?>
 							<option value="<?php echo esc_attr( $role_key ); ?>" <?php selected( in_array( $role_key, $sel_roles, true ) ); ?>><?php echo esc_html( $role_label ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show for everyone.', 'my-account-customizer' ); ?></p>
+					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show for everyone.', 'my-account-dashboard-builder' ); ?></p>
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Show from', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Only show this item on or after this date.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<label><?php esc_html_e( 'Show from', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Only show this item on or after this date.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 					<input type="date" name="items[<?php echo esc_attr( $key ); ?>][vis_from]" value="<?php echo esc_attr( $item['vis_from'] ?? '' ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Show until', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Only show this item up to this date.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<label><?php esc_html_e( 'Show until', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Only show this item up to this date.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 					<input type="date" name="items[<?php echo esc_attr( $key ); ?>][vis_to]" value="<?php echo esc_attr( $item['vis_to'] ?? '' ); ?>" />
 				</div>
 
 				<div class="acfw-field">
-					<label><?php esc_html_e( 'Purchased product', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Only show to customers who bought this product ID.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
-					<input type="number" name="items[<?php echo esc_attr( $key ); ?>][vis_product]" min="0" value="<?php echo esc_attr( $item['vis_product'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Product ID', 'my-account-customizer' ); ?>" />
+					<label><?php esc_html_e( 'Purchased product', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Only show to customers who bought this product ID.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					<input type="number" name="items[<?php echo esc_attr( $key ); ?>][vis_product]" min="0" value="<?php echo esc_attr( $item['vis_product'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Product ID', 'my-account-dashboard-builder' ); ?>" />
 				</div>
 
 				<?php if ( 'link' === $type ) : ?>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'URL', 'my-account-customizer' ); ?></label>
+						<label><?php esc_html_e( 'URL', 'my-account-dashboard-builder' ); ?></label>
 						<input type="url" name="items[<?php echo esc_attr( $key ); ?>][url]" value="<?php echo esc_attr( $item['url'] ?? '' ); ?>" />
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Open in new tab', 'my-account-customizer' ); ?></label>
+						<label><?php esc_html_e( 'Open in new tab', 'my-account-dashboard-builder' ); ?></label>
 						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="items[<?php echo esc_attr( $key ); ?>][target_blank]" value="1" <?php checked( ! empty( $item['target_blank'] ) ); ?> /><span class="acfw-switch-slider"></span></label>
 					</div>
 				<?php elseif ( 'page' === $type ) : ?>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Page', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Link this menu item to an existing WordPress page.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<label><?php esc_html_e( 'Page', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Link this menu item to an existing WordPress page.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 						<?php
 						wp_dropdown_pages(
 							array(
 								'name'              => 'items[' . esc_attr( $key ) . '][page_id]',
 								'selected'          => (int) ( $item['page_id'] ?? 0 ),
-								'show_option_none'  => esc_html__( '— Select a page —', 'my-account-customizer' ),
+								'show_option_none'  => esc_html__( '— Select a page —', 'my-account-dashboard-builder' ),
 								'option_none_value' => 0,
 							)
 						);
 						?>
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Open in new tab', 'my-account-customizer' ); ?></label>
+						<label><?php esc_html_e( 'Open in new tab', 'my-account-dashboard-builder' ); ?></label>
 						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="items[<?php echo esc_attr( $key ); ?>][target_blank]" value="1" <?php checked( ! empty( $item['target_blank'] ) ); ?> /><span class="acfw-switch-slider"></span></label>
 					</div>
 				<?php elseif ( 'endpoint' === $type ) : ?>
@@ -433,20 +433,20 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					$is_block    = 'block' === $editor_type;
 					?>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Content editor', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Edit custom content with the Classic editor or the Block ( Gutenberg ) editor.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<label><?php esc_html_e( 'Content editor', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Edit custom content with the Classic editor or the Block ( Gutenberg ) editor.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 						<div class="acfw-radio-group acfw-editor-type-group" role="radiogroup">
 							<label class="acfw-radio-box acfw_choose_icon_type_inner_wrapper <?php echo ! $is_block ? 'is-active active' : ''; ?>">
 								<input type="radio" class="acfw_editor_type_radio" name="items[<?php echo esc_attr( $key ); ?>][editor_type]" value="classic" data-endpoint="<?php echo esc_attr( $ukey ); ?>" <?php checked( $editor_type, 'classic' ); ?> />
-								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Classic', 'my-account-customizer' ); ?></span>
+								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Classic', 'my-account-dashboard-builder' ); ?></span>
 							</label>
 							<label class="acfw-radio-box acfw_choose_icon_type_inner_wrapper <?php echo $is_block ? 'is-active active' : ''; ?>">
 								<input type="radio" class="acfw_editor_type_radio" name="items[<?php echo esc_attr( $key ); ?>][editor_type]" value="block" data-endpoint="<?php echo esc_attr( $ukey ); ?>" <?php checked( $editor_type, 'block' ); ?> />
-								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Block', 'my-account-customizer' ); ?></span>
+								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Block', 'my-account-dashboard-builder' ); ?></span>
 							</label>
 						</div>
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Custom content', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Extra content added to this endpoint. Use Add media and smart tags.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<label><?php esc_html_e( 'Custom content', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Extra content added to this endpoint. Use Add media and smart tags.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 						<div class="acfw-content-wrap">
 							<div class="acfw_classic_editor_wrapper <?php echo $is_block ? 'acfw_hidden' : ''; ?>" data-endpoint="<?php echo esc_attr( $ukey ); ?>">
 								<?php
@@ -470,32 +470,32 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 						</div>
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Custom content position', 'my-account-customizer' ); ?><?php echo $this->tip( __( 'Where the custom content appears relative to the default content.', 'my-account-customizer' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<label><?php esc_html_e( 'Custom content position', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Where the custom content appears relative to the default content.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 						<select name="items[<?php echo esc_attr( $key ); ?>][content_position]">
 							<?php $cp = $item['content_position'] ?? 'before'; ?>
-							<option value="before" <?php selected( $cp, 'before' ); ?>><?php esc_html_e( 'Before default content', 'my-account-customizer' ); ?></option>
-							<option value="after" <?php selected( $cp, 'after' ); ?>><?php esc_html_e( 'After default content', 'my-account-customizer' ); ?></option>
-							<option value="override" <?php selected( $cp, 'override' ); ?>><?php esc_html_e( 'Replace default content', 'my-account-customizer' ); ?></option>
+							<option value="before" <?php selected( $cp, 'before' ); ?>><?php esc_html_e( 'Before default content', 'my-account-dashboard-builder' ); ?></option>
+							<option value="after" <?php selected( $cp, 'after' ); ?>><?php esc_html_e( 'After default content', 'my-account-dashboard-builder' ); ?></option>
+							<option value="override" <?php selected( $cp, 'override' ); ?>><?php esc_html_e( 'Replace default content', 'my-account-dashboard-builder' ); ?></option>
 						</select>
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Banner', 'my-account-customizer' ); ?></label>
+						<label><?php esc_html_e( 'Banner', 'my-account-dashboard-builder' ); ?></label>
 						<select name="items[<?php echo esc_attr( $key ); ?>][banner_slug]">
-							<option value=""><?php esc_html_e( '— None —', 'my-account-customizer' ); ?></option>
+							<option value=""><?php esc_html_e( '— None —', 'my-account-dashboard-builder' ); ?></option>
 							<?php foreach ( ACFW_Banners::all() as $b_slug => $b ) : ?>
 								<option value="<?php echo esc_attr( $b_slug ); ?>" <?php selected( $item['banner_slug'] ?? '', $b_slug ); ?>><?php echo esc_html( $b['title'] ? $b['title'] : $b_slug ); ?></option>
 							<?php endforeach; ?>
 						</select>
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Banner position', 'my-account-customizer' ); ?></label>
+						<label><?php esc_html_e( 'Banner position', 'my-account-dashboard-builder' ); ?></label>
 						<?php
 						$this->buttonset(
 							'banner_position',
 							$item['banner_position'] ?? 'top',
 							array(
-								'top'    => __( 'Top', 'my-account-customizer' ),
-								'bottom' => __( 'Bottom', 'my-account-customizer' ),
+								'top'    => __( 'Top', 'my-account-dashboard-builder' ),
+								'bottom' => __( 'Bottom', 'my-account-dashboard-builder' ),
 							),
 							'top'
 						);

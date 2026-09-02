@@ -16,13 +16,13 @@ function acfw_menu_styles() {
 	return apply_filters(
 		'acfw_menu_styles',
 		array(
-			'theme'   => __( 'Theme style', 'my-account-customizer' ),
-			'simple'  => __( 'Simple', 'my-account-customizer' ),
-			'classic' => __( 'Classic', 'my-account-customizer' ),
-			'modern'  => __( 'Modern cards', 'my-account-customizer' ),
-			'minimal' => __( 'Minimal', 'my-account-customizer' ),
-			'pill'    => __( 'Pills', 'my-account-customizer' ),
-			'tabs'    => __( 'Tabs', 'my-account-customizer' ),
+			'theme'   => __( 'Theme style', 'my-account-dashboard-builder' ),
+			'simple'  => __( 'Simple', 'my-account-dashboard-builder' ),
+			'classic' => __( 'Classic', 'my-account-dashboard-builder' ),
+			'modern'  => __( 'Modern cards', 'my-account-dashboard-builder' ),
+			'minimal' => __( 'Minimal', 'my-account-dashboard-builder' ),
+			'pill'    => __( 'Pills', 'my-account-dashboard-builder' ),
+			'tabs'    => __( 'Tabs', 'my-account-dashboard-builder' ),
 		)
 	);
 }
@@ -97,8 +97,8 @@ function acfw_design_option_keys() {
 function acfw_prebuilt_templates() {
 	$templates = array(
 		'classic-sidebar' => array(
-			'label'       => __( 'Classic Sidebar', 'my-account-customizer' ),
-			'description' => __( 'Left menu with a subtle active bar. The safe default.', 'my-account-customizer' ),
+			'label'       => __( 'Classic Sidebar', 'my-account-dashboard-builder' ),
+			'description' => __( 'Left menu with a subtle active bar. The safe default.', 'my-account-dashboard-builder' ),
 			'accent'      => '#2563eb',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -110,8 +110,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'modern-cards'    => array(
-			'label'       => __( 'Modern Cards', 'my-account-customizer' ),
-			'description' => __( 'Raised cards with icon chips and rounded corners.', 'my-account-customizer' ),
+			'label'       => __( 'Modern Cards', 'my-account-dashboard-builder' ),
+			'description' => __( 'Raised cards with icon chips and rounded corners.', 'my-account-dashboard-builder' ),
 			'accent'      => '#7c3aed',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -125,8 +125,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'rounded-pills'   => array(
-			'label'       => __( 'Rounded Pills', 'my-account-customizer' ),
-			'description' => __( 'Soft pill items with a coloured active state.', 'my-account-customizer' ),
+			'label'       => __( 'Rounded Pills', 'my-account-dashboard-builder' ),
+			'description' => __( 'Soft pill items with a coloured active state.', 'my-account-dashboard-builder' ),
 			'accent'      => '#0ea5e9',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -138,8 +138,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'tabbed-top'      => array(
-			'label'       => __( 'Tabbed Top', 'my-account-customizer' ),
-			'description' => __( 'Horizontal tab bar above the content.', 'my-account-customizer' ),
+			'label'       => __( 'Tabbed Top', 'my-account-dashboard-builder' ),
+			'description' => __( 'Horizontal tab bar above the content.', 'my-account-dashboard-builder' ),
 			'accent'      => '#16a34a',
 			'options'     => array(
 				'acfw_menu_position'    => 'horizontal',
@@ -150,8 +150,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'minimal'         => array(
-			'label'       => __( 'Minimal', 'my-account-customizer' ),
-			'description' => __( 'Flat, borderless list. Quiet and compact.', 'my-account-customizer' ),
+			'label'       => __( 'Minimal', 'my-account-dashboard-builder' ),
+			'description' => __( 'Flat, borderless list. Quiet and compact.', 'my-account-dashboard-builder' ),
 			'accent'      => '#111827',
 			'options'     => array(
 				'acfw_menu_position'    => 'vertical-left',
@@ -163,8 +163,8 @@ function acfw_prebuilt_templates() {
 			),
 		),
 		'theme-native'    => array(
-			'label'       => __( 'Theme Native', 'my-account-customizer' ),
-			'description' => __( 'Drops plugin styling and inherits your theme.', 'my-account-customizer' ),
+			'label'       => __( 'Theme Native', 'my-account-dashboard-builder' ),
+			'description' => __( 'Drops plugin styling and inherits your theme.', 'my-account-dashboard-builder' ),
 			'accent'      => '#64748b',
 			'options'     => array(
 				'acfw_menu_position' => 'vertical-left',
@@ -497,7 +497,7 @@ function acfw_get_current_endpoint() {
  * Locate a template, allowing theme overrides.
  *
  * Themes can override by placing files in
- * yourtheme/my-account-customizer/{template}.
+ * yourtheme/my-account-dashboard-builder/{template}.
  *
  * @param string $template Template filename.
  * @param array  $args     Variables passed to the template.
@@ -518,7 +518,7 @@ function acfw_get_template( $template, $args = array() ) {
 
 	$override = locate_template(
 		array(
-			'my-account-customizer/' . $template,
+			'my-account-dashboard-builder/' . $template,
 		)
 	);
 
@@ -556,17 +556,17 @@ function acfw_smart_tags() {
 	return apply_filters(
 		'acfw_smart_tags',
 		array(
-			'{display_name}'    => __( 'Display name', 'my-account-customizer' ),
-			'{first_name}'      => __( 'First name', 'my-account-customizer' ),
-			'{last_name}'       => __( 'Last name', 'my-account-customizer' ),
-			'{username}'        => __( 'Username', 'my-account-customizer' ),
-			'{user_email}'      => __( 'Email address', 'my-account-customizer' ),
-			'{site_title}'      => __( 'Site title', 'my-account-customizer' ),
-			'{order_count}'     => __( 'Order count', 'my-account-customizer' ),
-			'{download_count}'  => __( 'Download count', 'my-account-customizer' ),
-			'{last_login}'      => __( 'Last login date', 'my-account-customizer' ),
-			'{points_balance}'  => __( 'Points balance', 'my-account-customizer' ),
-			'{membership_plan}' => __( 'Membership plan', 'my-account-customizer' ),
+			'{display_name}'    => __( 'Display name', 'my-account-dashboard-builder' ),
+			'{first_name}'      => __( 'First name', 'my-account-dashboard-builder' ),
+			'{last_name}'       => __( 'Last name', 'my-account-dashboard-builder' ),
+			'{username}'        => __( 'Username', 'my-account-dashboard-builder' ),
+			'{user_email}'      => __( 'Email address', 'my-account-dashboard-builder' ),
+			'{site_title}'      => __( 'Site title', 'my-account-dashboard-builder' ),
+			'{order_count}'     => __( 'Order count', 'my-account-dashboard-builder' ),
+			'{download_count}'  => __( 'Download count', 'my-account-dashboard-builder' ),
+			'{last_login}'      => __( 'Last login date', 'my-account-dashboard-builder' ),
+			'{points_balance}'  => __( 'Points balance', 'my-account-dashboard-builder' ),
+			'{membership_plan}' => __( 'Membership plan', 'my-account-dashboard-builder' ),
 		)
 	);
 }

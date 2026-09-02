@@ -87,7 +87,7 @@ jobs:
       - name: Regenerate the POT file
         run: |
           wp i18n make-pot . /tmp/regenerated.pot \
-            --domain=my-account-customizer \
+            --domain=my-account-dashboard-builder \
             --exclude=node_modules,dist,submission,vendor,tests,assets/src \
             --skip-audit
 
@@ -96,8 +96,8 @@ jobs:
           # Headers (creation date, generator version) always differ, so compare
           # only the strings and their code references.
           strip() { grep -E '^(msgid|msgctxt|#:)' "$1"; }
-          if ! diff <(strip languages/my-account-customizer.pot) <(strip /tmp/regenerated.pot) > /tmp/pot.diff; then
-            echo "::error::languages/*.pot is stale. Run: wp i18n make-pot . languages/my-account-customizer.pot"
+          if ! diff <(strip languages/my-account-dashboard-builder.pot) <(strip /tmp/regenerated.pot) > /tmp/pot.diff; then
+            echo "::error::languages/*.pot is stale. Run: wp i18n make-pot . languages/my-account-dashboard-builder.pot"
             head -40 /tmp/pot.diff
             exit 1
           fi
@@ -124,6 +124,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: my-account-customizer
-          path: dist/my-account-customizer.zip
+          name: my-account-dashboard-builder
+          path: dist/my-account-dashboard-builder.zip
           if-no-files-found: error

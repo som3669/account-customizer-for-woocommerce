@@ -1,4 +1,4 @@
-=== My Account Customizer ===
+=== My Account Dashboard Builder ===
 Contributors: Rcube
 Tags: woocommerce, my account, account page, endpoints, customizer
 Requires at least: 6.0
@@ -14,7 +14,7 @@ Turn the default WooCommerce My Account page into a branded customer dashboard: 
 
 == Description ==
 
-The default WooCommerce **My Account** page is a plain list of links. My Account Customizer rebuilds it into a branded customer dashboard — without touching a template file or writing a line of code.
+The default WooCommerce **My Account** page is a plain list of links. My Account Dashboard Builder rebuilds it into a branded customer dashboard — without touching a template file or writing a line of code.
 
 = Build the menu =
 

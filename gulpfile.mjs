@@ -21,7 +21,7 @@ import { deleteAsync } from 'del';
 const { src, dest, series, parallel, watch: gulpWatch } = gulp;
 const sass = gulpSass( sassCompiler );
 
-const SLUG = 'my-account-customizer';
+const SLUG = 'my-account-dashboard-builder';
 
 /* Hand-authored JS that should be minified. Bundled libs (select2, fontawesome) are skipped. */
 const OWN_JS = [

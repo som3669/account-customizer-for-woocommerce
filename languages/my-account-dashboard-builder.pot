@@ -2,42 +2,42 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: My Account Customizer 1.0.0\n"
+"Project-Id-Version: My Account Dashboard Builder 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/account-customizer-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-01T09:02:22+00:00\n"
+"POT-Creation-Date: 2026-09-02T03:42:05+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
-"X-Domain: my-account-customizer\n"
+"X-Domain: my-account-dashboard-builder\n"
 
 #. Plugin Name of the plugin
-#: my-account-customizer.php
+#: my-account-dashboard-builder.php
 #: includes/admin/class-acfw-admin.php:67
 #: includes/admin/class-acfw-admin.php:380
-msgid "My Account Customizer"
+msgid "My Account Dashboard Builder"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: my-account-customizer.php
-msgid "https://rube.thulo.eu.org/my-account-customizer"
+#: my-account-dashboard-builder.php
+msgid "https://rube.thulo.eu.org/my-account-dashboard-builder"
 msgstr ""
 
 #. Description of the plugin
-#: my-account-customizer.php
+#: my-account-dashboard-builder.php
 msgid "Customize the WooCommerce \"My Account\" page: reorder the menu, add custom endpoints, groups and links, set per-endpoint content, control visibility by user role and restyle the whole area."
 msgstr ""
 
 #. Author of the plugin
-#: my-account-customizer.php
+#: my-account-dashboard-builder.php
 msgid "Rcube"
 msgstr ""
 
 #. Author URI of the plugin
-#: my-account-customizer.php
+#: my-account-dashboard-builder.php
 msgid "https://rube.thulo.eu.org"
 msgstr ""
 
@@ -156,7 +156,7 @@ msgid "Add smart tags"
 msgstr ""
 
 #: includes/admin/class-acfw-import-export.php:72
-msgid "The file is not a valid My Account Customizer export."
+msgid "The file is not a valid My Account Dashboard Builder export."
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-banners.php:92
@@ -1301,20 +1301,20 @@ msgstr ""
 msgid "Membership plan"
 msgstr ""
 
-#: my-account-customizer.php:40
-msgid "My Account Customizer is enabled but requires WooCommerce to be installed and active."
+#: my-account-dashboard-builder.php:40
+msgid "My Account Dashboard Builder is enabled but requires WooCommerce to be installed and active."
 msgstr ""
 
-#: my-account-customizer.php:144
+#: my-account-dashboard-builder.php:144
 #: assets/js/block.js:8
 msgid "Account Menu"
 msgstr ""
 
-#: my-account-customizer.php:145
+#: my-account-dashboard-builder.php:145
 msgid "The customized WooCommerce My Account menu."
 msgstr ""
 
-#: my-account-customizer.php:169
+#: my-account-dashboard-builder.php:169
 msgid "Title"
 msgstr ""
 

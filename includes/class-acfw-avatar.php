@@ -145,12 +145,12 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 		public function ajax_upload() {
 
 			if ( ! self::enabled() || ! is_user_logged_in() ) {
-				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'my-account-customizer' ) ), 403 );
+				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'my-account-dashboard-builder' ) ), 403 );
 			}
 			check_ajax_referer( self::NONCE, 'nonce' );
 
 			if ( empty( $_FILES['avatar']['name'] ) || ! isset( $_FILES['avatar']['error'] ) || UPLOAD_ERR_OK !== (int) $_FILES['avatar']['error'] ) {
-				wp_send_json_error( array( 'message' => __( 'No file was uploaded.', 'my-account-customizer' ) ) );
+				wp_send_json_error( array( 'message' => __( 'No file was uploaded.', 'my-account-dashboard-builder' ) ) );
 			}
 
 			$file = $_FILES['avatar']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated below.
@@ -160,7 +160,7 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 				wp_send_json_error(
 					array(
 						/* translators: %s: maximum size, e.g. "2 MB". */
-						'message' => sprintf( __( 'The image is too large. Maximum size is %s.', 'my-account-customizer' ), size_format( self::max_bytes() ) ),
+						'message' => sprintf( __( 'The image is too large. Maximum size is %s.', 'my-account-dashboard-builder' ), size_format( self::max_bytes() ) ),
 					)
 				);
 			}
@@ -168,13 +168,13 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 			// Extension / MIME allowlist ( ignores the browser-declared type ).
 			$check = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'], self::MIMES );
 			if ( empty( $check['ext'] ) || empty( $check['type'] ) || ! in_array( $check['type'], self::MIMES, true ) ) {
-				wp_send_json_error( array( 'message' => __( 'Please upload a JPG, PNG, GIF or WebP image.', 'my-account-customizer' ) ) );
+				wp_send_json_error( array( 'message' => __( 'Please upload a JPG, PNG, GIF or WebP image.', 'my-account-dashboard-builder' ) ) );
 			}
 
 			// Confirm the bytes really are an image.
 			$dims = @getimagesize( $file['tmp_name'] ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- invalid image returns false, handled next.
 			if ( false === $dims ) {
-				wp_send_json_error( array( 'message' => __( 'The file is not a valid image.', 'my-account-customizer' ) ) );
+				wp_send_json_error( array( 'message' => __( 'The file is not a valid image.', 'my-account-dashboard-builder' ) ) );
 			}
 
 			require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -206,7 +206,7 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 			wp_send_json_success(
 				array(
 					'url'     => self::url( $user_id, $size > 150 ? 'medium' : 'thumbnail' ),
-					'message' => __( 'Profile picture updated.', 'my-account-customizer' ),
+					'message' => __( 'Profile picture updated.', 'my-account-dashboard-builder' ),
 				)
 			);
 		}
@@ -217,7 +217,7 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 		public function ajax_remove() {
 
 			if ( ! self::enabled() || ! is_user_logged_in() ) {
-				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'my-account-customizer' ) ), 403 );
+				wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'my-account-dashboard-builder' ) ), 403 );
 			}
 			check_ajax_referer( self::NONCE, 'nonce' );
 
@@ -228,7 +228,7 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 			wp_send_json_success(
 				array(
 					'url'     => get_avatar_url( $user_id, array( 'force_default' => false ) ),
-					'message' => __( 'Profile picture removed.', 'my-account-customizer' ),
+					'message' => __( 'Profile picture removed.', 'my-account-dashboard-builder' ),
 				)
 			);
 		}
@@ -263,8 +263,8 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 		 * @return array
 		 */
 		public function register_exporter( $exporters ) {
-			$exporters['my-account-customizer'] = array(
-				'exporter_friendly_name' => __( 'Account Customizer avatar', 'my-account-customizer' ),
+			$exporters['my-account-dashboard-builder'] = array(
+				'exporter_friendly_name' => __( 'Account Customizer avatar', 'my-account-dashboard-builder' ),
 				'callback'               => array( $this, 'export_data' ),
 			);
 			return $exporters;
@@ -284,11 +284,11 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 				if ( '' !== $url ) {
 					$data[] = array(
 						'group_id'    => 'acfw_avatar',
-						'group_label' => __( 'Profile picture', 'my-account-customizer' ),
+						'group_label' => __( 'Profile picture', 'my-account-dashboard-builder' ),
 						'item_id'     => 'acfw-avatar',
 						'data'        => array(
 							array(
-								'name'  => __( 'Uploaded profile picture', 'my-account-customizer' ),
+								'name'  => __( 'Uploaded profile picture', 'my-account-dashboard-builder' ),
 								'value' => $url,
 							),
 						),
@@ -308,8 +308,8 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 		 * @return array
 		 */
 		public function register_eraser( $erasers ) {
-			$erasers['my-account-customizer'] = array(
-				'eraser_friendly_name' => __( 'Account Customizer avatar', 'my-account-customizer' ),
+			$erasers['my-account-dashboard-builder'] = array(
+				'eraser_friendly_name' => __( 'Account Customizer avatar', 'my-account-dashboard-builder' ),
 				'callback'             => array( $this, 'erase_data' ),
 			);
 			return $erasers;

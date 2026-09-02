@@ -233,12 +233,12 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'ajaxNavigation'    => 'yes' === get_option( 'acfw_ajax_navigation', 'no' ),
 					'contentSelector'   => apply_filters( 'acfw_content_selector', '.woocommerce-MyAccount-content' ),
 					'logoutConfirm'     => 'yes' === get_option( 'acfw_logout_confirm', 'no' ),
-					'logoutMsg'         => __( 'Are you sure you want to log out?', 'my-account-customizer' ),
-					'searchPlaceholder' => __( 'Search…', 'my-account-customizer' ),
+					'logoutMsg'         => __( 'Are you sure you want to log out?', 'my-account-dashboard-builder' ),
+					'searchPlaceholder' => __( 'Search…', 'my-account-dashboard-builder' ),
 					'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 					'avatarNonce'       => wp_create_nonce( ACFW_Avatar::NONCE ),
-					'avatarRemoveMsg'   => __( 'Remove your profile picture?', 'my-account-customizer' ),
-					'avatarErrorMsg'    => __( 'Upload failed. Please try again.', 'my-account-customizer' ),
+					'avatarRemoveMsg'   => __( 'Remove your profile picture?', 'my-account-dashboard-builder' ),
+					'avatarErrorMsg'    => __( 'Upload failed. Please try again.', 'my-account-dashboard-builder' ),
 				)
 			);
 		}
@@ -423,7 +423,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$dismissible ? ' data-acfw-notice="' . esc_attr( $key ) . '"' : '',
 				wp_kses_post( wpautop( $notice ) ),
 				$dismissible
-					? '<button type="button" class="acfw-notice-close" aria-label="' . esc_attr__( 'Dismiss this notice', 'my-account-customizer' ) . '">&times;</button>'
+					? '<button type="button" class="acfw-notice-close" aria-label="' . esc_attr__( 'Dismiss this notice', 'my-account-dashboard-builder' ) . '">&times;</button>'
 					: ''
 			);
 		}
@@ -474,23 +474,23 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			if ( 'yes' === get_option( 'acfw_stat_orders', 'yes' ) ) {
-				$cards[] = $this->stat_card( 'cart', __( 'Total orders', 'my-account-customizer' ), count( $orders ) );
+				$cards[] = $this->stat_card( 'cart', __( 'Total orders', 'my-account-dashboard-builder' ), count( $orders ) );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_pending', 'yes' ) ) {
 				$pending = ( $by_status['pending'] ?? 0 ) + ( $by_status['processing'] ?? 0 ) + ( $by_status['on-hold'] ?? 0 );
-				$cards[] = $this->stat_card( 'clock', __( 'Pending orders', 'my-account-customizer' ), $pending );
+				$cards[] = $this->stat_card( 'clock', __( 'Pending orders', 'my-account-dashboard-builder' ), $pending );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_spent', 'yes' ) && function_exists( 'wc_get_customer_total_spent' ) ) {
-				$cards[] = $this->stat_card( 'money', __( 'Total spent', 'my-account-customizer' ), wc_price( wc_get_customer_total_spent( $user_id ) ) );
+				$cards[] = $this->stat_card( 'money', __( 'Total spent', 'my-account-dashboard-builder' ), wc_price( wc_get_customer_total_spent( $user_id ) ) );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_refunds', 'no' ) ) {
-				$cards[] = $this->stat_card( 'undo', __( 'Refunds', 'my-account-customizer' ), $by_status['refunded'] ?? 0 );
+				$cards[] = $this->stat_card( 'undo', __( 'Refunds', 'my-account-dashboard-builder' ), $by_status['refunded'] ?? 0 );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_downloads', 'yes' ) && function_exists( 'wc_get_customer_available_downloads' ) ) {
-				$cards[] = $this->stat_card( 'download', __( 'Downloads', 'my-account-customizer' ), count( wc_get_customer_available_downloads( $user_id ) ) );
+				$cards[] = $this->stat_card( 'download', __( 'Downloads', 'my-account-dashboard-builder' ), count( wc_get_customer_available_downloads( $user_id ) ) );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_points', 'no' ) ) {
-				$cards[] = $this->stat_card( 'star-filled', __( 'Reward points', 'my-account-customizer' ), acfw_points_balance( $user_id ) );
+				$cards[] = $this->stat_card( 'star-filled', __( 'Reward points', 'my-account-dashboard-builder' ), acfw_points_balance( $user_id ) );
 			}
 
 			$html = '';
@@ -503,7 +503,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$latest = $orders[0];
 				$html  .= sprintf(
 					'<div class="acfw-stat-latest"><span class="acfw-stat-latest-label">%s</span> <a href="%s">#%s</a> — %s <span class="acfw-badge">%s</span></div>',
-					esc_html__( 'Latest order', 'my-account-customizer' ),
+					esc_html__( 'Latest order', 'my-account-dashboard-builder' ),
 					esc_url( $latest->get_view_order_url() ),
 					esc_html( $latest->get_order_number() ),
 					wp_kses_post( $latest->get_formatted_order_total() ),
@@ -578,7 +578,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			return sprintf(
 				'<div class="acfw-pie"><svg viewBox="0 0 160 160" class="acfw-pie-svg" role="img" aria-label="%s"><g transform="rotate(-90 80 80)">%s</g><text x="80" y="86" text-anchor="middle" class="acfw-pie-total">%d</text></svg><ul class="acfw-pie-legend">%s</ul></div>',
-				esc_attr__( 'Orders by status', 'my-account-customizer' ),
+				esc_attr__( 'Orders by status', 'my-account-dashboard-builder' ),
 				$segs,
 				(int) $total,
 				$legend
@@ -767,7 +767,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			?>
 			<div class="acfw-profile-meter">
 				<div class="acfw-pm-head">
-					<strong><?php esc_html_e( 'Profile completeness', 'my-account-customizer' ); ?></strong>
+					<strong><?php esc_html_e( 'Profile completeness', 'my-account-dashboard-builder' ); ?></strong>
 					<span><?php echo esc_html( $pct ); ?>%</span>
 				</div>
 				<div class="acfw-pm-bar"><span style="width:<?php echo esc_attr( $pct ); ?>%"></span></div>

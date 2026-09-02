@@ -2,7 +2,7 @@
 /**
  * My Account custom menu.
  *
- * Override: yourtheme/my-account-customizer/myaccount-menu.php
+ * Override: yourtheme/my-account-dashboard-builder/myaccount-menu.php
  *
  * @var array         $items    Visible menu items.
  * @var string        $current  Current endpoint key.
@@ -46,7 +46,7 @@ $acfw_group_open = ! empty( $group_open );
 ?>
 <button type="button" class="acfw-nav-toggle" aria-expanded="false" aria-controls="acfw-menu-list">
 	<span class="dashicons dashicons-menu-alt"></span>
-	<span class="acfw-nav-toggle-label"><?php esc_html_e( 'Account menu', 'my-account-customizer' ); ?></span>
+	<span class="acfw-nav-toggle-label"><?php esc_html_e( 'Account menu', 'my-account-dashboard-builder' ); ?></span>
 </button>
 <?php
 /*
@@ -54,7 +54,7 @@ $acfw_group_open = ! empty( $group_open );
  * WooCommerce's own end-to-end tests both find the menu by it, so replacing the
  * navigation must keep it.
  */
-$acfw_nav_label = apply_filters( 'acfw_menu_aria_label', __( 'Account pages', 'my-account-customizer' ) );
+$acfw_nav_label = apply_filters( 'acfw_menu_aria_label', __( 'Account pages', 'my-account-dashboard-builder' ) );
 ?>
 <nav class="woocommerce-MyAccount-navigation <?php echo esc_attr( implode( ' ', $wrap_classes ) ); ?>" aria-label="<?php echo esc_attr( $acfw_nav_label ); ?>">
 	<span class="acfw-nav-backdrop"></span>
@@ -64,10 +64,10 @@ $acfw_nav_label = apply_filters( 'acfw_menu_aria_label', __( 'Account pages', 'm
 	}
 	?>
 	<?php if ( ! empty( $collapsible ) ) : ?>
-		<button type="button" class="acfw-collapse-toggle" aria-label="<?php esc_attr_e( 'Collapse menu', 'my-account-customizer' ); ?>"><span class="dashicons dashicons-arrow-left-alt2"></span></button>
+		<button type="button" class="acfw-collapse-toggle" aria-label="<?php esc_attr_e( 'Collapse menu', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-arrow-left-alt2"></span></button>
 	<?php endif; ?>
 	<?php if ( ! empty( $search ) ) : ?>
-		<input type="search" class="acfw-menu-search" placeholder="<?php esc_attr_e( 'Search…', 'my-account-customizer' ); ?>" aria-label="<?php esc_attr_e( 'Search menu', 'my-account-customizer' ); ?>" />
+		<input type="search" class="acfw-menu-search" placeholder="<?php esc_attr_e( 'Search…', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Search menu', 'my-account-dashboard-builder' ); ?>" />
 	<?php endif; ?>
 	<ul id="acfw-menu-list">
 		<?php

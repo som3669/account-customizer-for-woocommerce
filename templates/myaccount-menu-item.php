@@ -2,7 +2,7 @@
 /**
  * A single My Account menu item.
  *
- * Override: yourtheme/my-account-customizer/myaccount-menu-item.php
+ * Override: yourtheme/my-account-dashboard-builder/myaccount-menu-item.php
  *
  * @var string $key     Item key.
  * @var array  $item    Item options.
@@ -25,5 +25,5 @@ defined( 'ABSPATH' ) || exit;
 			<span class="acfw-count"><?php echo esc_html( $count ); ?></span>
 		<?php endif; ?>
 	</a>
-	<button type="button" class="acfw-pin" data-key="<?php echo esc_attr( $key ); ?>" aria-label="<?php esc_attr_e( 'Pin to top', 'my-account-customizer' ); ?>"><span class="dashicons dashicons-star-empty"></span></button>
+	<button type="button" class="acfw-pin" data-key="<?php echo esc_attr( $key ); ?>" aria-label="<?php esc_attr_e( 'Pin to top', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-star-empty"></span></button>
 </li>

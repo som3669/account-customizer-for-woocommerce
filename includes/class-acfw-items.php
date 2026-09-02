@@ -87,13 +87,13 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 			}
 
 			$labels = array(
-				'dashboard'       => __( 'Dashboard', 'my-account-customizer' ),
-				'orders'          => __( 'Orders', 'my-account-customizer' ),
-				'downloads'       => __( 'Downloads', 'my-account-customizer' ),
-				'edit-address'    => __( 'Addresses', 'my-account-customizer' ),
-				'payment-methods' => __( 'Payment methods', 'my-account-customizer' ),
-				'edit-account'    => __( 'Account details', 'my-account-customizer' ),
-				'customer-logout' => __( 'Log out', 'my-account-customizer' ),
+				'dashboard'       => __( 'Dashboard', 'my-account-dashboard-builder' ),
+				'orders'          => __( 'Orders', 'my-account-dashboard-builder' ),
+				'downloads'       => __( 'Downloads', 'my-account-dashboard-builder' ),
+				'edit-address'    => __( 'Addresses', 'my-account-dashboard-builder' ),
+				'payment-methods' => __( 'Payment methods', 'my-account-dashboard-builder' ),
+				'edit-account'    => __( 'Account details', 'my-account-dashboard-builder' ),
+				'customer-logout' => __( 'Log out', 'my-account-dashboard-builder' ),
 			);
 
 			$labels = apply_filters( 'woocommerce_account_menu_items', $labels ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- reading WooCommerce's own filter.

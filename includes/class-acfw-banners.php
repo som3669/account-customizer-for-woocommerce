@@ -59,12 +59,12 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 		 */
 		public static function color_fields() {
 			return array(
-				'text_color'   => __( 'Text', 'my-account-customizer' ),
-				'text_hover'   => __( 'Text hover', 'my-account-customizer' ),
-				'bg_color'     => __( 'Background', 'my-account-customizer' ),
-				'bg_hover'     => __( 'Background hover', 'my-account-customizer' ),
-				'border_color' => __( 'Borders', 'my-account-customizer' ),
-				'border_hover' => __( 'Borders hover', 'my-account-customizer' ),
+				'text_color'   => __( 'Text', 'my-account-dashboard-builder' ),
+				'text_hover'   => __( 'Text hover', 'my-account-dashboard-builder' ),
+				'bg_color'     => __( 'Background', 'my-account-dashboard-builder' ),
+				'bg_hover'     => __( 'Background hover', 'my-account-dashboard-builder' ),
+				'border_color' => __( 'Borders', 'my-account-dashboard-builder' ),
+				'border_hover' => __( 'Borders hover', 'my-account-dashboard-builder' ),
 			);
 		}
 
@@ -270,7 +270,7 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 							<?php endif; ?>
 							<div class="acfw-banner-content"><?php echo wp_kses_post( wpautop( acfw_apply_smart_tags( ACFW_I18n::translate( 'banner_' . $slug . '_content', $banner['content'] ) ) ) ); ?></div>
 							<?php if ( $link ) : ?>
-								<a class="acfw-banner-link" href="<?php echo esc_url( $link ); ?>"><?php esc_html_e( 'Learn more', 'my-account-customizer' ); ?></a>
+								<a class="acfw-banner-link" href="<?php echo esc_url( $link ); ?>"><?php esc_html_e( 'Learn more', 'my-account-dashboard-builder' ); ?></a>
 							<?php endif; ?>
 						</div>
 					</div>

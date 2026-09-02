@@ -1,4 +1,4 @@
-*** My Account Customizer Changelog ***
+*** My Account Dashboard Builder Changelog ***
 
 2026-09-01 - version 1.0.0
 * First public release.

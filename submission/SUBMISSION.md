@@ -1,6 +1,6 @@
 # WooCommerce Marketplace — Submit Product form answers
 
-Zip to upload: `dist/my-account-customizer.zip` (291 KB)
+Zip to upload: `dist/my-account-dashboard-builder.zip` (291 KB)
 
 ---
 
@@ -8,7 +8,7 @@ Zip to upload: `dist/my-account-customizer.zip` (291 KB)
 
 **Name** (4–60 chars)
 ```
-My Account Customizer
+My Account Dashboard Builder
 ```
 (21 chars. The Marketplace rejected the earlier name: product names may not contain
 "Woo" or "WooCommerce", even descriptively. The description fields may still name
@@ -32,7 +32,7 @@ Redesign the WooCommerce My Account page: custom endpoints, block editor content
 
 **Describe your product** (3–5 sentences)
 ```
-My Account Customizer turns the default My Account page into a branded customer dashboard. Store owners build unlimited menu endpoints (endpoint, page, link or grouped), add custom content with either the Classic or the native Gutenberg block editor, and apply one-click design templates or fine-tune everything (layout, colours, typography, avatar, active indicators) live in the WordPress Customizer. Customers get modern touches their store previously lacked: their own uploaded profile picture, a "Buy again" one-click reorder tab, a Recently Viewed tab, an order-tracking summary, and per-endpoint promotional banners. Every design choice is visual and preview-driven, so no code or theme edits are required. It is translation-ready (WPML and Polylang), HPOS and cart/checkout-blocks compatible, and ships as a self-contained plugin with no external service calls.
+My Account Dashboard Builder turns the default My Account page into a branded customer dashboard. Store owners build unlimited menu endpoints (endpoint, page, link or grouped), add custom content with either the Classic or the native Gutenberg block editor, and apply one-click design templates or fine-tune everything (layout, colours, typography, avatar, active indicators) live in the WordPress Customizer. Customers get modern touches their store previously lacked: their own uploaded profile picture, a "Buy again" one-click reorder tab, a Recently Viewed tab, an order-tracking summary, and per-endpoint promotional banners. Every design choice is visual and preview-driven, so no code or theme edits are required. It is translation-ready (WPML and Polylang), HPOS and cart/checkout-blocks compatible, and ships as a self-contained plugin with no external service calls.
 ```
 
 **How does your product compare to existing solutions?** (2–3 sentences)
@@ -82,7 +82,7 @@ Revenue share is 70% to the vendor.
 ```
 English
 ```
-(The plugin is fully translation-ready — .pot-ready text domain `my-account-customizer` + WPML/Polylang string registration. Add other languages only if you ship actual translation files.)
+(The plugin is fully translation-ready — .pot-ready text domain `my-account-dashboard-builder` + WPML/Polylang string registration. Add other languages only if you ship actual translation files.)
 
 ---
 
@@ -114,7 +114,7 @@ WooCommerce Shipment Tracking
 1. Upload and activate the plugin. A top-level "My Account" menu appears in wp-admin.
 2. Menu Items tab: default WooCommerce endpoints are pre-loaded. Add endpoints/links/pages/groups, set icons, and add custom content (Classic or Block editor). Drag to reorder.
 3. Templates tab: click any starter template to apply a full design in one click.
-4. Customizer: open "My Account Customizer" to fine-tune layout, colours, typography and avatar with a live preview.
+4. Customizer: open "My Account Dashboard Builder" to fine-tune layout, colours, typography and avatar with a live preview.
 5. Settings > General: enable the commerce features (all OFF by default):
    - Buy Again  -> adds a "Buy again" account tab + dashboard tile (one-click reorder of past products).
    - Recently viewed -> adds a "Recently viewed" account tab.
@@ -175,7 +175,7 @@ those live in wp-admin. Never publish admin credentials.
 
 **Product slug**
 ```
-my-account-customizer
+my-account-dashboard-builder
 ```
 (Matches the zip's top-level folder name — required.)
 
@@ -186,7 +186,7 @@ Unchecked (No)
 
 **Zip file**
 ```
-Upload: dist/my-account-customizer.zip
+Upload: dist/my-account-dashboard-builder.zip
 ```
 
 ---
@@ -241,7 +241,7 @@ Privacy and data
   attachments it stored. Deactivating removes nothing.
 
 Quality
-- Translation-ready: languages/my-account-customizer.pot ships with 328 strings,
+- Translation-ready: languages/my-account-dashboard-builder.pot ships with 328 strings,
   plus WPML and Polylang string registration for admin-entered text.
 - PHPCS (WordPress-Extra) passes with zero errors and zero warnings. 50 unit
   tests cover the output sanitisers and the import filter. CI lints the tree on
@@ -270,11 +270,11 @@ links in the Setup instructions land you straight in it.
       (captions match the `== Screenshots ==` block in readme.txt; more in `screenshots/extras/`).
       Still missing: the listing **banner/header** graphic, if the form asks for one.
 - [ ] Tick "I agree to the terms of the Partner Agreement".
-- [x] `qit woo:validate-zip dist/my-account-customizer.zip` — **passes** ("ZIP file content is valid").
+- [x] `qit woo:validate-zip dist/my-account-dashboard-builder.zip` — **passes** ("ZIP file content is valid").
 - [ ] QIT cloud tests. These cannot run until the product exists in the partner portal: with an
       unregistered slug every run fails with *"Could not find Woo Extension with slug
-      my-account-customizer"*. So create the product entry first, then run:
-      `qit run:security <slug> --zip=dist/my-account-customizer.zip` and the same for
+      my-account-dashboard-builder"*. So create the product entry first, then run:
+      `qit run:security <slug> --zip=dist/my-account-dashboard-builder.zip` and the same for
       `run:phpstan`, `run:validation`, `run:plugin-check`, `run:phpcompatibility`.
       Note `run:phpcs` no longer exists in current QIT — `run:validation` and `run:plugin-check`
       replace it. `run:activation` and any E2E run need **WSL** on Windows.
