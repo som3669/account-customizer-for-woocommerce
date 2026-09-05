@@ -656,9 +656,40 @@ function acfw_default_endpoint_options( $key = '' ) {
 		'visibility'       => 'all',    // all | roles.
 		'usr_roles'        => array(),
 		'class'            => '',
-		'banner_slug'      => '',
+		'banner_slug'      => '',       // Deprecated single value, still read for data saved before 1.0.
+		'banner_slugs'     => array(),
 		'banner_position'  => 'top',    // top | bottom.
 	);
+}
+
+/**
+ * Banners assigned to an item, as a list of slugs.
+ *
+ * Accepts both shapes: the multi-select `banner_slugs` array, and the single
+ * `banner_slug` string saved by earlier versions.
+ *
+ * @param array $item Item options.
+ * @return array
+ */
+function acfw_item_banner_slugs( $item ) {
+
+	$slugs = array();
+
+	if ( ! empty( $item['banner_slugs'] ) && is_array( $item['banner_slugs'] ) ) {
+		$slugs = $item['banner_slugs'];
+	} elseif ( ! empty( $item['banner_slug'] ) ) {
+		$slugs = array( $item['banner_slug'] );
+	}
+
+	$slugs = array_values( array_unique( array_filter( array_map( 'strval', $slugs ) ) ) );
+
+	// Drop anything that no longer exists, so a deleted banner cannot linger.
+	if ( class_exists( 'ACFW_Banners' ) ) {
+		$known = array_keys( ACFW_Banners::all() );
+		$slugs = array_values( array_intersect( $slugs, $known ) );
+	}
+
+	return $slugs;
 }
 
 /**

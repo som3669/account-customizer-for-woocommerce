@@ -68,9 +68,21 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 		 */
 		public function render() {
 
-			$banners = ACFW_Banners::all();
+			$banners  = ACFW_Banners::all();
+			$is_empty = empty( $banners );
 			?>
-			<div class="acfw-builder">
+			<?php if ( $is_empty ) : ?>
+				<div class="acfw-card acfw-empty-state">
+					<span class="acfw-empty-icon dashicons dashicons-archive" aria-hidden="true"></span>
+					<h2 class="acfw-empty-title"><?php esc_html_e( 'No banners yet', 'my-account-dashboard-builder' ); ?></h2>
+					<p class="acfw-empty-text"><?php esc_html_e( 'Create a banner to show a widget or image on your My Account page.', 'my-account-dashboard-builder' ); ?></p>
+					<button type="button" class="acfw-empty-add acfw-add-banner-btn">
+						<span class="dashicons dashicons-plus-alt"></span>
+						<?php esc_html_e( 'Add banner', 'my-account-dashboard-builder' ); ?>
+					</button>
+				</div>
+			<?php endif; ?>
+			<div class="acfw-builder"<?php echo $is_empty ? ' hidden' : ''; ?>>
 				<div class="acfw-builder-layout">
 
 					<div class="acfw-builder-list-col">
@@ -97,6 +109,25 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						<?php foreach ( $banners as $slug => $banner ) : ?>
 							<?php $this->render_banner_form( $slug, wp_parse_args( $banner, ACFW_Banners::defaults() ), false ); ?>
 						<?php endforeach; ?>
+					</div>
+				</div>
+			</div>
+
+			<?php // Name prompt shown before the full banner form opens. ?>
+			<div class="acfw-modal-overlay" id="acfw-add-banner-modal" hidden>
+				<div class="acfw-modal" role="dialog" aria-modal="true" aria-labelledby="acfw-add-banner-title">
+					<div class="acfw-modal-head">
+						<h2 id="acfw-add-banner-title"><?php esc_html_e( 'Add Banner', 'my-account-dashboard-builder' ); ?></h2>
+						<button type="button" class="acfw-modal-close" aria-label="<?php esc_attr_e( 'Close', 'my-account-dashboard-builder' ); ?>">&times;</button>
+					</div>
+					<div class="acfw-modal-body">
+						<label for="acfw-new-banner-name"><?php esc_html_e( 'Name', 'my-account-dashboard-builder' ); ?></label>
+						<input type="text" id="acfw-new-banner-name" class="acfw-modal-input" autocomplete="off" />
+						<p class="acfw-modal-error" role="alert" hidden><?php esc_html_e( 'Give the banner a name first.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+					<div class="acfw-modal-foot">
+						<button type="button" class="button acfw-modal-cancel"><?php esc_html_e( 'Cancel', 'my-account-dashboard-builder' ); ?></button>
+						<button type="button" class="button button-primary acfw-modal-confirm"><?php esc_html_e( 'Add Banner', 'my-account-dashboard-builder' ); ?></button>
 					</div>
 				</div>
 			</div>

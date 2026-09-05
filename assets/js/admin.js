@@ -156,6 +156,15 @@
 		/* ---- Role chips + searchable icon picker with glyphs (bundled select2) ---- */
 		if ( $.fn.select2 ) {
 			$( '.acfw-roles-select' ).select2( { width: '100%', placeholder: 'All roles', closeOnSelect: false } );
+			$( '.acfw-banner-select' ).each( function () {
+				var $el = $( this );
+				$el.select2( {
+					width: '100%',
+					placeholder: $el.data( 'placeholder' ) || '',
+					closeOnSelect: false,
+					allowClear: true,
+				} );
+			} );
 
 			var iconTpl = function ( data ) {
 				if ( ! data.id ) {
@@ -210,9 +219,73 @@
 		} );
 
 		/* ---- Add banner (banners tab) ---- */
-		$( '.acfw-add-banner-btn' ).on( 'click', function () {
+		/* ---- Add banner: ask for a name first, then open the full form ---- */
+		var $addModal   = $( '#acfw-add-banner-modal' );
+		var $addName    = $( '#acfw-new-banner-name' );
+		var $addError   = $addModal.find( '.acfw-modal-error' );
+		var addReturnEl = null;
+
+		function openAddBanner( trigger ) {
+			addReturnEl = trigger || null;
+			$addError.attr( 'hidden', 'hidden' );
+			$addName.val( '' );
+			$addModal.removeAttr( 'hidden' );
+			$addName.trigger( 'focus' );
+		}
+
+		function closeAddBanner() {
+			$addModal.attr( 'hidden', 'hidden' );
+			if ( addReturnEl ) {
+				$( addReturnEl ).trigger( 'focus' );
+				addReturnEl = null;
+			}
+		}
+
+		function confirmAddBanner() {
+			var name = $.trim( $addName.val() );
+
+			if ( ! name ) {
+				$addError.removeAttr( 'hidden' );
+				$addName.trigger( 'focus' );
+				return;
+			}
+
+			// The empty state stands in for the builder until the first banner.
+			$( '.acfw-empty-state' ).hide();
+			$( '.acfw-builder' ).removeAttr( 'hidden' );
+
+			closeAddBanner();
 			selectItem( '__new__' );
-			$( '.acfw-detail[data-key="__new__"]' ).find( 'input[name="banner_title"]' ).focus();
+
+			var $form = $( '.acfw-detail[data-key="__new__"]' );
+			$form.find( 'input[name="banner_title"]' ).val( name ).trigger( 'change' ).trigger( 'focus' );
+		}
+
+		$( document ).on( 'click', '.acfw-add-banner-btn', function () {
+			openAddBanner( this );
+		} );
+
+		$addModal.on( 'click', '.acfw-modal-cancel, .acfw-modal-close', closeAddBanner );
+		$addModal.on( 'click', '.acfw-modal-confirm', confirmAddBanner );
+
+		// Click the backdrop, not the dialog itself.
+		$addModal.on( 'click', function ( e ) {
+			if ( e.target === this ) {
+				closeAddBanner();
+			}
+		} );
+
+		$addName.on( 'keydown', function ( e ) {
+			if ( 'Enter' === e.key ) {
+				e.preventDefault();
+				confirmAddBanner();
+			}
+		} );
+
+		$( document ).on( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key && ! $addModal.attr( 'hidden' ) ) {
+				closeAddBanner();
+			}
 		} );
 
 		/* Bring a Classic editor back to life after its container was hidden.

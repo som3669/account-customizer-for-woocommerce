@@ -87,7 +87,10 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 								'url'              => isset( $data['url'] ) ? esc_url_raw( $data['url'] ) : '',
 								'page_id'          => isset( $data['page_id'] ) ? absint( $data['page_id'] ) : 0,
 								'target_blank'     => ! empty( $data['target_blank'] ),
-								'banner_slug'      => isset( $data['banner_slug'] ) ? acfw_sanitize_key( $data['banner_slug'] ) : '',
+								'banner_slugs'     => isset( $data['banner_slugs'] ) && is_array( $data['banner_slugs'] )
+									? array_values( array_filter( array_map( 'acfw_sanitize_key', $data['banner_slugs'] ) ) )
+									: array(),
+								'banner_slug'      => '',
 								'banner_position'  => ( isset( $data['banner_position'] ) && 'bottom' === $data['banner_position'] ) ? 'bottom' : 'top',
 								'vis_from'         => isset( $data['vis_from'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_from'] ) : '',
 								'vis_to'           => isset( $data['vis_to'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_to'] ) : '',
@@ -479,11 +482,11 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 						</select>
 					</div>
 					<div class="acfw-field">
-						<label><?php esc_html_e( 'Banner', 'my-account-dashboard-builder' ); ?></label>
-						<select name="items[<?php echo esc_attr( $key ); ?>][banner_slug]">
-							<option value=""><?php esc_html_e( '— None —', 'my-account-dashboard-builder' ); ?></option>
+						<label><?php esc_html_e( 'Banners', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Show one or more banners on this endpoint. They render in the order picked.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<?php $acfw_selected_banners = acfw_item_banner_slugs( $item ); ?>
+						<select name="items[<?php echo esc_attr( $key ); ?>][banner_slugs][]" class="acfw-banner-select" multiple data-placeholder="<?php esc_attr_e( 'No banners', 'my-account-dashboard-builder' ); ?>">
 							<?php foreach ( ACFW_Banners::all() as $b_slug => $b ) : ?>
-								<option value="<?php echo esc_attr( $b_slug ); ?>" <?php selected( $item['banner_slug'] ?? '', $b_slug ); ?>><?php echo esc_html( $b['title'] ? $b['title'] : $b_slug ); ?></option>
+								<option value="<?php echo esc_attr( $b_slug ); ?>" <?php selected( in_array( $b_slug, $acfw_selected_banners, true ) ); ?>><?php echo esc_html( $b['title'] ? $b['title'] : $b_slug ); ?></option>
 							<?php endforeach; ?>
 						</select>
 					</div>

@@ -2055,3 +2055,165 @@
 	min-height: 240px;
 	box-sizing: border-box;
 }
+
+/* Empty state: shown on the Banners tab before the first banner exists. */
+.acfw-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 64px 24px;
+	text-align: center;
+}
+
+.acfw-empty-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 72px;
+	height: 72px;
+	margin-bottom: 14px;
+	border-radius: 50%;
+	background: rgba(37, 99, 235, 0.10);
+	color: #2563eb;
+	font-size: 32px;
+}
+
+.acfw-empty-icon::before {
+	font-size: 32px;
+	line-height: 1;
+}
+
+.acfw-empty-title {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 700;
+	color: #1e1e1e;
+}
+
+.acfw-empty-text {
+	margin: 0 0 6px;
+	max-width: 360px;
+	color: #646970;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.acfw-empty-add {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 4px;
+	border: 0;
+	background: none;
+	color: #1e1e1e;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.acfw-empty-add .dashicons {
+	color: #2563eb;
+	font-size: 22px;
+	width: 22px;
+	height: 22px;
+}
+
+.acfw-empty-add:hover,
+.acfw-empty-add:focus {
+	color: #2563eb;
+}
+
+/* Modal: the name prompt shown before the full banner form opens. */
+.acfw-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100050;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba(0, 0, 0, 0.45);
+}
+
+.acfw-modal-overlay[hidden] {
+	display: none;
+}
+
+.acfw-modal {
+	width: 100%;
+	max-width: 520px;
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+}
+
+.acfw-modal-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 24px 16px;
+	border-bottom: 1px solid #e2e4e7;
+}
+
+.acfw-modal-head h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 600;
+	color: #1e1e1e;
+}
+
+.acfw-modal-close {
+	border: 0;
+	background: none;
+	color: #646970;
+	font-size: 24px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.acfw-modal-close:hover,
+.acfw-modal-close:focus {
+	color: #1e1e1e;
+}
+
+.acfw-modal-body {
+	padding: 20px 24px;
+}
+
+.acfw-modal-body label {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1e1e1e;
+}
+
+.acfw-modal-input {
+	width: 100%;
+	padding: 9px 12px;
+	border: 1px solid #2563eb;
+	border-radius: 5px;
+	box-shadow: none;
+	font-size: 14px;
+}
+
+.acfw-modal-input:focus {
+	border-color: #2563eb;
+	box-shadow: 0 0 0 1px #2563eb;
+	outline: 2px solid transparent;
+}
+
+.acfw-modal-error {
+	margin: 8px 0 0;
+	color: #b32d2e;
+	font-size: 13px;
+}
+
+.acfw-modal-foot {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 0 24px 22px;
+}

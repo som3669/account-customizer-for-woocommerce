@@ -689,15 +689,22 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * @param string $position top|bottom.
 		 */
 		protected function render_banner( $position ) {
-			$item = $this->current_item();
-			if ( empty( $item['banner_slug'] ) ) {
+
+			$item  = $this->current_item();
+			$slugs = acfw_item_banner_slugs( $item );
+
+			if ( empty( $slugs ) ) {
 				return;
 			}
+
 			$item_pos = isset( $item['banner_position'] ) && 'bottom' === $item['banner_position'] ? 'bottom' : 'top';
 			if ( $item_pos !== $position ) {
 				return;
 			}
-			echo ACFW_Banners::render( $item['banner_slug'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderer.
+
+			foreach ( $slugs as $slug ) {
+				echo ACFW_Banners::render( $slug ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderer.
+			}
 		}
 
 		/**
