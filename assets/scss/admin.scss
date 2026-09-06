@@ -2217,3 +2217,599 @@
 	gap: 10px;
 	padding: 0 24px 22px;
 }
+
+/* =========================================================================
+   Redesign pass: header, list panel and detail pane.
+   Layered after the base rules so the original structure stays intact.
+   ========================================================================= */
+
+$acfw-ink: #0f2545;
+$acfw-line: #e6ecf5;
+$acfw-tint: #f2f6fd;
+
+.acfw-wrap {
+	background: linear-gradient(180deg, #f7faff 0%, #f4f7fc 320px, #f4f7fc 100%);
+}
+
+/* ---- Header ---- */
+.acfw-header {
+	gap: 16px;
+	padding: 12px 16px;
+	border: 1px solid $acfw-line;
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(15, 37, 69, 0.04);
+}
+
+.acfw-header-brand .acfw-header-icon {
+	width: 42px;
+	height: 42px;
+	border-radius: 11px;
+}
+
+.acfw-tabs {
+	gap: 2px;
+}
+
+.acfw-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 9px 14px;
+	border-radius: 9px;
+	color: #5a6b85;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.acfw-tab .acfw-tab-icon {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+	opacity: 0.75;
+}
+
+.acfw-tab:hover {
+	background: $acfw-tint;
+	color: $acfw-ink;
+}
+
+.acfw-tab.is-active {
+	background: rgba(37, 99, 235, 0.10);
+	color: #1d4ed8;
+	box-shadow: inset 0 -2px 0 #2563eb;
+}
+
+.acfw-tab.is-active .acfw-tab-icon {
+	opacity: 1;
+}
+
+.acfw-header-btn {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+	height: 38px;
+	padding: 0 14px;
+	border-radius: 9px !important;
+	border-color: $acfw-line !important;
+	font-weight: 600 !important;
+}
+
+.acfw-header-btn.acfw-header-btn-primary {
+	border-color: #2563eb !important;
+	background: #2563eb !important;
+	box-shadow: 0 1px 2px rgba(37, 99, 235, 0.35) !important;
+}
+
+.acfw-header-more {
+	position: relative;
+}
+
+.acfw-more-menu {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	z-index: 50;
+	min-width: 210px;
+	padding: 6px;
+	border: 1px solid $acfw-line;
+	border-radius: 10px;
+	background: #fff;
+	box-shadow: 0 12px 28px rgba(15, 37, 69, 0.14);
+}
+
+.acfw-more-menu[hidden] {
+	display: none;
+}
+
+.acfw-more-item {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	width: 100%;
+	padding: 9px 10px;
+	border: 0;
+	border-radius: 7px;
+	background: none;
+	color: $acfw-ink;
+	font-size: 13px;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.acfw-more-item:hover,
+.acfw-more-item:focus {
+	background: $acfw-tint;
+	color: #1d4ed8;
+}
+
+/* ---- Cards ---- */
+.acfw-card {
+	border: 1px solid $acfw-line;
+	border-radius: 14px;
+	box-shadow: 0 1px 2px rgba(15, 37, 69, 0.04);
+}
+
+/* ---- List panel ---- */
+.acfw-panel-head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 18px 18px 14px;
+}
+
+.acfw-panel-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 38px;
+	height: 38px;
+	border-radius: 10px;
+	background: linear-gradient(135deg, #2563eb, #1d4ed8);
+	color: #fff;
+	font-size: 19px;
+}
+
+.acfw-panel-heading h2 {
+	margin: 0;
+	font-size: 17px;
+	font-weight: 700;
+	color: $acfw-ink;
+}
+
+.acfw-panel-heading p {
+	margin: 2px 0 0;
+	color: #64748b;
+	font-size: 12.5px;
+}
+
+.acfw-panel-tools {
+	display: flex;
+	gap: 8px;
+	padding: 0 18px 14px;
+}
+
+.acfw-search-wrap {
+	position: relative;
+	flex: 1 1 auto;
+}
+
+.acfw-search-wrap .dashicons {
+	position: absolute;
+	top: 50%;
+	left: 10px;
+	transform: translateY(-50%);
+	color: #94a3b8;
+	font-size: 17px;
+}
+
+.acfw-item-search {
+	width: 100%;
+	height: 38px;
+	padding: 0 12px 0 34px !important;
+	border: 1px solid $acfw-line !important;
+	border-radius: 9px !important;
+	background: #fff;
+	box-shadow: none !important;
+}
+
+.acfw-item-search:focus {
+	border-color: #2563eb !important;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+.acfw-filter-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	background: #fff;
+	color: #5a6b85;
+	cursor: pointer;
+}
+
+.acfw-filter-toggle:hover,
+.acfw-filter-toggle.is-active {
+	border-color: #2563eb;
+	background: rgba(37, 99, 235, 0.08);
+	color: #1d4ed8;
+}
+
+.acfw-list-empty {
+	margin: 0;
+	padding: 18px;
+	color: #64748b;
+	font-size: 13px;
+	text-align: center;
+}
+
+.acfw-list-hint {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 4px 14px 14px;
+	padding: 12px 14px;
+	border: 1px dashed rgba(37, 99, 235, 0.28);
+	border-radius: 11px;
+	background: $acfw-tint;
+	color: #5a6b85;
+	font-size: 12.5px;
+}
+
+.acfw-list-hint .dashicons {
+	color: #2563eb;
+	font-size: 17px;
+}
+
+/* ---- Rows ---- */
+.acfw-node-head {
+	gap: 8px;
+	padding: 10px 12px;
+	border-radius: 11px;
+	transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.acfw-node.is-selected > .acfw-node-head {
+	background: rgba(37, 99, 235, 0.09);
+	box-shadow: inset 3px 0 0 #2563eb;
+}
+
+.acfw-node.is-selected > .acfw-node-head .acfw-node-title {
+	color: #1d4ed8;
+	font-weight: 700;
+}
+
+.acfw-node-head:hover {
+	background: $acfw-tint;
+}
+
+.acfw-node-edit,
+.acfw-node-duplicate,
+.acfw-node-remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	width: 30px;
+	height: 30px;
+	border-radius: 8px;
+	color: #64748b;
+	line-height: 30px;
+	text-align: center;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.acfw-node-edit:hover,
+.acfw-node-duplicate:hover {
+	background: rgba(37, 99, 235, 0.10);
+	color: #1d4ed8;
+}
+
+.acfw-node-remove:hover:not(.is-disabled) {
+	background: rgba(179, 45, 46, 0.10);
+	color: #b32d2e;
+}
+
+/* ---- Detail pane ---- */
+.acfw-detail-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid $acfw-line;
+}
+
+.acfw-detail-spacer {
+	flex: 1 1 auto;
+}
+
+.acfw-back-to-menu {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 34px;
+	padding: 0 13px;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	background: #fff;
+	color: #5a6b85;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.acfw-back-to-menu:hover,
+.acfw-back-to-menu:focus {
+	border-color: #2563eb;
+	background: rgba(37, 99, 235, 0.08);
+	color: #1d4ed8;
+}
+
+.acfw-back-to-menu .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+/* ---- Fields ---- */
+.acfw-builder-detail .acfw-field input[type="text"],
+.acfw-builder-detail .acfw-field input[type="url"],
+.acfw-builder-detail .acfw-field input[type="number"],
+.acfw-builder-detail .acfw-field input[type="date"],
+.acfw-builder-detail .acfw-field select,
+.acfw-builder-detail .acfw-field textarea {
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	box-shadow: none;
+}
+
+.acfw-builder-detail .acfw-field input:focus,
+.acfw-builder-detail .acfw-field select:focus,
+.acfw-builder-detail .acfw-field textarea:focus {
+	border-color: #2563eb;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* ---- Save bar ---- */
+.acfw-form-footer .acfw-save-all {
+	height: 42px;
+	padding: 0 22px;
+	border-radius: 10px !important;
+	font-weight: 600 !important;
+	box-shadow: 0 2px 6px rgba(37, 99, 235, 0.30) !important;
+}
+
+/* ---- Settings screen ---- */
+.acfw-subnav {
+	padding: 8px;
+	border: 1px solid $acfw-line;
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(15, 37, 69, 0.04);
+}
+
+.acfw-subnav-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 11px 12px;
+	border-radius: 10px;
+	color: #5a6b85;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.acfw-subnav-item + .acfw-subnav-item {
+	margin-top: 2px;
+}
+
+.acfw-subnav-item:hover {
+	background: $acfw-tint;
+	color: $acfw-ink;
+}
+
+.acfw-subnav-item.is-active {
+	background: rgba(37, 99, 235, 0.10);
+	color: #1d4ed8;
+	box-shadow: inset 3px 0 0 #2563eb;
+}
+
+.acfw-subnav-icon {
+	font-size: 17px;
+	opacity: 0.8;
+}
+
+.acfw-subnav-caret {
+	margin-left: auto;
+	font-size: 16px;
+	opacity: 0.45;
+}
+
+.acfw-subnav-item.is-active .acfw-subnav-caret {
+	opacity: 0.9;
+}
+
+/* Settings rows: one clear line per option, label column fixed. */
+.acfw-subnav-body .form-table {
+	margin: 0;
+}
+
+.acfw-subnav-body .form-table th {
+	width: 210px;
+	padding: 18px 20px 18px 22px;
+	color: $acfw-ink;
+	font-size: 13.5px;
+	font-weight: 600;
+	vertical-align: top;
+}
+
+.acfw-subnav-body .form-table td {
+	padding: 16px 22px 16px 0;
+}
+
+.acfw-subnav-body .form-table tr + tr th,
+.acfw-subnav-body .form-table tr + tr td {
+	border-top: 1px solid $acfw-line;
+}
+
+.acfw-subnav-body .form-table input[type="text"],
+.acfw-subnav-body .form-table input[type="url"],
+.acfw-subnav-body .form-table input[type="number"],
+.acfw-subnav-body .form-table select,
+.acfw-subnav-body .form-table textarea {
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	box-shadow: none;
+}
+
+.acfw-subnav-body .form-table select {
+	height: 38px;
+	min-width: 240px;
+	padding: 0 34px 0 12px;
+}
+
+.acfw-subnav-body .form-table input:focus,
+.acfw-subnav-body .form-table select:focus,
+.acfw-subnav-body .form-table textarea:focus {
+	border-color: #2563eb;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.acfw-subnav-body .form-table textarea {
+	max-width: 720px;
+	padding: 10px 12px;
+}
+
+.acfw-subnav-body .acfw-hint,
+.acfw-subnav-body .form-table .description {
+	margin: 8px 0 0;
+	color: #64748b;
+	font-size: 12.5px;
+	line-height: 1.55;
+}
+
+/* Toggle rows read as "switch, then what it does". */
+.acfw-subnav-body .acfw-switch-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.acfw-subnav-body .acfw-switch-row > span {
+	color: #475569;
+	font-size: 13px;
+}
+
+.acfw-subnav-body .acfw-section-title {
+	margin: 0 0 4px;
+	font-size: 15px;
+	font-weight: 700;
+	color: $acfw-ink;
+}
+
+/* ---- Templates ---- */
+.acfw-templates {
+	padding-bottom: 22px;
+}
+
+.acfw-template-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+	gap: 18px;
+	padding: 4px 22px 0;
+}
+
+.acfw-template-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border: 1px solid $acfw-line;
+	border-radius: 14px;
+	background: #fff;
+	transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.acfw-template-card:hover {
+	transform: translateY(-2px);
+	border-color: rgba(37, 99, 235, 0.45);
+	box-shadow: 0 10px 24px rgba(15, 37, 69, 0.10);
+}
+
+.acfw-template-card.is-applied {
+	border-color: #2563eb;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.acfw-template-preview {
+	padding: 14px;
+	border-bottom: 1px solid $acfw-line;
+	background: linear-gradient(180deg, #fbfdff 0%, #f4f7fc 100%);
+}
+
+.acfw-template-body {
+	display: block;
+	padding: 16px 16px 6px;
+}
+
+.acfw-template-name {
+	display: block;
+	margin-bottom: 6px;
+	color: $acfw-ink;
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.acfw-template-desc {
+	display: block;
+	color: #64748b;
+	font-size: 13px;
+	line-height: 1.55;
+}
+
+.acfw-template-apply {
+	margin-top: auto;
+	padding: 14px 16px 16px;
+}
+
+.acfw-template-apply .button {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	width: 100%;
+	height: 40px;
+	border-radius: 10px !important;
+	font-weight: 600 !important;
+}
+
+.acfw-template-badge {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 9px;
+	border-radius: 999px;
+	background: #2563eb;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+}
+
+.acfw-template-badge .dashicons {
+	font-size: 13px;
+	width: 13px;
+	height: 13px;
+}

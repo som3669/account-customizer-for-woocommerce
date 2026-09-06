@@ -208,6 +208,24 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					<div class="acfw-builder-layout">
 
 						<div class="acfw-card acfw-builder-list">
+							<div class="acfw-panel-head">
+								<span class="acfw-panel-icon dashicons dashicons-menu-alt" aria-hidden="true"></span>
+								<div class="acfw-panel-heading">
+									<h2><?php esc_html_e( 'Menu Items', 'my-account-dashboard-builder' ); ?></h2>
+									<p><?php esc_html_e( 'Manage your account menu structure', 'my-account-dashboard-builder' ); ?></p>
+								</div>
+							</div>
+
+							<div class="acfw-panel-tools">
+								<span class="acfw-search-wrap">
+									<span class="dashicons dashicons-search" aria-hidden="true"></span>
+									<input type="search" class="acfw-item-search" placeholder="<?php esc_attr_e( 'Search menu items…', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Search menu items', 'my-account-dashboard-builder' ); ?>" />
+								</span>
+								<button type="button" class="acfw-filter-toggle" aria-pressed="false" title="<?php esc_attr_e( 'Show enabled items only', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Show enabled items only', 'my-account-dashboard-builder' ); ?>">
+									<span class="dashicons dashicons-filter" aria-hidden="true"></span>
+								</button>
+							</div>
+
 							<ol class="acfw-sortable acfw-sortable-root">
 								<?php
 								foreach ( $items as $key => $item ) {
@@ -215,6 +233,13 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 								}
 								?>
 							</ol>
+
+							<p class="acfw-list-empty" hidden><?php esc_html_e( 'No menu items match that search.', 'my-account-dashboard-builder' ); ?></p>
+
+							<div class="acfw-list-hint">
+								<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>
+								<?php esc_html_e( 'Drag and drop to reorder menu items', 'my-account-dashboard-builder' ); ?>
+							</div>
 						</div>
 
 						<div class="acfw-card acfw-builder-detail">
@@ -283,6 +308,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 						<input type="checkbox" class="acfw-active-proxy" data-key="<?php echo esc_attr( $key ); ?>" <?php checked( $active ); ?> />
 						<span class="acfw-switch-slider"></span>
 					</label>
+					<button type="button" class="acfw-node-edit dashicons dashicons-edit" title="<?php esc_attr_e( 'Edit', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Edit', 'my-account-dashboard-builder' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
 					<button type="button" class="acfw-node-duplicate dashicons dashicons-admin-page" title="<?php esc_attr_e( 'Duplicate', 'my-account-dashboard-builder' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
 					<?php if ( $is_default ) : ?>
 						<button type="button" class="acfw-node-remove is-disabled dashicons dashicons-trash" title="<?php esc_attr_e( 'Default items cannot be deleted', 'my-account-dashboard-builder' ); ?>" disabled aria-disabled="true"></button>
@@ -334,6 +360,11 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					<?php echo $this->icon_markup( $item, 'acfw-detail-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<h2 class="acfw-detail-title"><?php echo esc_html( $item['label'] ); ?></h2>
 					<span class="acfw-node-badge acfw-badge-<?php echo esc_attr( $type ); ?>"><?php echo esc_html( $type_labels[ $type ] ?? $type ); ?></span>
+					<span class="acfw-detail-spacer"></span>
+					<button type="button" class="acfw-back-to-menu">
+						<span class="dashicons dashicons-arrow-left-alt" aria-hidden="true"></span>
+						<?php esc_html_e( 'Back to menu', 'my-account-dashboard-builder' ); ?>
+					</button>
 				</div>
 
 				<div class="acfw-field">

@@ -348,9 +348,80 @@
 			$details.find( '.acfw-detail-empty' ).hide();
 			$details.find( '.acfw-detail' ).attr( 'hidden', 'hidden' );
 			$details.find( '.acfw-detail[data-key="' + key + '"]' ).removeAttr( 'hidden' );
+			$( '.acfw-builder-layout' ).addClass( 'is-editing' );
 
 			repaintClassicEditor( String( key ).replace( /-/g, '_' ) );
 		}
+
+		/* ---- Header overflow menu ---- */
+		$( document ).on( 'click', '.acfw-more-toggle', function ( e ) {
+			e.stopPropagation();
+			var $btn  = $( this );
+			var $menu = $btn.next( '.acfw-more-menu' );
+			var open  = ! $menu.attr( 'hidden' );
+			$menu.attr( 'hidden', open ? 'hidden' : null );
+			$btn.attr( 'aria-expanded', open ? 'false' : 'true' );
+		} );
+
+		$( document ).on( 'click', function () {
+			$( '.acfw-more-menu' ).attr( 'hidden', 'hidden' );
+			$( '.acfw-more-toggle' ).attr( 'aria-expanded', 'false' );
+		} );
+
+		$( document ).on( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key ) {
+				$( '.acfw-more-menu' ).attr( 'hidden', 'hidden' );
+				$( '.acfw-more-toggle' ).attr( 'aria-expanded', 'false' );
+			}
+		} );
+
+		/* ---- Search + "enabled only" filter over the menu-item list ---- */
+		function filterItems() {
+			var term    = ( $( '.acfw-item-search' ).val() || '' ).toLowerCase().trim();
+			var only    = 'true' === $( '.acfw-filter-toggle' ).attr( 'aria-pressed' );
+			var visible = 0;
+
+			$( '.acfw-sortable-root > .acfw-node' ).each( function () {
+				var $node   = $( this );
+				var label   = $node.find( '> .acfw-node-head .acfw-node-title' ).first().text().toLowerCase();
+				var enabled = ! $node.hasClass( 'is-inactive' );
+				var show    = ( ! term || label.indexOf( term ) !== -1 ) && ( ! only || enabled );
+
+				$node.toggle( show );
+				if ( show ) {
+					visible++;
+				}
+			} );
+
+			$( '.acfw-list-empty' ).attr( 'hidden', visible ? 'hidden' : null );
+			// Reordering a filtered list would save a misleading order.
+			$( '.acfw-list-hint' ).toggle( ! term && ! only );
+		}
+
+		$( document ).on( 'input', '.acfw-item-search', filterItems );
+
+		$( document ).on( 'click', '.acfw-filter-toggle', function () {
+			var $btn = $( this );
+			$btn.attr( 'aria-pressed', 'true' === $btn.attr( 'aria-pressed' ) ? 'false' : 'true' );
+			$btn.toggleClass( 'is-active' );
+			filterItems();
+		} );
+
+		/* ---- Pencil opens the same detail pane as clicking the row ---- */
+		$( document ).on( 'click', '.acfw-node-edit', function ( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			selectItem( $( this ).data( 'key' ) );
+		} );
+
+		/* ---- Back to menu: collapse the detail pane, useful on narrow screens ---- */
+		$( document ).on( 'click', '.acfw-back-to-menu', function () {
+			$( '.acfw-node' ).removeClass( 'is-selected' );
+			$details.find( '.acfw-detail' ).attr( 'hidden', 'hidden' );
+			$details.find( '.acfw-detail-empty' ).show();
+			$( '.acfw-builder-layout' ).removeClass( 'is-editing' );
+			$( 'html, body' ).animate( { scrollTop: $( '.acfw-builder-list' ).offset().top - 60 }, 200 );
+		} );
 
 		$( document ).on( 'click', '.acfw-node-head', function ( e ) {
 			if ( $( e.target ).closest( '.acfw-drag, .acfw-node-remove, .acfw-node-duplicate, .acfw-switch, .acfw-banner-row-delete' ).length ) {

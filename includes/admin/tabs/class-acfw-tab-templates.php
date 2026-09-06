@@ -56,8 +56,13 @@ if ( ! class_exists( 'ACFW_Tab_Templates' ) ) {
 			?>
 			<?php $active_tpl = get_option( 'acfw_active_template', '' ); ?>
 			<div class="acfw-card acfw-templates">
-				<h2 class="acfw-section-title"><?php esc_html_e( 'Starter templates', 'my-account-dashboard-builder' ); ?></h2>
-				<p class="acfw-hint"><?php esc_html_e( 'One-click ready-made designs. Applying a template overwrites the related design settings.', 'my-account-dashboard-builder' ); ?></p>
+				<div class="acfw-panel-head">
+					<span class="acfw-panel-icon dashicons dashicons-layout" aria-hidden="true"></span>
+					<div class="acfw-panel-heading">
+						<h2><?php esc_html_e( 'Starter templates', 'my-account-dashboard-builder' ); ?></h2>
+						<p><?php esc_html_e( 'One-click ready-made designs. Applying a template overwrites the related design settings.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+				</div>
 				<div class="acfw-template-grid">
 					<?php foreach ( acfw_prebuilt_templates() as $tslug => $tpl ) : ?>
 						<?php $is_applied = ( $tslug === $active_tpl ); ?>

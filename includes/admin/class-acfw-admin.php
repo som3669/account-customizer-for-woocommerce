@@ -366,11 +366,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$tab  = $this->current_tab();
 			$tabs = array(
-				'items'      => __( 'Menu Items', 'my-account-dashboard-builder' ),
-				'templates'  => __( 'Templates', 'my-account-dashboard-builder' ),
-				'general'    => __( 'Settings', 'my-account-dashboard-builder' ),
-				'customizer' => __( 'Customizer', 'my-account-dashboard-builder' ),
-				'banners'    => __( 'Banners', 'my-account-dashboard-builder' ),
+				'items'      => array( __( 'Menu Items', 'my-account-dashboard-builder' ), 'menu-alt' ),
+				'templates'  => array( __( 'Templates', 'my-account-dashboard-builder' ), 'layout' ),
+				'general'    => array( __( 'Settings', 'my-account-dashboard-builder' ), 'admin-generic' ),
+				'customizer' => array( __( 'Customizer', 'my-account-dashboard-builder' ), 'art' ),
+				'banners'    => array( __( 'Banners', 'my-account-dashboard-builder' ), 'megaphone' ),
 			);
 			?>
 			<div class="wrap acfw-wrap">
@@ -381,21 +381,24 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						</div>
 						<nav class="acfw-tabs">
 							<?php
-							foreach ( $tabs as $slug => $label ) :
-								$tab_url = 'customizer' === $slug
+							foreach ( $tabs as $slug => $tab_def ) :
+								list( $label, $icon ) = $tab_def;
+								$tab_url              = 'customizer' === $slug
 									? ACFW_Customizer::url()
 									: admin_url( 'admin.php?page=' . self::PAGE . '&tab=' . $slug );
 								?>
 								<a href="<?php echo esc_url( $tab_url ); ?>"
-									class="acfw-tab <?php echo $tab === $slug ? 'is-active' : ''; ?>">
-									<?php echo esc_html( $label ); ?>
+									class="acfw-tab <?php echo $tab === $slug ? 'is-active' : ''; ?>"
+									<?php echo $tab === $slug ? 'aria-current="page"' : ''; ?>>
+									<span class="acfw-tab-icon dashicons dashicons-<?php echo esc_attr( $icon ); ?>" aria-hidden="true"></span>
+									<span class="acfw-tab-label"><?php echo esc_html( $label ); ?></span>
 								</a>
 							<?php endforeach; ?>
 						</nav>
 					</div>
 					<div class="acfw-header-actions">
 						<?php if ( 'items' === $tab ) : ?>
-							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="endpoint">
+							<button type="button" class="button button-primary acfw-header-btn acfw-header-btn-primary acfw-add-btn" data-type="endpoint">
 								<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add endpoint', 'my-account-dashboard-builder' ); ?>
 							</button>
 							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="group">
@@ -414,14 +417,21 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							</button>
 						<?php endif; ?>
 						<?php if ( function_exists( 'wc_get_page_permalink' ) ) : ?>
-							<button type="button" class="button acfw-header-btn acfw-icon-only acfw-preview-btn" data-url="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>" title="<?php esc_attr_e( 'Preview', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Preview', 'my-account-dashboard-builder' ); ?>">
-								<span class="dashicons dashicons-visibility"></span>
-								<span class="acfw-btn-text"><?php esc_html_e( 'Preview', 'my-account-dashboard-builder' ); ?></span>
-							</button>
-							<a href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>" class="button acfw-header-btn acfw-icon-only" target="_blank" rel="noopener" title="<?php esc_attr_e( 'View My Account', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'View My Account', 'my-account-dashboard-builder' ); ?>">
-								<span class="dashicons dashicons-external"></span>
-								<span class="acfw-btn-text"><?php esc_html_e( 'View My Account', 'my-account-dashboard-builder' ); ?></span>
-							</a>
+							<div class="acfw-header-more">
+								<button type="button" class="button acfw-header-btn acfw-icon-only acfw-more-toggle" aria-expanded="false" aria-haspopup="true" title="<?php esc_attr_e( 'More actions', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'More actions', 'my-account-dashboard-builder' ); ?>">
+									<span class="dashicons dashicons-ellipsis"></span>
+								</button>
+								<div class="acfw-more-menu" hidden>
+									<button type="button" class="acfw-more-item acfw-preview-btn" data-url="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>">
+										<span class="dashicons dashicons-visibility" aria-hidden="true"></span>
+										<?php esc_html_e( 'Preview', 'my-account-dashboard-builder' ); ?>
+									</button>
+									<a class="acfw-more-item" href="<?php echo esc_url( wc_get_page_permalink( 'myaccount' ) ); ?>" target="_blank" rel="noopener">
+										<span class="dashicons dashicons-external" aria-hidden="true"></span>
+										<?php esc_html_e( 'View My Account', 'my-account-dashboard-builder' ); ?>
+									</a>
+								</div>
+							</div>
 						<?php endif; ?>
 					</div>
 				</div>

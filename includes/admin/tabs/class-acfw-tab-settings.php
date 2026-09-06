@@ -111,6 +111,21 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 
 			<?php if ( 'general' === $section ) : ?>
 			<div class="acfw-card">
+				<?php
+				$acfw_heads = array(
+					'general' => array( 'admin-settings', __( 'General', 'my-account-dashboard-builder' ), __( 'Navigation, redirects and the commerce features', 'my-account-dashboard-builder' ) ),
+					'presets' => array( 'art', __( 'Presets & Reset', 'my-account-dashboard-builder' ), __( 'Save a design you like, or start over', 'my-account-dashboard-builder' ) ),
+					'tools'   => array( 'update', __( 'Import / Export', 'my-account-dashboard-builder' ), __( 'Move your configuration between sites', 'my-account-dashboard-builder' ) ),
+				);
+				$acfw_head  = $acfw_heads[ $section ] ?? $acfw_heads['general'];
+				?>
+				<div class="acfw-panel-head">
+					<span class="acfw-panel-icon dashicons dashicons-<?php echo esc_attr( $acfw_head[0] ); ?>" aria-hidden="true"></span>
+					<div class="acfw-panel-heading">
+						<h2><?php echo esc_html( $acfw_head[1] ); ?></h2>
+						<p><?php echo esc_html( $acfw_head[2] ); ?></p>
+					</div>
+				</div>
 			<form method="post" action="options.php">
 				<?php settings_fields( 'acfw_settings' ); ?>
 				<table class="form-table" role="presentation">
