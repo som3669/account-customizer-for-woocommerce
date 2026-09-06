@@ -86,7 +86,8 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				<div class="acfw-builder-layout">
 
 					<div class="acfw-builder-list-col">
-						<div class="acfw-card acfw-builder-list">
+						<?php // With no banners the list card would render as an empty white box. ?>
+						<div class="acfw-card acfw-builder-list<?php echo $is_empty ? ' acfw-is-empty' : ''; ?>">
 							<ul class="acfw-sortable-root acfw-banner-node-list">
 								<?php foreach ( $banners as $slug => $banner ) : ?>
 									<?php $this->render_banner_row( $slug, wp_parse_args( $banner, ACFW_Banners::defaults() ) ); ?>
@@ -96,6 +97,25 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						<button type="button" class="button acfw-add-banner-btn acfw-add-banner-below">
 							<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add banner', 'my-account-dashboard-builder' ); ?>
 						</button>
+
+						<div class="acfw-card acfw-banner-preview-card">
+							<h3 class="acfw-preview-title"><?php esc_html_e( 'Banner Preview', 'my-account-dashboard-builder' ); ?></h3>
+							<div class="acfw-preview-stage">
+								<span class="acfw-preview-arrow is-prev dashicons dashicons-arrow-left-alt2" aria-hidden="true"></span>
+								<div class="acfw-preview-frame" aria-hidden="true">
+									<span class="acfw-preview-dots">
+										<i></i><i></i><i></i>
+									</span>
+									<span class="acfw-preview-image">
+										<span class="acfw-preview-sun"></span>
+										<span class="acfw-preview-hill"></span>
+									</span>
+								</div>
+								<span class="acfw-preview-arrow is-next dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span>
+							</div>
+							<span class="acfw-preview-pager" aria-hidden="true"><i class="is-on"></i><i></i><i></i></span>
+							<p class="acfw-preview-note"><?php esc_html_e( 'Your banner will appear here when added.', 'my-account-dashboard-builder' ); ?></p>
+						</div>
 					</div>
 
 					<div class="acfw-card acfw-builder-detail">
@@ -185,6 +205,7 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				<div class="acfw-field">
 					<label><?php esc_html_e( 'Banner name', 'my-account-dashboard-builder' ); ?></label>
 					<input type="text" name="banner_title" value="<?php echo esc_attr( $banner['title'] ); ?>" />
+					<p class="acfw-hint"><?php esc_html_e( 'Enter a unique name for this banner.', 'my-account-dashboard-builder' ); ?></p>
 				</div>
 
 				<div class="acfw-field">
@@ -225,16 +246,19 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Icon width (px)', 'my-account-dashboard-builder' ); ?></label>
 					<input type="number" name="banner_icon_width" min="16" max="100" value="<?php echo esc_attr( $banner['icon_width'] ?? 40 ); ?>" />
+					<p class="acfw-hint"><?php esc_html_e( 'Set the icon width in pixels.', 'my-account-dashboard-builder' ); ?></p>
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Widget width (px)', 'my-account-dashboard-builder' ); ?></label>
 					<input type="number" name="banner_widget_width" min="200" max="700" value="<?php echo esc_attr( $banner['widget_width'] ?? 250 ); ?>" />
+					<p class="acfw-hint"><?php esc_html_e( 'Set the widget width in pixels.', 'my-account-dashboard-builder' ); ?></p>
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Widget text', 'my-account-dashboard-builder' ); ?></label>
 					<textarea name="banner_content" rows="3"><?php echo esc_textarea( $banner['content'] ); ?></textarea>
+					<p class="acfw-hint"><?php esc_html_e( 'Optional text to display in the banner widget.', 'my-account-dashboard-builder' ); ?></p>
 				</div>
 
 				<div class="acfw-field acfw-btype acfw-btype-image">
@@ -305,7 +329,10 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 					<?php if ( ! $is_new ) : ?>
 						<button type="submit" class="button acfw-banner-delete" data-slug="<?php echo esc_attr( $slug ); ?>"><?php esc_html_e( 'Delete', 'my-account-dashboard-builder' ); ?></button>
 					<?php endif; ?>
-					<button type="submit" class="button button-primary"><?php echo $is_new ? esc_html__( 'Create banner', 'my-account-dashboard-builder' ) : esc_html__( 'Save banner', 'my-account-dashboard-builder' ); ?></button>
+					<button type="submit" class="button button-primary acfw-banner-submit">
+						<span class="dashicons dashicons-<?php echo $is_new ? 'plus-alt2' : 'yes'; ?>" aria-hidden="true"></span>
+						<?php echo $is_new ? esc_html__( 'Create banner', 'my-account-dashboard-builder' ) : esc_html__( 'Save banner', 'my-account-dashboard-builder' ); ?>
+					</button>
 				</div>
 			</form>
 			</div>

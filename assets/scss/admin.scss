@@ -2813,3 +2813,159 @@ $acfw-tint: #f2f6fd;
 	width: 13px;
 	height: 13px;
 }
+
+/* ---- Banners: dashed add button and the preview placeholder ---- */
+.acfw-add-banner-below {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	width: 100%;
+	height: 46px;
+	margin: 0 0 16px !important;
+	border: 1px dashed rgba(37, 99, 235, 0.45) !important;
+	border-radius: 12px !important;
+	background: rgba(37, 99, 235, 0.05) !important;
+	color: #1d4ed8 !important;
+	font-weight: 600 !important;
+	box-shadow: none !important;
+}
+
+.acfw-add-banner-below:hover {
+	border-color: #2563eb !important;
+	background: rgba(37, 99, 235, 0.10) !important;
+}
+
+.acfw-banner-preview-card {
+	padding: 16px;
+}
+
+.acfw-preview-title {
+	margin: 0 0 12px;
+	color: $acfw-ink;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.acfw-preview-stage {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 18px 6px;
+	border: 1px solid $acfw-line;
+	border-radius: 12px;
+	background: linear-gradient(180deg, #fbfdff 0%, #f4f7fc 100%);
+}
+
+.acfw-preview-arrow {
+	flex: 0 0 auto;
+	color: #94a3b8;
+	font-size: 18px;
+}
+
+.acfw-preview-frame {
+	position: relative;
+	flex: 1 1 auto;
+	height: 108px;
+	border: 1px solid #dbe4f3;
+	border-radius: 10px;
+	background: #fff;
+	overflow: hidden;
+}
+
+.acfw-preview-dots {
+	display: flex;
+	gap: 4px;
+	padding: 8px 10px;
+}
+
+.acfw-preview-dots i {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #cbd9f0;
+}
+
+.acfw-preview-image {
+	position: absolute;
+	inset: 26px 16px 14px;
+	border-radius: 8px;
+	background: linear-gradient(180deg, #dbe7fb 0%, #c7d9f8 100%);
+	overflow: hidden;
+}
+
+.acfw-preview-sun {
+	position: absolute;
+	top: 12px;
+	right: 18px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: #fff;
+	opacity: 0.9;
+}
+
+.acfw-preview-hill {
+	position: absolute;
+	right: -10%;
+	bottom: -32px;
+	left: -10%;
+	height: 62px;
+	border-radius: 50% 50% 0 0;
+	background: #93b4ee;
+}
+
+.acfw-preview-pager {
+	display: flex;
+	justify-content: center;
+	gap: 5px;
+	margin-top: 10px;
+}
+
+.acfw-preview-pager i {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #d6e0f2;
+}
+
+.acfw-preview-pager i.is-on {
+	background: #2563eb;
+}
+
+.acfw-preview-note {
+	margin: 10px 0 0;
+	color: #64748b;
+	font-size: 12.5px;
+	line-height: 1.5;
+	text-align: center;
+}
+
+.acfw-banner-submit {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+	height: 42px;
+	padding: 0 20px;
+	border-radius: 10px !important;
+	font-weight: 600 !important;
+	box-shadow: 0 2px 6px rgba(37, 99, 235, 0.30) !important;
+}
+
+.acfw-banner-submit .dashicons {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+}
+
+/* Field hints inside the detail pane match the settings screen. */
+.acfw-builder-detail .acfw-hint {
+	margin: 7px 0 0;
+	color: #64748b;
+	font-size: 12.5px;
+	line-height: 1.55;
+}
+
+.acfw-builder-list.acfw-is-empty {
+	display: none;
+}
