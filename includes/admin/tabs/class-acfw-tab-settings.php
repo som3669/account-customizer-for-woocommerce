@@ -225,7 +225,13 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 										'warning' => __( 'Warning', 'my-account-dashboard-builder' ),
 										'plain'   => __( 'Plain', 'my-account-dashboard-builder' ),
 									),
-									'info'
+									'info',
+									array(
+										'info'    => 'dot-ring',
+										'success' => 'dot-ring',
+										'warning' => 'dot-ring',
+										'plain'   => 'dot-ring',
+									)
 								);
 								?>
 								<div class="acfw-switch-row" style="margin-top:10px;">

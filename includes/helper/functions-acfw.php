@@ -663,6 +663,79 @@ function acfw_default_endpoint_options( $key = '' ) {
 }
 
 /**
+ * Inline SVG icons for the admin option controls.
+ *
+ * Drawn rather than shipped as images so they stay crisp on any display and
+ * pick up the surrounding text colour through currentColor.
+ *
+ * @param string $name Icon name.
+ * @return string SVG markup, or an empty string when the name is unknown.
+ */
+function acfw_ui_icon( $name ) {
+
+	$open  = '<svg class="acfw-ui-icon" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">';
+	$close = '</svg>';
+
+	$paths = array(
+		// Four squares: the widget layout.
+		'widget'   => '<rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.6" fill="currentColor"/><rect x="11" y="2.5" width="6.5" height="6.5" rx="1.6" fill="currentColor"/><rect x="2.5" y="11" width="6.5" height="6.5" rx="1.6" fill="currentColor"/><rect x="11" y="11" width="6.5" height="6.5" rx="1.6" fill="currentColor"/>',
+		// Framed picture with a hill and a sun.
+		'image'    => '<rect x="2.5" y="3.5" width="15" height="13" rx="2.2" stroke="currentColor" stroke-width="1.6"/><circle cx="7.3" cy="8" r="1.5" fill="currentColor"/><path d="M3.5 14.5 8 10.4l3.1 2.8 2.6-2.3 2.8 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+		// Cloud with an upward arrow.
+		'upload'   => '<path d="M5.6 15.5a3.6 3.6 0 0 1-.3-7.2 4.7 4.7 0 0 1 9 .8 3.2 3.2 0 0 1-.6 6.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 17.5V9.2m0 0L7.7 11.5M10 9.2l2.3 2.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+		// Sheet of paper with lines: the classic editor.
+		'classic'  => '<path d="M5 2.8h6.4L16 7.2v10a1.6 1.6 0 0 1-1.6 1.6H5A1.6 1.6 0 0 1 3.4 17V4.4A1.6 1.6 0 0 1 5 2.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M11.2 3v4.4H16M6.4 11h7M6.4 14h4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+		// Cube: the block editor.
+		'block'    => '<path d="m10 2.6 6.4 3.6v7.6L10 17.4 3.6 13.8V6.2L10 2.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m3.8 6.3 6.2 3.5 6.2-3.5M10 17.2V9.8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+		// Solid dot, used to colour the notice-style options.
+		'dot'      => '<circle cx="10" cy="10" r="5" fill="currentColor"/>',
+		'dot-ring' => '<circle cx="10" cy="10" r="5.2" stroke="currentColor" stroke-width="1.8"/>',
+	);
+
+	if ( ! isset( $paths[ $name ] ) ) {
+		return '';
+	}
+
+	return $open . $paths[ $name ] . $close;
+}
+
+/**
+ * Tags allowed when printing acfw_ui_icon() output.
+ *
+ * @return array
+ */
+function acfw_svg_kses() {
+	$attrs = array(
+		'class'           => true,
+		'width'           => true,
+		'height'          => true,
+		'viewbox'         => true,
+		'fill'            => true,
+		'stroke'          => true,
+		'stroke-width'    => true,
+		'stroke-linecap'  => true,
+		'stroke-linejoin' => true,
+		'aria-hidden'     => true,
+		'focusable'       => true,
+		'xmlns'           => true,
+		'x'               => true,
+		'y'               => true,
+		'rx'              => true,
+		'cx'              => true,
+		'cy'              => true,
+		'r'               => true,
+		'd'               => true,
+	);
+
+	return array(
+		'svg'    => $attrs,
+		'rect'   => $attrs,
+		'circle' => $attrs,
+		'path'   => $attrs,
+	);
+}
+
+/**
  * Banners assigned to an item, as a list of slugs.
  *
  * Accepts both shapes: the multi-select `banner_slugs` array, and the single

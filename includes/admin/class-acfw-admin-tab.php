@@ -155,11 +155,27 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		 * @param array  $choices  value => label pairs.
 		 * @param string $fallback Value used when nothing is stored.
 		 */
-		protected function buttonset( $name, $current, $choices, $fallback = '' ) {
+		protected function buttonset( $name, $current, $choices, $fallback = '', $icons = array() ) {
 			$current = ( '' === $current || null === $current ) ? $fallback : $current;
 			echo '<div class="acfw-radio-group" role="radiogroup">';
 			foreach ( $choices as $value => $label ) {
 				$active = (string) $current === (string) $value;
+				$icon   = isset( $icons[ $value ] ) ? acfw_ui_icon( $icons[ $value ] ) : '';
+
+				if ( $icon ) {
+					printf(
+						'<label class="acfw-radio-box acfw-radio-icon acfw-radio-%6$s%1$s"><input type="radio" name="%2$s" value="%3$s" %4$s />%7$s<span class="acfw-radio-text">%5$s</span></label>',
+						$active ? ' is-active' : '',
+						esc_attr( $name ),
+						esc_attr( $value ),
+						checked( $current, $value, false ),
+						esc_html( $label ),
+						esc_attr( $value ),
+						wp_kses( $icon, acfw_svg_kses() )
+					);
+					continue;
+				}
+
 				printf(
 					'<label class="acfw-radio-box%1$s"><input type="radio" name="%2$s" value="%3$s" %4$s /><span class="acfw-radio-dot"></span><span class="acfw-radio-text">%5$s</span></label>',
 					$active ? ' is-active' : '',

@@ -377,11 +377,11 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					<div class="acfw-icon-source">
 						<label class="acfw-radio-card <?php echo 'choose' === $icon_source ? 'is-active' : ''; ?>">
 							<input type="radio" name="items[<?php echo esc_attr( $key ); ?>][icon_source]" value="choose" <?php checked( $icon_source, 'choose' ); ?> />
-							<span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'my-account-dashboard-builder' ); ?>
+							<?php echo wp_kses( acfw_ui_icon( 'widget' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Choose icon', 'my-account-dashboard-builder' ); ?>
 						</label>
 						<label class="acfw-radio-card <?php echo 'upload' === $icon_source ? 'is-active' : ''; ?>">
 							<input type="radio" name="items[<?php echo esc_attr( $key ); ?>][icon_source]" value="upload" <?php checked( $icon_source, 'upload' ); ?> />
-							<span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?>
+							<?php echo wp_kses( acfw_ui_icon( 'upload' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?>
 						</label>
 					</div>
 
@@ -468,14 +468,14 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					?>
 					<div class="acfw-field">
 						<label><?php esc_html_e( 'Content editor', 'my-account-dashboard-builder' ); ?><?php echo $this->tip( __( 'Edit custom content with the Classic editor or the Block ( Gutenberg ) editor.', 'my-account-dashboard-builder' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
-						<div class="acfw-radio-group acfw-editor-type-group" role="radiogroup">
+						<div class="acfw-radio-group acfw-editor-type-group acfw-has-icons" role="radiogroup">
 							<label class="acfw-radio-box acfw_choose_icon_type_inner_wrapper <?php echo ! $is_block ? 'is-active active' : ''; ?>">
 								<input type="radio" class="acfw_editor_type_radio" name="items[<?php echo esc_attr( $key ); ?>][editor_type]" value="classic" data-endpoint="<?php echo esc_attr( $ukey ); ?>" <?php checked( $editor_type, 'classic' ); ?> />
-								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Classic', 'my-account-dashboard-builder' ); ?></span>
+								<?php echo wp_kses( acfw_ui_icon( 'classic' ), acfw_svg_kses() ); ?><span class="acfw-radio-text"><?php esc_html_e( 'Classic', 'my-account-dashboard-builder' ); ?></span>
 							</label>
 							<label class="acfw-radio-box acfw_choose_icon_type_inner_wrapper <?php echo $is_block ? 'is-active active' : ''; ?>">
 								<input type="radio" class="acfw_editor_type_radio" name="items[<?php echo esc_attr( $key ); ?>][editor_type]" value="block" data-endpoint="<?php echo esc_attr( $ukey ); ?>" <?php checked( $editor_type, 'block' ); ?> />
-								<span class="acfw-radio-dot"></span><span class="acfw-radio-text"><?php esc_html_e( 'Block', 'my-account-dashboard-builder' ); ?></span>
+								<?php echo wp_kses( acfw_ui_icon( 'block' ), acfw_svg_kses() ); ?><span class="acfw-radio-text"><?php esc_html_e( 'Block', 'my-account-dashboard-builder' ); ?></span>
 							</label>
 						</div>
 					</div>

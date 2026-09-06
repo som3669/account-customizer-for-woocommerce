@@ -218,7 +218,11 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 							'widget' => __( 'Widget', 'my-account-dashboard-builder' ),
 							'image'  => __( 'Image', 'my-account-dashboard-builder' ),
 						),
-						'widget'
+						'widget',
+						array(
+							'widget' => 'widget',
+							'image'  => 'image',
+						)
 					);
 					?>
 				</div>
@@ -227,8 +231,8 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 					<label><?php esc_html_e( 'Banner icon', 'my-account-dashboard-builder' ); ?></label>
 					<?php $b_icon_src = ( 'upload' === ( $banner['icon_source'] ?? 'choose' ) || ! empty( $banner['icon_url'] ) ) ? 'upload' : 'choose'; ?>
 					<div class="acfw-icon-source">
-						<label class="acfw-radio-card <?php echo 'choose' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="choose" <?php checked( $b_icon_src, 'choose' ); ?> /><span class="dashicons dashicons-screenoptions"></span> <?php esc_html_e( 'Choose icon', 'my-account-dashboard-builder' ); ?></label>
-						<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><span class="dashicons dashicons-upload"></span> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?></label>
+						<label class="acfw-radio-card <?php echo 'choose' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="choose" <?php checked( $b_icon_src, 'choose' ); ?> /><?php echo wp_kses( acfw_ui_icon( 'widget' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Choose icon', 'my-account-dashboard-builder' ); ?></label>
+						<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><?php echo wp_kses( acfw_ui_icon( 'upload' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?></label>
 					</div>
 					<div class="acfw-icon-choose" <?php echo 'choose' === $b_icon_src ? '' : 'hidden'; ?>>
 						<select name="banner_icon" class="acfw-icon-select">

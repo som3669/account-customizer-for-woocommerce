@@ -2211,10 +2211,6 @@
    Redesign pass: header, list panel and detail pane.
    Layered after the base rules so the original structure stays intact.
    ========================================================================= */
-.acfw-wrap {
-  background: linear-gradient(180deg, #f7faff 0%, #f4f7fc 320px, #f4f7fc 100%);
-}
-
 /* ---- Header ---- */
 .acfw-header {
   gap: 16px;
@@ -2952,4 +2948,70 @@
 
 .acfw-builder-list.acfw-is-empty {
   display: none;
+}
+
+/* ---- Icon-bearing option buttons ---- */
+.acfw-ui-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.acfw-radio-box.acfw-radio-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.acfw-radio-box.acfw-radio-icon .acfw-ui-icon {
+  color: #64748b;
+  transition: color 0.15s ease;
+}
+
+.acfw-radio-box.acfw-radio-icon.is-active .acfw-ui-icon,
+.acfw-radio-box.acfw-radio-icon:hover .acfw-ui-icon {
+  color: #2563eb;
+}
+
+/* The editor switch and the icon-source cards use the same treatment. */
+.acfw-editor-type-group .acfw-ui-icon,
+.acfw-radio-card .acfw-ui-icon {
+  color: #64748b;
+  transition: color 0.15s ease;
+}
+
+.acfw-editor-type-group .acfw-radio-box.is-active .acfw-ui-icon,
+.acfw-editor-type-group .acfw-radio-box.active .acfw-ui-icon,
+.acfw-radio-card.is-active .acfw-ui-icon {
+  color: #2563eb;
+}
+
+.acfw-radio-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Notice styles carry their own colour, so the dot previews the result. */
+.acfw-radio-box.acfw-radio-info .acfw-ui-icon {
+  color: #2563eb;
+}
+
+.acfw-radio-box.acfw-radio-success .acfw-ui-icon {
+  color: #16a34a;
+}
+
+.acfw-radio-box.acfw-radio-warning .acfw-ui-icon {
+  color: #d97706;
+}
+
+.acfw-radio-box.acfw-radio-plain .acfw-ui-icon {
+  color: #94a3b8;
+}
+
+.acfw-radio-box.acfw-radio-info.is-active,
+.acfw-radio-box.acfw-radio-success.is-active,
+.acfw-radio-box.acfw-radio-warning.is-active,
+.acfw-radio-box.acfw-radio-plain.is-active {
+  border-color: currentColor;
 }
