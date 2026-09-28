@@ -29,11 +29,15 @@ if ( ! class_exists( 'ACFW_Tab_Templates' ) ) {
 					$tslug     = isset( $_POST['template_slug'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['template_slug'] ) ) ) : '';
 					$templates = acfw_prebuilt_templates();
 					if ( ! empty( $templates[ $tslug ]['options'] ) ) {
-						// Reset the whole design to defaults first so the result is
+						// Reset the design to defaults first so the result is
 						// deterministic and matches the template preview exactly,
-						// with no leftover values from a previous template.
+						// with no leftover values from a previous template. Keys a
+						// template never sets ( Custom CSS, avatar, counts ) stay.
+						$preserved = acfw_template_preserved_keys();
 						foreach ( acfw_design_option_defaults() as $dk => $dv ) {
-							update_option( $dk, $dv );
+							if ( ! in_array( $dk, $preserved, true ) ) {
+								update_option( $dk, $dv );
+							}
 						}
 						// Overlay the template's own values.
 						$keys = acfw_design_option_keys();

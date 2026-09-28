@@ -197,11 +197,28 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'acfw-admin',
 				'acfwAdmin',
 				array(
-					'confirmDelete' => __( 'Delete this item? This cannot be undone.', 'my-account-dashboard-builder' ),
-					'mediaTitle'    => __( 'Select an icon image', 'my-account-dashboard-builder' ),
-					'mediaButton'   => __( 'Use this image', 'my-account-dashboard-builder' ),
+					'confirmDelete'  => __( 'Delete this item? This cannot be undone.', 'my-account-dashboard-builder' ),
+					'confirmReset'   => __( 'Reset every menu item, design setting and banner to the defaults? This cannot be undone.', 'my-account-dashboard-builder' ),
+					'mediaTitle'     => __( 'Select an icon image', 'my-account-dashboard-builder' ),
+					'mediaButton'    => __( 'Use this image', 'my-account-dashboard-builder' ),
+					'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+					'productNonce'   => wp_create_nonce( 'search-products' ),
+					'productMinChar' => __( 'Type at least 3 characters to search.', 'my-account-dashboard-builder' ),
+					'searching'      => __( 'Searching…', 'my-account-dashboard-builder' ),
+					'noResults'      => __( 'No products found.', 'my-account-dashboard-builder' ),
+					'everyone'       => __( 'Everyone', 'my-account-dashboard-builder' ),
 				)
 			);
+
+			// The icon library, once for every picker on the page ( see icon_picker() ).
+			$icons = array();
+			foreach ( acfw_icon_choices() as $icon_class => $icon_label ) {
+				$icons[] = array(
+					'id'   => $icon_class,
+					'text' => $icon_label,
+				);
+			}
+			wp_add_inline_script( 'acfw-admin', 'window.acfwIconChoices = ' . wp_json_encode( $icons ) . ';', 'before' );
 
 			// Standalone Block Editor for endpoint custom content ( optional ).
 			$this->enqueue_block_editor();
@@ -328,6 +345,28 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		}
 
 		/**
+		 * The Settings tab's inner section, when one is being shown.
+		 *
+		 * @return string Empty outside the Settings tab.
+		 */
+		protected function current_section() {
+			if ( 'general' !== $this->current_tab() || ! isset( $_GET['section'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				return '';
+			}
+			$section = sanitize_key( wp_unslash( $_GET['section'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return in_array( $section, array( 'general', 'presets', 'tools' ), true ) ? $section : '';
+		}
+
+		/**
+		 * Transient that carries notices across the post-save redirect.
+		 *
+		 * @return string
+		 */
+		protected function notices_key() {
+			return 'acfw_admin_notices_' . get_current_user_id();
+		}
+
+		/**
 		 * Handle POST actions for the menu-items builder.
 		 */
 		public function handle_actions() {
@@ -343,18 +382,34 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			$action = sanitize_key( wp_unslash( $_POST['acfw_action'] ) );
 			$items  = ACFW()->items;
 
-			foreach ( $this->tabs as $tab ) {
-				$tab->handle( $action, $items );
+			$args = array(
+				'page'    => self::PAGE,
+				'tab'     => $this->current_tab(),
+				'updated' => 'true',
+			);
+			// Presets and Import live in sections of the Settings tab; land back there.
+			if ( '' !== $this->current_section() ) {
+				$args['section'] = $this->current_section();
 			}
 
-			$redirect = add_query_arg(
-				array(
-					'page'    => self::PAGE,
-					'tab'     => $this->current_tab(),
-					'updated' => 'true',
-				),
-				admin_url( 'admin.php' )
-			);
+			$notices = array();
+			foreach ( $this->tabs as $tab ) {
+				$tab->handle( $action, $items );
+				$args    = array_merge( $args, $tab->redirect_args() );
+				$notices = array_merge( $notices, $tab->notices() );
+			}
+
+			if ( $notices ) {
+				set_transient( $this->notices_key(), $notices, MINUTE_IN_SECONDS );
+			}
+
+			// add_query_arg() does not encode values; a key saved with "%xx"
+			// octets by an earlier version must survive the round trip.
+			if ( ! empty( $args['select'] ) ) {
+				$args['select'] = rawurlencode( (string) $args['select'] );
+			}
+
+			$redirect = add_query_arg( $args, admin_url( 'admin.php' ) );
 			wp_safe_redirect( $redirect );
 			exit;
 		}
@@ -445,20 +500,23 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						'msg'  => __( 'Changes saved.', 'my-account-dashboard-builder' ),
 					);
 				}
-				$acfw_import_notice = get_transient( 'acfw_import_notice' );
-				if ( $acfw_import_notice ) {
-					delete_transient( 'acfw_import_notice' );
-					$acfw_ok       = 'success' === $acfw_import_notice;
-					$acfw_toasts[] = array(
-						'type' => $acfw_ok ? 'success' : 'error',
-						'msg'  => $acfw_ok ? __( 'Configuration imported.', 'my-account-dashboard-builder' ) : $acfw_import_notice,
-					);
+				$acfw_queued = get_transient( $this->notices_key() );
+				if ( $acfw_queued ) {
+					delete_transient( $this->notices_key() );
+					foreach ( (array) $acfw_queued as $acfw_notice ) {
+						if ( ! empty( $acfw_notice['msg'] ) ) {
+							$acfw_toasts[] = array(
+								'type' => in_array( $acfw_notice['type'] ?? '', array( 'success', 'warning', 'error' ), true ) ? $acfw_notice['type'] : 'warning',
+								'msg'  => (string) $acfw_notice['msg'],
+							);
+						}
+					}
 				}
 				if ( $acfw_toasts ) :
 					?>
 					<div class="acfw-toast-wrap" aria-live="polite">
 						<?php foreach ( $acfw_toasts as $t ) : ?>
-							<div class="acfw-toast acfw-toast-<?php echo esc_attr( $t['type'] ); ?>">
+							<div class="acfw-toast acfw-toast-<?php echo esc_attr( $t['type'] ); ?>" role="<?php echo 'success' === $t['type'] ? 'status' : 'alert'; ?>">
 								<span class="dashicons dashicons-<?php echo 'success' === $t['type'] ? 'yes-alt' : 'warning'; ?>"></span>
 								<span class="acfw-toast-msg"><?php echo esc_html( $t['msg'] ); ?></span>
 								<button type="button" class="acfw-toast-close" aria-label="<?php esc_attr_e( 'Dismiss', 'my-account-dashboard-builder' ); ?>">&times;</button>

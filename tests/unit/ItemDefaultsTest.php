@@ -46,6 +46,7 @@ class ItemDefaultsTest extends TestCase {
 			'endpoint' => array( acfw_default_endpoint_options( 'orders' ), 'endpoint' ),
 			'group'    => array( acfw_default_group_options(), 'group' ),
 			'link'     => array( acfw_default_link_options(), 'link' ),
+			'page'     => array( acfw_default_page_options(), 'page' ),
 		);
 	}
 

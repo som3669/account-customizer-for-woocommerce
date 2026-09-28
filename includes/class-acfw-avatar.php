@@ -264,7 +264,7 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 		 */
 		public function register_exporter( $exporters ) {
 			$exporters['my-account-dashboard-builder'] = array(
-				'exporter_friendly_name' => __( 'Account Customizer avatar', 'my-account-dashboard-builder' ),
+				'exporter_friendly_name' => __( 'My Account Dashboard Builder avatar', 'my-account-dashboard-builder' ),
 				'callback'               => array( $this, 'export_data' ),
 			);
 			return $exporters;
@@ -309,7 +309,7 @@ if ( ! class_exists( 'ACFW_Avatar' ) ) {
 		 */
 		public function register_eraser( $erasers ) {
 			$erasers['my-account-dashboard-builder'] = array(
-				'eraser_friendly_name' => __( 'Account Customizer avatar', 'my-account-dashboard-builder' ),
+				'eraser_friendly_name' => __( 'My Account Dashboard Builder avatar', 'my-account-dashboard-builder' ),
 				'callback'             => array( $this, 'erase_data' ),
 			);
 			return $erasers;

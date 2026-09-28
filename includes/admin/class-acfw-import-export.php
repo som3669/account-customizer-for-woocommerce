@@ -89,6 +89,13 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 					$value = self::sanitize_imported( $name, $value );
 				}
 
+				// The menu tree drives rewrite rules for everyone, so its shape is
+				// checked whoever imports it.
+				if ( 'acfw_items_order' === $name ) {
+					$tree  = is_string( $value ) ? json_decode( $value, true ) : $value;
+					$value = wp_json_encode( acfw_sanitize_order_tree( $tree ) );
+				}
+
 				update_option( $name, $value );
 			}
 

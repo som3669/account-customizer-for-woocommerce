@@ -98,6 +98,9 @@ if ( ! class_exists( 'ACFW_I18n' ) ) {
 					if ( ! empty( $data['content'] ) ) {
 						self::register( 'item_' . $key . '_content', $data['content'] );
 					}
+					if ( ! empty( $data['badge'] ) ) {
+						self::register( 'item_' . $key . '_badge', $data['badge'] );
+					}
 				}
 			}
 
@@ -114,6 +117,9 @@ if ( ! class_exists( 'ACFW_I18n' ) ) {
 					}
 					if ( ! empty( $banner['content'] ) ) {
 						self::register( 'banner_' . $slug . '_content', $banner['content'] );
+					}
+					if ( ! empty( $banner['link_text'] ) ) {
+						self::register( 'banner_' . $slug . '_link_text', $banner['link_text'] );
 					}
 				}
 			}
@@ -141,7 +147,7 @@ if ( ! class_exists( 'ACFW_I18n' ) ) {
 		}
 
 		/**
-		 * Translate one item's label + content.
+		 * Translate one item's label, content and badge.
 		 *
 		 * @param string $key  Item key.
 		 * @param array  $item Item options.
@@ -153,6 +159,9 @@ if ( ! class_exists( 'ACFW_I18n' ) ) {
 			}
 			if ( ! empty( $item['content'] ) ) {
 				$item['content'] = self::translate( 'item_' . $key . '_content', $item['content'] );
+			}
+			if ( ! empty( $item['badge'] ) ) {
+				$item['badge'] = self::translate( 'item_' . $key . '_badge', $item['badge'] );
 			}
 			return $item;
 		}

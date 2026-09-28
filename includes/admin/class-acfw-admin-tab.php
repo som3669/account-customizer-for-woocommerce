@@ -21,6 +21,21 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		const NONCE = 'acfw_admin_action';
 
 		/**
+		 * Query args a handled action adds to the post-save redirect
+		 * ( e.g. which item to reselect ). A false value removes the arg.
+		 *
+		 * @var array
+		 */
+		protected $redirect_args = array();
+
+		/**
+		 * Messages a handled action wants shown after the redirect.
+		 *
+		 * @var array[] Each: array{ type: success|warning|error, msg: string }.
+		 */
+		protected $notices = array();
+
+		/**
 		 * Render the tab's content.
 		 */
 		abstract public function render();
@@ -35,6 +50,37 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		 * @param ACFW_Items $items  Menu items manager.
 		 */
 		public function handle( $action, $items ) {}
+
+		/**
+		 * Redirect args collected while handling an action.
+		 *
+		 * @return array
+		 */
+		public function redirect_args() {
+			return $this->redirect_args;
+		}
+
+		/**
+		 * Notices collected while handling an action.
+		 *
+		 * @return array[]
+		 */
+		public function notices() {
+			return $this->notices;
+		}
+
+		/**
+		 * Queue a notice for the page shown after the redirect.
+		 *
+		 * @param string $msg  Message.
+		 * @param string $type success | warning | error.
+		 */
+		protected function add_notice( $msg, $type = 'warning' ) {
+			$this->notices[] = array(
+				'type' => $type,
+				'msg'  => (string) $msg,
+			);
+		}
 
 		/**
 		 * Render a range slider control with a px value bubble.
@@ -207,18 +253,35 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		}
 
 		/**
-		 * Curated list of dashicons offered in the icon picker.
+		 * Icons offered in the icon picker ( class => label ).
 		 *
 		 * @return array
 		 */
 		protected function icon_choices() {
-			$choices = array();
-			foreach ( acfw_icon_list() as $class ) {
-				// Derive a readable label from the fa-* name.
-				$name              = preg_replace( '/^.*fa-/', '', $class );
-				$choices[ $class ] = ucwords( str_replace( '-', ' ', $name ) );
-			}
-			return $choices;
+			return acfw_icon_choices();
+		}
+
+		/**
+		 * Render an icon picker.
+		 *
+		 * Only the current icon is printed as an option: the full library is
+		 * sent once for the whole page ( window.acfwIconChoices ) and searched
+		 * by select2, instead of repeating a thousand options in every picker.
+		 *
+		 * @param string $name    Field name.
+		 * @param string $current Current icon class.
+		 * @param string $id      Optional element id.
+		 */
+		protected function icon_picker( $name, $current, $id = '' ) {
+			$current = (string) $current;
+			?>
+			<select name="<?php echo esc_attr( $name ); ?>" class="acfw-icon-select"<?php echo $id ? ' id="' . esc_attr( $id ) . '"' : ''; ?> data-placeholder="<?php esc_attr_e( 'Search the icon library…', 'my-account-dashboard-builder' ); ?>">
+				<option value=""><?php esc_html_e( '— Select an icon —', 'my-account-dashboard-builder' ); ?></option>
+				<?php if ( '' !== $current ) : ?>
+					<option value="<?php echo esc_attr( $current ); ?>" selected><?php echo esc_html( acfw_icon_label( $current ) ); ?></option>
+				<?php endif; ?>
+			</select>
+			<?php
 		}
 	}
 }

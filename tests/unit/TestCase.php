@@ -42,6 +42,39 @@ abstract class TestCase extends PHPUnitTestCase {
 			}
 		);
 
+		// Like sanitize_title_with_dashes(): lowercase, dashes for spaces, and
+		// every non-ASCII byte percent-encoded ( "म" becomes "%e0%a4%ae" ).
+		Functions\when( 'sanitize_title' )->alias(
+			function ( $title ) {
+				$title = strtolower( trim( strip_tags( (string) $title ) ) );
+				$title = preg_replace_callback(
+					'/[\x80-\xff]/',
+					function ( $m ) {
+						return '%' . bin2hex( $m[0] );
+					},
+					$title
+				);
+				$title = preg_replace( '/%(?![a-f0-9]{2})/', '', $title );
+				$title = preg_replace( '/[^%a-z0-9 _-]/', '', $title );
+				$title = preg_replace( '/\s+/', '-', $title );
+				return trim( preg_replace( '/-+/', '-', $title ), '-' );
+			}
+		);
+
+		Functions\when( 'sanitize_key' )->alias(
+			function ( $key ) {
+				return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $key ) );
+			}
+		);
+
+		Functions\when( '__' )->returnArg();
+
+		Functions\when( 'esc_html' )->alias(
+			function ( $text ) {
+				return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
+			}
+		);
+
 		// Stands in for kses: drops script/style blocks and event attributes.
 		Functions\when( 'wp_kses_post' )->alias(
 			function ( $string ) {

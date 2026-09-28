@@ -63,6 +63,7 @@ if ( ! class_exists( 'ACFW' ) ) {
 			require_once ACFW_DIR . 'includes/class-acfw-avatar.php';
 			require_once ACFW_DIR . 'includes/class-acfw-i18n.php';
 			require_once ACFW_DIR . 'includes/class-acfw-commerce.php';
+			require_once ACFW_DIR . 'includes/class-acfw-order-stats.php';
 			require_once ACFW_DIR . 'includes/customize/class-acfw-customizer.php';
 
 			$this->items = new ACFW_Items();
@@ -70,6 +71,7 @@ if ( ! class_exists( 'ACFW' ) ) {
 			new ACFW_Avatar();
 			new ACFW_I18n();
 			new ACFW_Commerce();
+			new ACFW_Order_Stats();
 
 			if ( is_admin() ) {
 				require_once ACFW_DIR . 'includes/admin/class-acfw-import-export.php';

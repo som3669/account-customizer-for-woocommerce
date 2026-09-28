@@ -1,5 +1,37 @@
 *** My Account Dashboard Builder Changelog ***
 
+Unreleased
+* New - Menu items: an editable endpoint URL for custom endpoints, checked against WooCommerce's endpoints, WordPress query vars and the rest of the menu.
+* New - Menu items: a badge ( e.g. "New", or "{points_balance} pts" ) shown in place of the item count.
+* New - Visibility rules: "bought any of" with a product search, a minimum number of orders and a minimum total spent. Dates now follow the site timezone.
+* New - Groups: a "Start expanded" switch per group; a group holding the current page opens on its own.
+* New - Banners: choose what the count badge shows ( orders, downloads, items in cart, reward points ), set the link text, and schedule a banner with show-from / show-until dates.
+* New - Dashboard: stat cards link to the page they summarise, and the profile meter lists what is missing with a link to each form.
+* New - Smart tags: {total_spent}, {member_since}, {cart_count}, {billing_phone}, {billing_city}, {billing_country}, {account_url}, {shop_url}, {site_url}.
+* New - Custom endpoints get their menu label as the page title.
+* New - Menu Items screen: settings split into General / Content / Visibility / Advanced tabs, a live "What customers see" preview, badge and restriction markers in the list, a save bar that says when there are unsaved changes, and a warning before leaving with unsaved edits.
+* Tweak - AJAX navigation handles Back / Forward, opens new tabs on Ctrl / Cmd-click, moves the active state and keeps focus for screen readers.
+* Tweak - Menu search keeps a group when one of its items matches; pinning favourites works without a reload and per customer.
+* Tweak - Order counts for the dashboard are cached per customer and cleared when their orders change.
+* Tweak - The icon library is sent once per admin page instead of once per icon picker ( the Menu Items screen is a third lighter ).
+* Tweak - Applying a template keeps your Custom CSS, avatar settings and item-count setting.
+* Fix - Custom endpoints showed the WooCommerce dashboard ( greeting and dashboard widgets ) under their own content.
+* Fix - An endpoint's banner position was never saved.
+* Fix - Items with a label in a non-Latin script ( Devanagari, Cyrillic, CJK… ) disappeared from the menu after the first save.
+* Fix - Adding an item named like an existing one ( e.g. "Orders" ) overwrote it; a new banner with an existing banner's name replaced it.
+* Fix - Endpoints inside a group got no rewrite rule.
+* Fix - The Customizer's accent colour, text colour and corner radius did not reach the menu or the dashboard widgets.
+* Fix - Banner colours with transparency ( rgba ) were reset to the defaults.
+* Fix - Smart tags in a banner title were escaped twice, so a name like D'Angelo showed as "D&#039;Angelo".
+* Fix - The "Reward points" stat was always empty.
+* Fix - Switching Buy again or Recently viewed off left a dead tab in a saved menu; switching one on for the first time did not register its URL.
+* Fix - The "Default endpoint" setting did nothing. My Account now opens on it, and the dashboard moves to /dashboard/.
+* Fix - Log out went through WooCommerce's "Are you sure?" page.
+* Fix - Keyboard users had no focus outline in the menu and could not open groups; the pin star stayed invisible on focus.
+* Fix - The "Add smart tags" button disappeared from an editor once it was opened.
+* Fix - Presets, imports and saves returned to the wrong place, and warnings vanished before they could be read.
+* Fix - Reset flushed the whole object cache; it now deletes the plugin's options one by one.
+
 2026-09-01 - version 1.0.0
 * First public release.
 * New - Menu builder: endpoints, pages, links and collapsible groups, drag-to-reorder, per-item icons (Font Awesome, Dashicons or uploaded).

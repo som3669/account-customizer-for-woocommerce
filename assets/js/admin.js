@@ -11,7 +11,9 @@
 				$toast.remove();
 			}, 250 );
 		}
-		$( '.acfw-toast' ).each( function () {
+		// Confirmations fade on their own; a warning or an error stays until it
+		// is closed, so there is time to read it.
+		$( '.acfw-toast.acfw-toast-success' ).each( function () {
 			var $toast = $( this );
 			window.setTimeout( function () {
 				acfwDismissToast( $toast );
@@ -155,7 +157,13 @@
 
 		/* ---- Role chips + searchable icon picker with glyphs (bundled select2) ---- */
 		if ( $.fn.select2 ) {
-			$( '.acfw-roles-select' ).select2( { width: '100%', placeholder: 'All roles', closeOnSelect: false } );
+			$( '.acfw-roles-select' ).each( function () {
+				$( this ).select2( {
+					width: '100%',
+					placeholder: $( this ).data( 'placeholder' ) || acfwAdmin.everyone || '',
+					closeOnSelect: false
+				} );
+			} );
 			$( '.acfw-banner-select' ).each( function () {
 				var $el = $( this );
 				$el.select2( {
@@ -172,12 +180,82 @@
 				}
 				return $( '<span class="acfw-icon-opt"><i class="' + data.id + '"></i> <span>' + data.text + '</span></span>' );
 			};
-			$( '.acfw-icon-select' ).select2( {
-				width: '100%',
-				placeholder: 'Select an icon',
-				allowClear: true,
-				templateResult: iconTpl,
-				templateSelection: iconTpl
+			// Every picker searches one shared list ( printed once as
+			// acfwIconChoices ), paged 60 at a time, so none of them carries a
+			// thousand <option>s of its own.
+			var iconChoices = window.acfwIconChoices || [];
+			$( '.acfw-icon-select' ).each( function () {
+				var $el = $( this );
+				$el.select2( {
+					width: '100%',
+					placeholder: $el.data( 'placeholder' ) || '',
+					allowClear: true,
+					templateResult: iconTpl,
+					templateSelection: iconTpl,
+					ajax: {
+						delay: 0,
+						transport: function ( params, success ) {
+							var term = ( ( params.data && params.data.term ) || '' ).toLowerCase();
+							var page = ( params.data && params.data.page ) || 1;
+							var hits = ! term ? iconChoices : iconChoices.filter( function ( icon ) {
+								return -1 !== icon.text.toLowerCase().indexOf( term ) || -1 !== icon.id.indexOf( term );
+							} );
+							success( {
+								results: hits.slice( ( page - 1 ) * 60, page * 60 ),
+								pagination: { more: page * 60 < hits.length }
+							} );
+							return { abort: function () {} };
+						},
+						processResults: function ( data ) {
+							return data;
+						}
+					}
+				} );
+			} );
+
+			// Purchased-products rule: search the catalogue through WooCommerce's
+			// own product search ( names, SKUs, variations ).
+			$( '.acfw-product-select' ).each( function () {
+				var $el = $( this );
+				$el.select2( {
+					width: '100%',
+					placeholder: $el.data( 'placeholder' ) || '',
+					closeOnSelect: false,
+					minimumInputLength: 3,
+					language: {
+						inputTooShort: function () {
+							return acfwAdmin.productMinChar;
+						},
+						searching: function () {
+							return acfwAdmin.searching;
+						},
+						noResults: function () {
+							return acfwAdmin.noResults;
+						}
+					},
+					ajax: {
+						url: acfwAdmin.ajaxUrl,
+						dataType: 'json',
+						delay: 250,
+						data: function ( params ) {
+							return {
+								action: 'woocommerce_json_search_products_and_variations',
+								security: acfwAdmin.productNonce,
+								term: params.term
+							};
+						},
+						processResults: function ( data ) {
+							var results = [];
+							$.each( data || {}, function ( id, text ) {
+								// Names come back with entities ( &ndash; … ); select2 escapes
+								// its text, so decode them to plain characters first.
+								results.push( { id: id, text: $( '<textarea/>' ).html( text ).text() } );
+							} );
+							return { results: results };
+						},
+						cache: true
+					}
+				} );
 			} );
 		}
 
@@ -317,6 +395,10 @@
 			}
 
 			if ( window.wp && window.wp.editor && window.wp.editor.initialize ) {
+				// wp.editor.initialize() rebuilds the toolbar with only "Add Media",
+				// so carry the "Add smart tags" button across the rebuild.
+				// The rebuilt toolbar has no ids, so find it by class inside the wrap.
+				var $smartTags = $( '#wp-' + id + '-wrap .wp-media-buttons .acfw-smarttag-wrap' ).detach();
 				if ( ed ) {
 					window.wp.editor.remove( id );
 				}
@@ -328,6 +410,9 @@
 					quicktags: true,
 					mediaButtons: true,
 				} );
+				if ( $smartTags.length ) {
+					$( '#wp-' + id + '-wrap .wp-media-buttons' ).first().append( $smartTags );
+				}
 				return;
 			}
 
@@ -341,16 +426,224 @@
 		window.acfwRepaintClassic = repaintClassicEditor;
 
 		/* ---- Select a row → show its detail form ---- */
+		function byKey( selector, key ) {
+			// Keys can hold "%" octets from older versions, so match on data
+			// rather than building an attribute selector from the key.
+			return $( selector ).filter( function () {
+				return String( $( this ).data( 'key' ) ) === String( key );
+			} );
+		}
+
+		/* ---- Detail sections ( General / Content / Visibility / Advanced ) ---- */
+		var lastSection = 'general';
+
+		// select2 sizes its placeholder while the pane is hidden ( 0px wide ),
+		// so re-measure whenever a pane or a section becomes visible.
+		function refreshSelects( $scope ) {
+			$scope.find( 'select' ).each( function () {
+				if ( $( this ).data( 'select2' ) ) {
+					$( this ).trigger( 'change.select2' );
+				}
+			} );
+		}
+
+		function showSection( $detail, section, focus ) {
+			var $tabs = $detail.find( '.acfw-section-tab' );
+			var $tab  = $tabs.filter( '[data-section="' + section + '"]' );
+			if ( ! $tab.length ) {
+				// Not every item type has every section ( only endpoints have Content ).
+				$tab    = $tabs.first();
+				section = String( $tab.data( 'section' ) );
+			}
+
+			$tabs.removeClass( 'is-active' ).attr( { 'aria-selected': 'false', tabindex: '-1' } );
+			$tab.addClass( 'is-active' ).attr( { 'aria-selected': 'true', tabindex: '0' } );
+			$detail.find( '.acfw-section' ).removeClass( 'is-active' );
+			var $panel = $detail.find( '.acfw-section[data-section="' + section + '"]' ).addClass( 'is-active' );
+
+			if ( focus ) {
+				$tab.trigger( 'focus' );
+			}
+			refreshSelects( $panel );
+			if ( 'content' === section ) {
+				repaintClassicEditor( String( $detail.data( 'key' ) ).replace( /-/g, '_' ) );
+			}
+			return section;
+		}
+
+		$( document ).on( 'click', '.acfw-section-tab', function () {
+			lastSection = showSection( $( this ).closest( '.acfw-detail' ), String( $( this ).data( 'section' ) ), false );
+		} );
+
+		// Arrow keys, Home and End move between the tabs ( WAI-ARIA tabs pattern ).
+		$( document ).on( 'keydown', '.acfw-section-tab', function ( e ) {
+			var moves = { ArrowRight: 1, ArrowLeft: -1, Home: 'first', End: 'last' };
+			if ( ! Object.prototype.hasOwnProperty.call( moves, e.key ) ) {
+				return;
+			}
+			e.preventDefault();
+			var $tabs = $( this ).closest( '.acfw-section-tabs' ).find( '.acfw-section-tab' );
+			var count = $tabs.length;
+			var at    = $tabs.index( this );
+			var move  = moves[ e.key ];
+			var next  = 'first' === move ? 0 : ( 'last' === move ? count - 1 : ( at + move + count ) % count );
+			lastSection = showSection( $( this ).closest( '.acfw-detail' ), String( $tabs.eq( next ).data( 'section' ) ), true );
+		} );
+
 		function selectItem( key ) {
 			$( '.acfw-node' ).removeClass( 'is-selected' );
-			$( '.acfw-node[data-key="' + key + '"]' ).first().addClass( 'is-selected' );
+			byKey( '.acfw-node', key ).first().addClass( 'is-selected' );
 
 			$details.find( '.acfw-detail-empty' ).hide();
 			$details.find( '.acfw-detail' ).attr( 'hidden', 'hidden' );
-			$details.find( '.acfw-detail[data-key="' + key + '"]' ).removeAttr( 'hidden' );
+			var $detail = byKey( '.acfw-builder-detail .acfw-detail', key ).removeAttr( 'hidden' );
 			$( '.acfw-builder-layout' ).addClass( 'is-editing' );
 
-			repaintClassicEditor( String( key ).replace( /-/g, '_' ) );
+			// Saving the menu lands back on this item.
+			$( '.acfw-selected-input' ).val( key );
+
+			// Menu items open on the section last used, so comparing several
+			// items' Visibility rules does not mean re-clicking the tab each time.
+			if ( $detail.find( '.acfw-section-tab' ).length ) {
+				showSection( $detail, lastSection, false );
+			} else {
+				refreshSelects( $detail );
+				repaintClassicEditor( String( key ).replace( /-/g, '_' ) );
+			}
+		}
+
+		/* ---- Live preview: the pane, its preview strip and the list row follow the fields ---- */
+		function paneOf( el ) {
+			return $( el ).closest( '.acfw-item-form' );
+		}
+
+		function rowOf( $pane ) {
+			return byKey( '.acfw-node', $pane.data( 'key' ) ).first();
+		}
+
+		function iconMarkup( cls, url, wrapper ) {
+			if ( url ) {
+				return $( '<img alt="" />' ).addClass( wrapper + ' acfw-icon-img' ).attr( 'src', url );
+			}
+			if ( cls && -1 !== cls.indexOf( 'fa-' ) ) {
+				return $( '<i></i>' ).addClass( wrapper + ' ' + cls );
+			}
+			return $( '<span></span>' ).addClass( wrapper + ' dashicons ' + ( cls || 'dashicons-menu-alt' ) );
+		}
+
+		function refreshIcon( $pane ) {
+			var upload = 'upload' === $pane.find( '.acfw-icon-source input:checked' ).val();
+			var url    = upload ? $.trim( $pane.find( '.acfw-icon-upload .acfw-media-input' ).val() || '' ) : '';
+			var cls    = upload ? '' : ( $pane.find( '.acfw-icon-select' ).val() || '' );
+			var $row   = rowOf( $pane );
+
+			if ( ! url && ! cls ) {
+				// Nothing picked yet: keep what the server drew ( the type's default ).
+				return;
+			}
+			$pane.find( '.acfw-preview-icon' ).empty().append( iconMarkup( cls, url, 'acfw-preview-glyph' ) );
+			$pane.find( '.acfw-detail-head .acfw-detail-icon' ).replaceWith( iconMarkup( cls, url, 'acfw-detail-icon' ) );
+			$row.find( '> .acfw-node-head .acfw-node-icon' ).replaceWith( iconMarkup( cls, url, 'acfw-node-icon' ) );
+		}
+
+		$( document ).on( 'input', '.acfw-item-form .acfw-label-input', function () {
+			var $pane = paneOf( this );
+			$pane.find( '.acfw-detail-title, .acfw-preview-label' ).text( this.value );
+			rowOf( $pane ).find( '> .acfw-node-head .acfw-node-title' ).text( this.value );
+		} );
+
+		$( document ).on( 'input', '.acfw-item-form .acfw-badge-input', function () {
+			var $pane = paneOf( this );
+			var text  = $.trim( this.value );
+			$pane.find( '.acfw-preview-pill' ).text( text ).prop( 'hidden', ! text );
+			rowOf( $pane ).find( '> .acfw-node-head .acfw-node-chip' ).text( text ).prop( 'hidden', ! text );
+		} );
+
+		$( document ).on( 'input', '.acfw-item-form .acfw-slug-input', function () {
+			var $preview = paneOf( this ).find( '.acfw-preview' );
+			var slug     = this.value.toLowerCase().trim().replace( /[\s_]+/g, '-' ).replace( /[^a-z0-9-]/g, '' );
+			$preview.find( '.acfw-preview-url' ).text( String( $preview.data( 'base' ) || '' ) + ( slug ? slug + '/' : '' ) );
+		} );
+
+		$( document ).on( 'input', '.acfw-item-form .acfw-url-input', function () {
+			var url = $.trim( this.value );
+			paneOf( this ).find( '.acfw-preview-url' ).text( url ).prop( 'hidden', ! url );
+		} );
+
+		$( document ).on( 'change', '.acfw-item-form .acfw-icon-select, .acfw-item-form .acfw-icon-source input', function () {
+			refreshIcon( paneOf( this ) );
+		} );
+
+		$( document ).on( 'acfw:image', '.acfw-item-form .acfw-uploader', function () {
+			refreshIcon( paneOf( this ) );
+		} );
+
+		// Visibility: how many rules narrow this item down.
+		function countRules( $pane ) {
+			var n = 0;
+			n += ( $pane.find( '.acfw-roles-select' ).val() || [] ).length ? 1 : 0;
+			n += ( $pane.find( 'input[name$="[vis_from]"]' ).val() || $pane.find( 'input[name$="[vis_to]"]' ).val() ) ? 1 : 0;
+			n += ( $pane.find( '.acfw-product-select' ).val() || [] ).length ? 1 : 0;
+			n += parseInt( $pane.find( 'input[name$="[vis_min_orders]"]' ).val(), 10 ) > 0 ? 1 : 0;
+			n += parseFloat( $pane.find( 'input[name$="[vis_min_spent]"]' ).val() ) > 0 ? 1 : 0;
+			return n;
+		}
+
+		$( document ).on( 'input change', '.acfw-item-form .acfw-rule-input', function () {
+			var $pane = paneOf( this );
+			var n     = countRules( $pane );
+			$pane.find( '.acfw-section-count' ).text( n ).prop( 'hidden', ! n );
+			$pane.find( '.acfw-preview-locked' ).prop( 'hidden', ! n );
+			rowOf( $pane ).find( '> .acfw-node-head .acfw-node-lock' ).prop( 'hidden', ! n );
+		} );
+
+		/* ---- Unsaved changes: say so, and warn before leaving the page ---- */
+		var $itemsForm = $( '.acfw-items-form' );
+		var isDirty    = false;
+		var submitting = false;
+
+		function markDirty() {
+			if ( isDirty ) {
+				return;
+			}
+			isDirty = true;
+			$itemsForm.find( '.acfw-savebar' ).addClass( 'is-dirty' ).find( '.acfw-savebar-dirty' ).prop( 'hidden', false );
+		}
+
+		if ( $itemsForm.length ) {
+			$itemsForm.on( 'input change', ':input', function ( e ) {
+				// Searching and filtering the list changes nothing that is saved.
+				if ( ! $( e.target ).closest( '.acfw-panel-tools' ).length ) {
+					markDirty();
+				}
+			} );
+			$itemsForm.on( 'sortupdate acfw:image', markDirty );
+			$itemsForm.on( 'keydown', '.acfw_block_editor', markDirty );
+
+			var watchEditor = function ( editor ) {
+				if ( editor && editor.id && 0 === String( editor.id ).indexOf( 'acfw_content_' ) ) {
+					editor.on( 'input change undo redo', markDirty );
+				}
+			};
+			$( document ).on( 'tinymce-editor-init', function ( event, editor ) {
+				watchEditor( editor );
+			} );
+			if ( window.tinymce && window.tinymce.editors ) {
+				$.each( window.tinymce.editors, function ( i, editor ) {
+					watchEditor( editor );
+				} );
+			}
+
+			$itemsForm.on( 'submit', function () {
+				submitting = true;
+			} );
+			$( window ).on( 'beforeunload', function ( e ) {
+				if ( isDirty && ! submitting ) {
+					e.preventDefault();
+					e.originalEvent.returnValue = '';
+					return '';
+				}
+			} );
 		}
 
 		/* ---- Header overflow menu ---- */
@@ -376,16 +669,33 @@
 		} );
 
 		/* ---- Search + "enabled only" filter over the menu-item list ---- */
+		function nodeMatches( $node, term, only ) {
+			var label = $node.find( '> .acfw-node-head .acfw-node-title' ).first().text().toLowerCase();
+			return ( ! term || -1 !== label.indexOf( term ) ) && ( ! only || ! $node.hasClass( 'is-inactive' ) );
+		}
+
 		function filterItems() {
 			var term    = ( $( '.acfw-item-search' ).val() || '' ).toLowerCase().trim();
 			var only    = 'true' === $( '.acfw-filter-toggle' ).attr( 'aria-pressed' );
 			var visible = 0;
 
 			$( '.acfw-sortable-root > .acfw-node' ).each( function () {
-				var $node   = $( this );
-				var label   = $node.find( '> .acfw-node-head .acfw-node-title' ).first().text().toLowerCase();
-				var enabled = ! $node.hasClass( 'is-inactive' );
-				var show    = ( ! term || label.indexOf( term ) !== -1 ) && ( ! only || enabled );
+				var $node = $( this );
+				var show  = nodeMatches( $node, term, only );
+				var $kids = $node.find( '> .acfw-sortable-children > .acfw-node' );
+
+				// A group stays listed when one of its items matches.
+				if ( $kids.length ) {
+					var groupHit = show;
+					var kidHits  = 0;
+					$kids.each( function () {
+						var $kid = $( this );
+						var hit  = groupHit ? ( ! only || ! $kid.hasClass( 'is-inactive' ) ) : nodeMatches( $kid, term, only );
+						$kid.toggle( hit );
+						kidHits += hit ? 1 : 0;
+					} );
+					show = groupHit || ( kidHits > 0 && ( ! only || ! $node.hasClass( 'is-inactive' ) ) );
+				}
 
 				$node.toggle( show );
 				if ( show ) {
@@ -430,9 +740,12 @@
 			selectItem( $( this ).closest( '.acfw-node' ).data( 'key' ) );
 		} );
 
-		/* ---- Auto-select the first item on load (reference shows options immediately) ---- */
+		/* ---- On load, reopen the item a save came from, else the first one ---- */
+		var wanted     = window.URLSearchParams ? new window.URLSearchParams( window.location.search ).get( 'select' ) : '';
 		var $firstNode = $( '.acfw-sortable-root > .acfw-node' ).first();
-		if ( $firstNode.length ) {
+		if ( wanted && byKey( '.acfw-node', wanted ).length ) {
+			selectItem( wanted );
+		} else if ( $firstNode.length ) {
 			selectItem( $firstNode.data( 'key' ) );
 		} else if ( $( '.acfw-detail[data-key="__new__"]' ).length ) {
 			selectItem( '__new__' );
@@ -443,7 +756,9 @@
 			var key = $( this ).data( 'key' );
 			var on = this.checked;
 			$( this ).closest( '.acfw-node' ).toggleClass( 'is-inactive', ! on );
-			$details.find( '.acfw-detail[data-key="' + key + '"]' ).find( '.acfw-active-input' ).val( on ? '1' : '0' );
+			var $pane = byKey( '.acfw-builder-detail .acfw-detail', key );
+			$pane.find( '.acfw-active-input' ).val( on ? '1' : '0' );
+			$pane.find( '.acfw-preview' ).toggleClass( 'is-off', ! on );
 		} );
 
 		/* ---- Radio-box groups (reference-style radio controls) ---- */
@@ -452,35 +767,43 @@
 			$( this ).closest( '.acfw-radio-box, .acfw-image-card' ).addClass( 'is-active' );
 		} );
 
-		/* ---- Banner type: show only the relevant controls (widget vs image) ---- */
-		function applyBannerType( $form ) {
-			var type = $form.find( 'input[name="banner_type"]:checked' ).val() || 'widget';
-			$form.find( '.acfw-btype-widget' ).attr( 'hidden', 'image' === type ? 'hidden' : null );
-			$form.find( '.acfw-btype-image' ).attr( 'hidden', 'widget' === type ? 'hidden' : null );
+		/* ---- Banner form: show only the controls that apply ---- */
+		// Widget vs image, the link fields for the chosen link type, the link
+		// text only when there is a link, the badge source only with a badge.
+		function refreshBannerForm( $form ) {
+			var type   = $form.find( 'input[name="banner_type"]:checked' ).val() || 'widget';
+			var link   = $form.find( 'input[name="banner_link_type"]:checked' ).val() || 'none';
+			var widget = 'widget' === type;
+
+			$form.find( '.acfw-btype-widget' ).attr( 'hidden', widget ? null : 'hidden' );
+			$form.find( '.acfw-btype-image' ).attr( 'hidden', widget ? 'hidden' : null );
+			$form.find( '.acfw-blink-endpoint' ).attr( 'hidden', 'endpoint' === link ? null : 'hidden' );
+			$form.find( '.acfw-blink-external' ).attr( 'hidden', 'external' === link ? null : 'hidden' );
+			$form.find( '.acfw-blink-text' ).attr( 'hidden', widget && 'none' !== link ? null : 'hidden' );
+			$form.find( '.acfw-bcount' ).attr( 'hidden', widget && $form.find( '.acfw-banner-count-toggle' ).is( ':checked' ) ? null : 'hidden' );
+
 			$form.find( '.acfw-detail-head .acfw-node-badge' )
 				.attr( 'class', 'acfw-node-badge acfw-badge-' + type )
 				.text( type );
 		}
 
-		$( document ).on( 'change', 'input[name="banner_type"]', function () {
-			applyBannerType( $( this ).closest( '.acfw-detail' ) );
-		} );
-
-		/* ---- Banner link: show endpoint / external URL per link type ---- */
-		function applyBannerLink( $form ) {
-			var type = $form.find( 'input[name="banner_link_type"]:checked' ).val() || 'none';
-			$form.find( '.acfw-blink-endpoint' ).attr( 'hidden', 'endpoint' === type ? null : 'hidden' );
-			$form.find( '.acfw-blink-external' ).attr( 'hidden', 'external' === type ? null : 'hidden' );
-		}
-
-		$( document ).on( 'change', 'input[name="banner_link_type"]', function () {
-			applyBannerLink( $( this ).closest( '.acfw-detail' ) );
+		$( document ).on( 'change', 'input[name="banner_type"], input[name="banner_link_type"], .acfw-banner-count-toggle', function () {
+			refreshBannerForm( $( this ).closest( '.acfw-detail' ) );
 		} );
 
 		// Initial state for every banner form on the page.
 		$( '.acfw-detail:has(input[name="banner_type"])' ).each( function () {
-			applyBannerType( $( this ) );
-			applyBannerLink( $( this ) );
+			refreshBannerForm( $( this ) );
+		} );
+
+		/* ---- Endpoint URL: keep it to what a URL slug can hold ---- */
+		$( document ).on( 'change', '.acfw-slug-input', function () {
+			this.value = this.value.toLowerCase()
+				.trim()
+				.replace( /[\s_]+/g, '-' )
+				.replace( /[^a-z0-9-]/g, '' )
+				.replace( /-+/g, '-' )
+				.replace( /^-|-$/g, '' );
 		} );
 
 		/* ---- Icon source toggle ---- */
@@ -504,6 +827,8 @@
 				$preview.attr( 'src', '' ).attr( 'hidden', 'hidden' );
 				$wrap.find( '.acfw-uploader-box' ).removeClass( 'has-image' );
 			}
+			// The value was set in code, which fires no change event.
+			$wrap.trigger( 'acfw:image', [ url ] );
 		}
 
 		$( document ).on( 'click', '.acfw-media-btn', function ( e ) {
@@ -619,7 +944,7 @@
 
 		/* ---- Reset all settings confirm ---- */
 		$( document ).on( 'click', '.acfw-reset-btn', function ( e ) {
-			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {
+			if ( ! window.confirm( acfwAdmin.confirmReset || acfwAdmin.confirmDelete ) ) {
 				e.preventDefault();
 			}
 		} );

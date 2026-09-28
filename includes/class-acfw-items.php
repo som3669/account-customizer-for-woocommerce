@@ -41,6 +41,19 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 			add_action( 'init', array( $this, 'build' ), 20 );
 			add_action( 'init', array( $this, 'register_endpoints' ), 21 );
 			add_action( 'init', array( $this, 'maybe_flush_rewrite_rules' ), 22 );
+
+			// A landing endpoint other than the dashboard moves the dashboard to
+			// its own /dashboard/ endpoint, which needs a rewrite flush. The add_
+			// hook covers the first save, when the option did not exist yet.
+			add_action( 'add_option_acfw_default_endpoint', array( $this, 'flag_flush' ) );
+			add_action( 'update_option_acfw_default_endpoint', array( $this, 'flag_flush' ) );
+		}
+
+		/**
+		 * Mark rewrite rules for a flush on the next load.
+		 */
+		public function flag_flush() {
+			update_option( 'acfw_flush_rewrite_rules', 1 );
 		}
 
 		/**
@@ -50,6 +63,46 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 		 */
 		public function get_items() {
 			return apply_filters( 'acfw_get_items', $this->items );
+		}
+
+		/**
+		 * Resolved items as one flat key => item list, group children included.
+		 *
+		 * @return array
+		 */
+		public function get_flat_items() {
+			return acfw_flatten_items( $this->get_items() );
+		}
+
+		/**
+		 * Every key and endpoint slug the menu already uses.
+		 *
+		 * @param string $except Item key to leave out ( the one being edited ).
+		 * @return array
+		 */
+		public function used_names( $except = '' ) {
+			$names = array();
+			foreach ( acfw_flatten_items( $this->items ) as $key => $item ) {
+				if ( (string) $key === (string) $except ) {
+					continue;
+				}
+				$names[] = (string) $key;
+				if ( ! empty( $item['slug'] ) ) {
+					$names[] = (string) $item['slug'];
+				}
+			}
+			return array_values( array_unique( $names ) );
+		}
+
+		/**
+		 * Is this key one of the WooCommerce-provided ( non-deletable ) items?
+		 *
+		 * @param string $key Item key.
+		 * @return bool
+		 */
+		public function is_default( $key ) {
+			$this->build_defaults();
+			return array_key_exists( $key, $this->defaults );
 		}
 
 		/**
@@ -160,8 +213,11 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 				$default_option = function_exists( $default_fn ) ? call_user_func( $default_fn, $key ) : array();
 				$stored         = get_option( 'acfw_item_' . $key, array() );
 
-				if ( empty( $stored ) && isset( $defaults[ $key ] ) ) {
-					$stored = $defaults[ $key ];
+				// A WooCommerce item keeps its own label and icon for whatever the
+				// stored options leave out: a partial record ( an import, an older
+				// save ) must not blank the Dashboard label.
+				if ( isset( $defaults[ $key ] ) ) {
+					$default_option = array_merge( $default_option, $defaults[ $key ] );
 				}
 
 				$options = array_merge( $default_option, is_array( $stored ) ? $stored : array() );
@@ -174,8 +230,8 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 						$child_base    = function_exists( $child_default ) ? call_user_func( $child_default, $child_key ) : array();
 						$child_stored  = get_option( 'acfw_item_' . $child_key, array() );
 
-						if ( empty( $child_stored ) && isset( $defaults[ $child_key ] ) ) {
-							$child_stored = $defaults[ $child_key ];
+						if ( isset( $defaults[ $child_key ] ) ) {
+							$child_base = array_merge( $child_base, $defaults[ $child_key ] );
 						}
 
 						$children[ $child_key ] = array_merge( $child_base, is_array( $child_stored ) ? $child_stored : array() );
@@ -233,7 +289,8 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 
 			$mask = WC()->query->get_endpoints_mask();
 
-			foreach ( $this->items as $key => $item ) {
+			// Endpoints nested in a group need their rewrite rules too.
+			foreach ( acfw_flatten_items( $this->items ) as $key => $item ) {
 				if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || 'dashboard' === $key ) {
 					continue;
 				}
@@ -243,6 +300,13 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 				}
 				WC()->query->query_vars[ $key ] = $slug;
 				add_rewrite_endpoint( $slug, $mask );
+			}
+
+			// With another landing endpoint, the bare My Account URL redirects,
+			// so the dashboard gets its own endpoint to stay reachable.
+			if ( 'dashboard' !== acfw_default_endpoint() && ! isset( WC()->query->query_vars['dashboard'] ) ) {
+				WC()->query->query_vars['dashboard'] = 'dashboard';
+				add_rewrite_endpoint( 'dashboard', $mask );
 			}
 		}
 
@@ -298,7 +362,7 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 		 * @param array $order Ordered structure.
 		 */
 		public function save_order( $order ) {
-			update_option( 'acfw_items_order', wp_json_encode( $order ) );
+			update_option( 'acfw_items_order', wp_json_encode( acfw_sanitize_order_tree( $order ) ) );
 			update_option( 'acfw_flush_rewrite_rules', 1 );
 			$this->build( true );
 		}

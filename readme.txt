@@ -20,16 +20,18 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 
 * Add unlimited items: **endpoints** (own URL + content), **pages**, **links** (internal or external) and **groups** (collapsible parents).
 * Drag to reorder; toggle any default WooCommerce endpoint on or off.
-* Rename every item and pick an icon from the bundled Font Awesome library, a Dashicon, or upload your own.
-* Control who sees what: by **user role**, by **date range**, or by **products the customer has purchased**.
-* Set the landing endpoint, plus login and logout redirects.
+* Rename every item, give a custom endpoint its own URL, and pick an icon from the bundled Font Awesome library, a Dashicon, or upload your own.
+* Add a **badge** to any item: "New", or a live value such as `{points_balance} pts`.
+* Control who sees what: by **user role**, **date range**, **products the customer bought**, **number of orders** or **total spent**.
+* A live preview in the builder shows each item as customers will see it.
+* Set the landing endpoint customers open on, plus login and logout redirects.
 
 = Fill it with content =
 
 * Give each endpoint its own content using either the **Classic editor** or the native **Gutenberg block editor**.
 * Insert content **before**, **after**, or **instead of** the default WooCommerce output.
-* Add promotional **banners** per endpoint — text, image or icon, with role targeting and an order-count badge.
-* **Smart tags** personalise any text: `{display_name}`, `{first_name}`, `{last_name}`, `{username}`, `{user_email}`, `{site_title}`, `{order_count}`, `{download_count}`, `{points_balance}`, `{membership_plan}`, `{last_login}`.
+* Add promotional **banners** per endpoint — text, image or icon, with role targeting, a schedule, your own link text and a count badge for orders, downloads, cart items or reward points.
+* **Smart tags** personalise any text: `{display_name}`, `{first_name}`, `{last_name}`, `{username}`, `{user_email}`, `{site_title}`, `{order_count}`, `{download_count}`, `{total_spent}`, `{member_since}`, `{cart_count}`, `{billing_phone}`, `{billing_city}`, `{billing_country}`, `{points_balance}`, `{membership_plan}`, `{last_login}`, `{account_url}`, `{shop_url}`, `{site_url}`.
 
 = Design it visually =
 
@@ -45,8 +47,8 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 * **Buy again** — a tab and dashboard tile for one-click reordering of previously purchased products.
 * **Recently viewed** — a tab listing products the customer just browsed.
 * **Order tracking** — a dashboard summary that auto-detects WooCommerce Shipment Tracking and falls back to a status timeline.
-* **Dashboard stats** — orders, pending, total spent, refunds, downloads, points, latest order, and an orders-by-status chart.
-* **Profile completeness meter** and optional quick-link tiles.
+* **Dashboard stats** — orders, pending, total spent, refunds, downloads, points, latest order, and an orders-by-status chart. Each card links to the page it sums up.
+* **Profile completeness meter** that lists what is missing, with a link to each form, and optional quick-link tiles.
 
 = Anywhere on the site =
 
@@ -100,7 +102,7 @@ Yes. A `.pot` file ships in `/languages`, and admin-entered strings (item labels
 
 = What data does it store, and what happens on uninstall? =
 
-Options prefixed `acfw_`, plus two user meta keys (`acfw_avatar_id`, `acfw_last_login`). Deleting the plugin from the Plugins screen removes all of it, including uploaded avatar images. Deactivating does not.
+Options prefixed `acfw_`, plus three user meta keys (`acfw_avatar_id`, `acfw_last_login`, and `acfw_order_stats`, a cache of the dashboard counts). Deleting the plugin from the Plugins screen removes all of it, including uploaded avatar images. Deactivating does not.
 
 == Screenshots ==
 
@@ -114,6 +116,13 @@ Options prefixed `acfw_`, plus two user meta keys (`acfw_avatar_id`, `acfw_last_
 8. Import / Export of the full configuration.
 
 == Changelog ==
+
+= Unreleased =
+* New: endpoint URLs, item badges, product / order-count / spend visibility rules, per-group "start expanded", banner schedules, badge sources and link text, clickable dashboard stats, an actionable profile meter and nine new smart tags.
+* New: the Menu Items screen is organised in tabs with a live customer preview, list markers and an unsaved-changes save bar.
+* Fix: custom endpoints no longer show the dashboard underneath; banner position saves; non-Latin labels no longer vanish; items and banners can no longer overwrite each other; nested endpoints resolve; Customizer colours and radius reach the menu; rgba banner colours, the Reward points stat, the landing endpoint and one-step logout work.
+* Accessibility: visible keyboard focus, keyboard-operable groups, tab-pattern settings, readable muted text and warnings that stay until closed.
+* Full list in changelog.txt.
 
 = 1.0.0 =
 * First public release.

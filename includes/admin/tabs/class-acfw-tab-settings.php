@@ -28,7 +28,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 				case 'save_preset':
 					$pname = isset( $_POST['preset_name'] ) ? sanitize_text_field( wp_unslash( $_POST['preset_name'] ) ) : '';
 					if ( '' !== $pname ) {
-						$pslug = acfw_sanitize_key( $pname );
+						$pslug = acfw_item_key_from_label( $pname, 'preset' );
 						$data  = array( '__label' => $pname );
 						foreach ( acfw_design_option_keys() as $ok ) {
 							$data[ $ok ] = get_option( $ok, '' );
@@ -41,7 +41,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					break;
 
 				case 'apply_preset':
-					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['preset_slug'] ) ) ) : '';
+					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( sanitize_title( wp_unslash( $_POST['preset_slug'] ) ) ) : '';
 					$presets = get_option( 'acfw_presets', array() );
 					if ( ! empty( $presets[ $pslug ] ) ) {
 						$keys = acfw_design_option_keys();
@@ -54,7 +54,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					break;
 
 				case 'delete_preset':
-					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['preset_slug'] ) ) ) : '';
+					$pslug   = isset( $_POST['preset_slug'] ) ? acfw_sanitize_key( sanitize_title( wp_unslash( $_POST['preset_slug'] ) ) ) : '';
 					$presets = get_option( 'acfw_presets', array() );
 					if ( is_array( $presets ) ) {
 						unset( $presets[ $pslug ] );
@@ -64,8 +64,16 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 
 				case 'reset':
 					global $wpdb;
-					$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'acfw\_%'" ); // phpcs:ignore WordPress.DB
-					wp_cache_flush();
+					$names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+						$wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'acfw_' ) . '%' )
+					);
+					// delete_option() clears each option's cache; flushing the whole
+					// object cache would evict every other plugin's data too.
+					foreach ( (array) $names as $name ) {
+						delete_option( $name );
+					}
+					// Custom endpoints just disappeared; their rewrite rules must go too.
+					update_option( 'acfw_flush_rewrite_rules', 1 );
 					$items->build( true );
 					break;
 			}
@@ -149,9 +157,9 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 							<td>
 								<select name="acfw_default_endpoint">
 									<?php
-									$default = get_option( 'acfw_default_endpoint', 'dashboard' );
-									foreach ( ACFW()->items->get_items() as $key => $item ) {
-										if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) ) {
+									$default = acfw_default_endpoint();
+									foreach ( ACFW()->items->get_flat_items() as $key => $item ) {
+										if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || 'customer-logout' === $key ) {
 											continue;
 										}
 										printf(
@@ -163,6 +171,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 									}
 									?>
 								</select>
+								<p class="acfw-hint"><?php esc_html_e( 'Customers land here when they open My Account. With anything but Dashboard, the dashboard moves to its own /dashboard/ address and stays in the menu.', 'my-account-dashboard-builder' ); ?></p>
 							</td>
 						</tr>
 
@@ -173,8 +182,8 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 									<?php $lr = get_option( 'acfw_login_redirect', '' ); ?>
 									<option value="" <?php selected( $lr, '' ); ?>><?php esc_html_e( 'Default (dashboard)', 'my-account-dashboard-builder' ); ?></option>
 									<?php
-									foreach ( ACFW()->items->get_items() as $key => $item ) {
-										if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) ) {
+									foreach ( ACFW()->items->get_flat_items() as $key => $item ) {
+										if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || 'customer-logout' === $key ) {
 											continue;
 										}
 										printf( '<option value="%s" %s>%s</option>', esc_attr( $key ), selected( $lr, $key, false ), esc_html( $item['label'] ) );
@@ -291,7 +300,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 										<input type="checkbox" name="acfw_recent_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_recent_enable', 'no' ) ); ?> />
 										<span class="acfw-switch-slider"></span>
 									</label>
-									<span class="acfw-control-hint"><?php esc_html_e( 'Show a Recently Viewed products tile on the dashboard.', 'my-account-dashboard-builder' ); ?></span>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Add a "Recently viewed" menu tab listing the products the customer looked at last.', 'my-account-dashboard-builder' ); ?></span>
 								</div>
 							</td>
 						</tr>

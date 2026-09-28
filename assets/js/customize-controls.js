@@ -32,26 +32,43 @@
 		}
 	} );
 
-	// Show avatar sub-options only while "Show avatar" is on ( live in the panel ).
-	api( 'acfw_avatar_enable', function ( setting ) {
-		var deps = [
-			'acfw_avatar_image',
-			'acfw_avatar_shape',
-			'acfw_avatar_align',
-			'acfw_avatar_size',
-			'acfw_avatar_show_name',
-			'acfw_avatar_show_role'
-		];
-		function apply( value ) {
-			var on = 'yes' === value;
-			deps.forEach( function ( id ) {
-				api.control( id, function ( control ) {
-					control.active.set( on );
+	// Show dependent controls only while their master toggle is on ( live in
+	// the panel, before the preview refreshes ).
+	function dependsOn( master, deps ) {
+		api( master, function ( setting ) {
+			function apply( value ) {
+				var on = 'yes' === value;
+				deps.forEach( function ( id ) {
+					api.control( id, function ( control ) {
+						control.active.set( on );
+					} );
 				} );
-			} );
-		}
-		apply( setting.get() );
-		setting.bind( apply );
-	} );
+			}
+			apply( setting.get() );
+			setting.bind( apply );
+		} );
+	}
+
+	dependsOn( 'acfw_avatar_enable', [
+		'acfw_avatar_image',
+		'acfw_avatar_shape',
+		'acfw_avatar_align',
+		'acfw_avatar_size',
+		'acfw_avatar_show_name',
+		'acfw_avatar_show_role',
+		'acfw_avatar_upload',
+		'acfw_avatar_upload_max'
+	] );
+
+	dependsOn( 'acfw_dashboard_stats', [
+		'acfw_stat_orders',
+		'acfw_stat_pending',
+		'acfw_stat_spent',
+		'acfw_stat_downloads',
+		'acfw_stat_refunds',
+		'acfw_stat_points',
+		'acfw_stat_latest',
+		'acfw_stat_piechart'
+	] );
 
 } )( jQuery, wp.customize );

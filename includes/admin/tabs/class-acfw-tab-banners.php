@@ -39,22 +39,31 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						'icon_width'    => isset( $_POST['banner_icon_width'] ) ? absint( wp_unslash( $_POST['banner_icon_width'] ) ) : 40,
 						'widget_width'  => isset( $_POST['banner_widget_width'] ) ? absint( wp_unslash( $_POST['banner_widget_width'] ) ) : 250,
 						'show_count'    => ! empty( $_POST['banner_show_count'] ) ? 'yes' : 'no',
+						'count_source'  => isset( $_POST['banner_count_source'] ) ? sanitize_key( wp_unslash( $_POST['banner_count_source'] ) ) : 'orders',
 						'link_type'     => isset( $_POST['banner_link_type'] ) ? sanitize_key( wp_unslash( $_POST['banner_link_type'] ) ) : 'none',
-						'link_endpoint' => isset( $_POST['banner_link_endpoint'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['banner_link_endpoint'] ) ) ) : '',
+						'link_endpoint' => isset( $_POST['banner_link_endpoint'] ) ? acfw_sanitize_key( sanitize_title( wp_unslash( $_POST['banner_link_endpoint'] ) ) ) : '',
 						'link'          => isset( $_POST['banner_link'] ) ? esc_url_raw( wp_unslash( $_POST['banner_link'] ) ) : '',
+						'link_text'     => isset( $_POST['banner_link_text'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_link_text'] ) ) : '',
 						'roles'         => $roles,
+						'vis_from'      => isset( $_POST['banner_vis_from'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_vis_from'] ) ) : '',
+						'vis_to'        => isset( $_POST['banner_vis_to'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_vis_to'] ) ) : '',
 					);
 					foreach ( array_keys( ACFW_Banners::color_fields() ) as $ckey ) {
 						$bdata[ $ckey ] = isset( $_POST[ 'banner_' . $ckey ] ) ? acfw_sanitize_color( sanitize_text_field( wp_unslash( $_POST[ 'banner_' . $ckey ] ) ) ) : '';
 					}
-					ACFW_Banners::save(
-						isset( $_POST['banner_key'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_key'] ) ) : '',
+					$saved = ACFW_Banners::save(
+						isset( $_POST['banner_key'] ) ? sanitize_title( wp_unslash( $_POST['banner_key'] ) ) : '',
 						$bdata
 					);
+					if ( '' !== $saved ) {
+						$this->redirect_args['select'] = $saved;
+					} else {
+						$this->add_notice( __( 'Give the banner a name before saving it.', 'my-account-dashboard-builder' ), 'error' );
+					}
 					break;
 
 				case 'remove_banner':
-					$bkey = isset( $_POST['banner_key'] ) ? acfw_sanitize_key( sanitize_text_field( wp_unslash( $_POST['banner_key'] ) ) ) : '';
+					$bkey = isset( $_POST['banner_key'] ) ? acfw_sanitize_key( sanitize_title( wp_unslash( $_POST['banner_key'] ) ) ) : '';
 					if ( '' !== $bkey ) {
 						ACFW_Banners::remove( $bkey );
 					}
@@ -235,12 +244,7 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><?php echo wp_kses( acfw_ui_icon( 'upload' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?></label>
 					</div>
 					<div class="acfw-icon-choose" <?php echo 'choose' === $b_icon_src ? '' : 'hidden'; ?>>
-						<select name="banner_icon" class="acfw-icon-select">
-							<option value=""><?php esc_html_e( '— Select an icon —', 'my-account-dashboard-builder' ); ?></option>
-							<?php foreach ( $this->icon_choices() as $ic => $ic_label ) : ?>
-								<option value="<?php echo esc_attr( $ic ); ?>" <?php selected( $banner['icon'] ?? '', $ic ); ?>><?php echo esc_html( $ic_label ); ?></option>
-							<?php endforeach; ?>
-						</select>
+						<?php $this->icon_picker( 'banner_icon', $banner['icon'] ?? '' ); ?>
 					</div>
 					<div class="acfw-icon-upload" <?php echo 'upload' === $b_icon_src ? '' : 'hidden'; ?>>
 						<?php $this->uploader( 'banner_icon_url', $banner['icon_url'] ?? '' ); ?>
@@ -281,7 +285,17 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 
 				<div class="acfw-field acfw-btype acfw-btype-widget">
 					<label><?php esc_html_e( 'Show item-count badge', 'my-account-dashboard-builder' ); ?></label>
-					<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="banner_show_count" value="yes" <?php checked( 'yes', $banner['show_count'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
+					<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="banner_show_count" class="acfw-banner-count-toggle" value="yes" <?php checked( 'yes', $banner['show_count'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
+				</div>
+
+				<div class="acfw-field acfw-btype acfw-btype-widget acfw-bcount">
+					<label><?php esc_html_e( 'Badge shows', 'my-account-dashboard-builder' ); ?></label>
+					<select name="banner_count_source">
+						<?php foreach ( ACFW_Banners::count_sources() as $acfw_source => $acfw_source_label ) : ?>
+							<option value="<?php echo esc_attr( $acfw_source ); ?>" <?php selected( $banner['count_source'] ?? 'orders', $acfw_source ); ?>><?php echo esc_html( $acfw_source_label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<p class="acfw-hint"><?php esc_html_e( 'The number shown in the pill beside the banner title.', 'my-account-dashboard-builder' ); ?></p>
 				</div>
 
 				<div class="acfw-field">
@@ -319,6 +333,11 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 					<input type="url" name="banner_link" value="<?php echo esc_attr( $banner['link'] ); ?>" placeholder="https://…" />
 				</div>
 
+				<div class="acfw-field acfw-btype acfw-btype-widget acfw-blink-text">
+					<label><?php esc_html_e( 'Link text', 'my-account-dashboard-builder' ); ?></label>
+					<input type="text" name="banner_link_text" value="<?php echo esc_attr( $banner['link_text'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Learn more', 'my-account-dashboard-builder' ); ?>" />
+				</div>
+
 				<div class="acfw-field">
 					<label><?php esc_html_e( 'Show banner to', 'my-account-dashboard-builder' ); ?></label>
 					<select name="banner_roles[]" multiple size="4" class="acfw-roles-select">
@@ -327,6 +346,17 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						<?php endforeach; ?>
 					</select>
 					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show to all users.', 'my-account-dashboard-builder' ); ?></p>
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Show from', 'my-account-dashboard-builder' ); ?></label>
+					<input type="date" name="banner_vis_from" value="<?php echo esc_attr( $banner['vis_from'] ?? '' ); ?>" />
+				</div>
+
+				<div class="acfw-field">
+					<label><?php esc_html_e( 'Show until', 'my-account-dashboard-builder' ); ?></label>
+					<input type="date" name="banner_vis_to" value="<?php echo esc_attr( $banner['vis_to'] ?? '' ); ?>" />
+					<p class="acfw-hint"><?php esc_html_e( 'Whole days, in the site timezone. Leave both empty to always show it.', 'my-account-dashboard-builder' ); ?></p>
 				</div>
 
 				<div class="acfw-form-footer">

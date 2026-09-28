@@ -74,9 +74,13 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 				add_filter( 'woocommerce_account_menu_items', array( $this, 'inject_menu_item' ), 20 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce hook.
 			}
 
-			// Flush rewrites when a toggle that owns an endpoint changes.
-			add_action( 'update_option_acfw_buyagain_enable', array( $this, 'flag_flush' ) );
-			add_action( 'update_option_acfw_recent_enable', array( $this, 'flag_flush' ) );
+			// Flush rewrites when a toggle that owns an endpoint changes. The add_
+			// hooks cover the first save, when the option does not exist yet and
+			// update_option() adds it instead.
+			foreach ( array( 'acfw_buyagain_enable', 'acfw_recent_enable' ) as $option ) {
+				add_action( 'add_option_' . $option, array( $this, 'flag_flush' ) );
+				add_action( 'update_option_' . $option, array( $this, 'flag_flush' ) );
+			}
 
 			// Dashboard widgets ( fires on the front end only ).
 			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_widgets' ), 7 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce hook.
@@ -90,6 +94,26 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 		 */
 		public static function enabled( $feature ) {
 			return 'yes' === get_option( 'acfw_' . $feature . '_enable', 'no' );
+		}
+
+		/**
+		 * Menu keys of the built-in endpoints whose feature is switched off.
+		 *
+		 * Once the menu has been saved, these keys live in the stored order, so
+		 * turning a feature off must hide the item rather than rely on the
+		 * endpoint no longer being injected.
+		 *
+		 * @return string[]
+		 */
+		public static function disabled_keys() {
+			$keys = array();
+			if ( ! self::enabled( 'buyagain' ) ) {
+				$keys[] = self::BUYAGAIN;
+			}
+			if ( ! self::enabled( 'recent' ) ) {
+				$keys[] = self::RECENT;
+			}
+			return $keys;
 		}
 
 		/**

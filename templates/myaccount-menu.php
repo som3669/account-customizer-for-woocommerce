@@ -76,18 +76,24 @@ $acfw_nav_label = apply_filters( 'acfw_menu_aria_label', __( 'Account pages', 'm
 			$type = isset( $item['type'] ) ? $item['type'] : 'endpoint';
 
 			if ( 'group' === $type ) :
-				$open_class = ( ! empty( $item['open'] ) || $acfw_group_open ) ? ' is-open' : '';
+				// A group holding the current page opens, so the active item shows. In
+				// the Tabs layout a group is a dropdown, so it stays shut and its tab
+				// is highlighted instead ( .has-current ).
+				$is_open     = ! empty( $item['open'] ) || $acfw_group_open || ( ! empty( $item['has_current'] ) && 'tabs' !== $layout );
+				$group_id    = 'acfw-group-' . sanitize_html_class( $key );
+				$open_class  = $is_open ? ' is-open' : '';
+				$open_class .= ! empty( $item['has_current'] ) ? ' has-current' : '';
 				?>
 				<li class="acfw-menu-item acfw-type-group<?php echo esc_attr( $open_class ); ?>">
-					<span class="acfw-group-toggle">
+					<button type="button" class="acfw-group-toggle" aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>" aria-controls="<?php echo esc_attr( $group_id ); ?>">
 						<?php echo acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper. ?>
-						<?php echo esc_html( $item['label'] ); ?>
-					</span>
+						<span class="acfw-label"><?php echo esc_html( $item['label'] ); ?></span>
+					</button>
 					<?php if ( ! empty( $item['children'] ) ) : ?>
-						<ul class="acfw-submenu">
+						<ul class="acfw-submenu" id="<?php echo esc_attr( $group_id ); ?>">
 							<?php
 							foreach ( $item['children'] as $child_key => $child_item ) {
-								$frontend->render_item( $child_key, $child_item );
+								$frontend->render_item( $child_key, $child_item, 1 );
 							}
 							?>
 						</ul>

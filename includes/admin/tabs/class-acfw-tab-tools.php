@@ -29,7 +29,7 @@ if ( ! class_exists( 'ACFW_Tab_Tools' ) ) {
 					$json = ACFW_Import_Export::export_json();
 					nocache_headers();
 					header( 'Content-Type: application/json; charset=utf-8' );
-					header( 'Content-Disposition: attachment; filename=account-customizer-' . gmdate( 'Y-m-d' ) . '.json' );
+					header( 'Content-Disposition: attachment; filename=my-account-dashboard-builder-' . gmdate( 'Y-m-d' ) . '.json' );
 					header( 'Content-Length: ' . strlen( $json ) );
 					echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
 					exit;
@@ -48,7 +48,13 @@ if ( ! class_exists( 'ACFW_Tab_Tools' ) ) {
 						$json = wp_unslash( $_POST['acfw_import_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- validated as JSON in importer.
 					}
 					$result = ACFW_Import_Export::import( (string) $json );
-					set_transient( 'acfw_import_notice', is_wp_error( $result ) ? $result->get_error_message() : 'success', 30 );
+					if ( is_wp_error( $result ) ) {
+						$this->add_notice( $result->get_error_message(), 'error' );
+					} else {
+						$this->add_notice( __( 'Configuration imported.', 'my-account-dashboard-builder' ), 'success' );
+					}
+					// The notice says what happened; a generic "Changes saved." next to an error would contradict it.
+					$this->redirect_args['updated'] = false;
 					break;
 			}
 			// phpcs:enable WordPress.Security.NonceVerification.Missing

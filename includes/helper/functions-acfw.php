@@ -221,6 +221,35 @@ function acfw_design_option_defaults() {
 }
 
 /**
+ * Design keys a starter template leaves alone.
+ *
+ * A template restyles the menu. It must not wipe the site owner's own Custom
+ * CSS, switch customer avatar uploads off, or hide the avatar block and the
+ * item counts, none of which a template sets.
+ *
+ * @return array
+ */
+function acfw_template_preserved_keys() {
+	return apply_filters(
+		'acfw_template_preserved_keys',
+		array(
+			'acfw_custom_css',
+			'acfw_show_counts',
+			'acfw_group_open',
+			'acfw_avatar_enable',
+			'acfw_avatar_image',
+			'acfw_avatar_shape',
+			'acfw_avatar_align',
+			'acfw_avatar_size',
+			'acfw_avatar_show_name',
+			'acfw_avatar_show_role',
+			'acfw_avatar_upload',
+			'acfw_avatar_upload_max',
+		)
+	);
+}
+
+/**
  * Full FontAwesome icon list ( class strings ) used by icon pickers.
  *
  * @return array
@@ -228,6 +257,35 @@ function acfw_design_option_defaults() {
 function acfw_icon_list() {
 	$list = include ACFW_DIR . 'includes/helper/icon-list.php';
 	return is_array( $list ) ? $list : array();
+}
+
+/**
+ * Icon picker choices: class => readable label ( "fas fa-cart-plus" => "Cart Plus" ).
+ *
+ * Built once per request; the admin pages print it once for every picker.
+ *
+ * @return array
+ */
+function acfw_icon_choices() {
+	static $choices = null;
+	if ( null === $choices ) {
+		$choices = array();
+		foreach ( acfw_icon_list() as $class ) {
+			$choices[ $class ] = acfw_icon_label( $class );
+		}
+	}
+	return $choices;
+}
+
+/**
+ * Readable label for an icon class.
+ *
+ * @param string $class_name Icon class, e.g. "fas fa-cart-plus" or "dashicons-cart".
+ * @return string
+ */
+function acfw_icon_label( $class_name ) {
+	$name = preg_replace( '/^.*(fa|dashicons)-/', '', (string) $class_name );
+	return ucwords( str_replace( '-', ' ', $name ) );
 }
 
 /**
@@ -243,17 +301,31 @@ function acfw_sanitize_icon( $value ) {
 }
 
 /**
+ * Resolve a user ID from a WP_User or a numeric ID.
+ *
+ * @param WP_User|int|null $user User object or ID.
+ * @return int 0 when it does not map to a user.
+ */
+function acfw_user_id( $user ) {
+	if ( is_object( $user ) && ! empty( $user->ID ) ) {
+		return (int) $user->ID;
+	}
+	return is_numeric( $user ) ? absint( $user ) : 0;
+}
+
+/**
  * Points balance ( WooCommerce Points & Rewards, when active ).
  *
- * @param WP_User $user User.
+ * @param WP_User|int $user User object or ID.
  * @return string
  */
 function acfw_points_balance( $user ) {
-	if ( empty( $user->ID ) ) {
+	$uid = acfw_user_id( $user );
+	if ( ! $uid ) {
 		return '';
 	}
 	if ( function_exists( 'wc_points_rewards_get_users_points' ) ) {
-		return (string) wc_points_rewards_get_users_points( $user->ID );
+		return (string) wc_points_rewards_get_users_points( $uid );
 	}
 	return '';
 }
@@ -261,14 +333,15 @@ function acfw_points_balance( $user ) {
 /**
  * Active membership plan name ( WooCommerce Memberships, when active ).
  *
- * @param WP_User $user User.
+ * @param WP_User|int $user User object or ID.
  * @return string
  */
 function acfw_membership_plan( $user ) {
-	if ( empty( $user->ID ) || ! function_exists( 'wc_memberships_get_user_active_memberships' ) ) {
+	$uid = acfw_user_id( $user );
+	if ( ! $uid || ! function_exists( 'wc_memberships_get_user_active_memberships' ) ) {
 		return '';
 	}
-	$memberships = wc_memberships_get_user_active_memberships( $user->ID );
+	$memberships = wc_memberships_get_user_active_memberships( $uid );
 	if ( ! empty( $memberships ) ) {
 		$first = reset( $memberships );
 		if ( is_object( $first ) && method_exists( $first, 'get_plan' ) ) {
@@ -319,6 +392,383 @@ function acfw_icon_markup( $icon, $icon_url = '', $wrapper = 'acfw-icon' ) {
 function acfw_sanitize_key( $value ) {
 	$value = sanitize_title( $value );
 	return str_replace( '_', '-', $value );
+}
+
+/**
+ * Sanitize a value into a plain ASCII slug ( letters, digits, dashes ).
+ *
+ * sanitize_title() percent-encodes characters it cannot transliterate, so a
+ * Devanagari, CJK or Cyrillic label comes back as "%e0%a4%ae…". Those octets
+ * are stripped: they make unreadable URLs, and WordPress' text sanitizers
+ * delete them from the saved menu order, which used to drop the item.
+ *
+ * @param string $value Raw value.
+ * @return string Possibly empty.
+ */
+function acfw_ascii_slug( $value ) {
+	$slug = acfw_sanitize_key( (string) $value );
+	$slug = preg_replace( '/%[a-f0-9]{2}/i', '', $slug );
+	$slug = preg_replace( '/[^a-z0-9-]/', '', strtolower( $slug ) );
+	return trim( preg_replace( '/-+/', '-', $slug ), '-' );
+}
+
+/**
+ * Derive a menu item key from its label.
+ *
+ * Falls back to "{type}-{hash}" when the label has no ASCII letters or digits
+ * at all, so every label yields a stable, URL-safe key.
+ *
+ * @param string $label Item label.
+ * @param string $type  Item type.
+ * @return string
+ */
+function acfw_item_key_from_label( $label, $type = 'endpoint' ) {
+	$key = acfw_ascii_slug( $label );
+	if ( '' === $key ) {
+		$type = acfw_ascii_slug( $type );
+		$key  = ( '' !== $type ? $type : 'item' ) . '-' . substr( md5( (string) $label ), 0, 6 );
+	}
+	return $key;
+}
+
+/**
+ * Names a custom menu item must not use as its key or URL slug.
+ *
+ * Covers WooCommerce's own account endpoints ( keys and their configured
+ * slugs ), the plugin's built-in endpoints and WordPress' public query vars:
+ * an endpoint called "order" or "page" would collide with core queries.
+ *
+ * @return array
+ */
+function acfw_reserved_item_keys() {
+	$reserved = array(
+		// WooCommerce's own account and checkout endpoints, by key. Their
+		// configured slugs are added below when WooCommerce is loaded.
+		'dashboard',
+		'orders',
+		'view-order',
+		'downloads',
+		'edit-account',
+		'edit-address',
+		'payment-methods',
+		'add-payment-method',
+		'delete-payment-method',
+		'set-default-payment-method',
+		'lost-password',
+		'customer-logout',
+		'order-pay',
+		'order-received',
+		// This plugin's built-in endpoints.
+		'buy-again',
+		'recently-viewed',
+		// WordPress query vars an endpoint name would collide with.
+		'page',
+		'paged',
+		'feed',
+		'embed',
+		'attachment',
+		'preview',
+		'order',
+		'orderby',
+		'name',
+		'author',
+		'search',
+		'error',
+		'year',
+		'monthnum',
+		'day',
+		'p',
+		's',
+		'm',
+		'w',
+	);
+
+	if ( function_exists( 'WC' ) && WC()->query ) {
+		foreach ( WC()->query->get_query_vars() as $var_key => $var_slug ) {
+			$reserved[] = (string) $var_key;
+			$reserved[] = (string) $var_slug;
+		}
+	}
+
+	global $wp;
+	if ( $wp instanceof WP && ! empty( $wp->public_query_vars ) ) {
+		$reserved = array_merge( $reserved, (array) $wp->public_query_vars );
+	}
+
+	$reserved = apply_filters( 'acfw_reserved_item_keys', $reserved );
+
+	return array_values( array_unique( array_filter( array_map( 'strval', (array) $reserved ) ) ) );
+}
+
+/**
+ * A key for a new menu item that nothing else uses.
+ *
+ * @param string $label Label ( or base key ) to derive the key from.
+ * @param string $type  Item type.
+ * @param array  $taken Keys and slugs already used by the menu.
+ * @return string
+ */
+function acfw_unique_item_key( $label, $type = 'endpoint', $taken = array() ) {
+	$base  = acfw_item_key_from_label( $label, $type );
+	$taken = array_merge( acfw_reserved_item_keys(), array_map( 'strval', (array) $taken ) );
+	$key   = $base;
+	$n     = 2;
+
+	while ( in_array( $key, $taken, true ) || false !== get_option( 'acfw_item_' . $key, false ) ) {
+		$key = $base . '-' . $n;
+		++$n;
+	}
+
+	return $key;
+}
+
+/**
+ * Sanitize the menu order tree posted by the builder ( or found in an import ).
+ *
+ * Keys go through acfw_sanitize_key() only, so keys saved by earlier versions
+ * survive unchanged. Types are allow-listed, and only a top-level group may
+ * hold children ( one level deep, no nested groups ).
+ *
+ * @param mixed $tree  Decoded tree: key => { type, children? }.
+ * @param int   $depth Current depth ( internal ).
+ * @return array
+ */
+function acfw_sanitize_order_tree( $tree, $depth = 0 ) {
+	$clean = array();
+	if ( ! is_array( $tree ) ) {
+		return $clean;
+	}
+
+	$types = class_exists( 'ACFW_Items' ) ? ACFW_Items::ITEM_TYPES : array( 'endpoint', 'group', 'link', 'page' );
+
+	foreach ( $tree as $key => $node ) {
+		$key = acfw_sanitize_key( (string) $key );
+		if ( '' === $key || ! is_array( $node ) ) {
+			continue;
+		}
+
+		$type = isset( $node['type'] ) ? sanitize_key( (string) $node['type'] ) : 'endpoint';
+		if ( ! in_array( $type, $types, true ) ) {
+			$type = 'endpoint';
+		}
+
+		$entry = array( 'type' => $type );
+		if ( 'group' === $type && 0 === $depth && ! empty( $node['children'] ) ) {
+			$entry['children'] = acfw_sanitize_order_tree( $node['children'], 1 );
+		}
+
+		$clean[ $key ] = $entry;
+	}
+
+	return $clean;
+}
+
+/**
+ * Flatten a menu items tree into key => item, children included.
+ *
+ * @param array $items Items tree ( as ACFW_Items::get_items() returns it ).
+ * @return array
+ */
+function acfw_flatten_items( $items ) {
+	$flat = array();
+	foreach ( (array) $items as $key => $item ) {
+		if ( ! is_array( $item ) ) {
+			continue;
+		}
+		$children = ( ! empty( $item['children'] ) && is_array( $item['children'] ) ) ? $item['children'] : array();
+		unset( $item['children'] );
+		$flat[ $key ] = $item;
+		foreach ( $children as $child_key => $child ) {
+			if ( is_array( $child ) ) {
+				unset( $child['children'] );
+				$flat[ $child_key ] = $child;
+			}
+		}
+	}
+	return $flat;
+}
+
+/**
+ * Parse a list of IDs ( array, or a comma / space separated string ).
+ *
+ * @param mixed $raw Raw list.
+ * @return int[] Unique positive IDs, in the order given.
+ */
+function acfw_parse_id_list( $raw ) {
+	if ( is_string( $raw ) || is_numeric( $raw ) ) {
+		$raw = preg_split( '/[\s,]+/', (string) $raw );
+	}
+	$ids = array_filter( array_map( 'absint', (array) $raw ) );
+	return array_values( array_unique( $ids ) );
+}
+
+/**
+ * Product IDs a visibility rule set requires the customer to have bought.
+ *
+ * @param array $rules Rules ( vis_products, or vis_product from before 1.1 ).
+ * @return int[]
+ */
+function acfw_rule_product_ids( $rules ) {
+	$ids = acfw_parse_id_list( $rules['vis_products'] ?? array() );
+	if ( ! empty( $rules['vis_product'] ) ) {
+		$ids[] = absint( $rules['vis_product'] );
+	}
+	return array_values( array_unique( array_filter( $ids ) ) );
+}
+
+/**
+ * Whether "now" falls inside a whole-day date window, in the site's timezone.
+ *
+ * @param string   $from Start date ( Y-m-d ), empty for none.
+ * @param string   $to   End date ( Y-m-d ), empty for none.
+ * @param int|null $now  Timestamp to test ( defaults to now ).
+ * @return bool
+ */
+function acfw_date_window_passes( $from, $to, $now = null ) {
+	$now   = null === $now ? time() : (int) $now;
+	$zone  = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+	$start = acfw_day_timestamp( $from, $zone, false );
+	$end   = acfw_day_timestamp( $to, $zone, true );
+
+	if ( null !== $start && $now < $start ) {
+		return false;
+	}
+	return null === $end || $now <= $end;
+}
+
+/**
+ * Timestamp of the first or last second of a Y-m-d day in a timezone.
+ *
+ * @param string       $date       Date ( Y-m-d ).
+ * @param DateTimeZone $zone       Timezone.
+ * @param bool         $end_of_day Last second instead of the first.
+ * @return int|null Null when the date is empty or malformed.
+ */
+function acfw_day_timestamp( $date, $zone, $end_of_day ) {
+	$date = trim( (string) $date );
+	if ( ! preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', $date, $m ) || ! checkdate( (int) $m[2], (int) $m[3], (int) $m[1] ) ) {
+		return null;
+	}
+	$moment = DateTimeImmutable::createFromFormat( 'Y-m-d H:i:s', $date . ( $end_of_day ? ' 23:59:59' : ' 00:00:00' ), $zone );
+	return $moment ? $moment->getTimestamp() : null;
+}
+
+/**
+ * Whether a set of visibility rules lets a user see something.
+ *
+ * Shared by menu items and banners. Every rule is optional:
+ *  - visibility + usr_roles: 'roles' with a role list limits it to those roles.
+ *  - vis_from / vis_to: whole-day window in the site's timezone.
+ *  - vis_products ( or the older single vis_product ): bought at least one.
+ *  - vis_min_orders: at least this many orders.
+ *  - vis_min_spent: at least this much spent in total.
+ *
+ * Shop managers pass every rule except the date window, so they can preview
+ * the account area as any customer would see it.
+ *
+ * @param array        $rules Rules.
+ * @param WP_User|null $user  User ( defaults to the current one ).
+ * @return bool
+ */
+function acfw_visibility_passes( $rules, $user = null ) {
+	$rules = is_array( $rules ) ? $rules : array();
+
+	if ( ! acfw_date_window_passes( $rules['vis_from'] ?? '', $rules['vis_to'] ?? '' ) ) {
+		return false;
+	}
+
+	if ( current_user_can( 'manage_woocommerce' ) ) {
+		return true;
+	}
+
+	$user = ( $user instanceof WP_User ) ? $user : wp_get_current_user();
+	$uid  = acfw_user_id( $user );
+
+	if ( isset( $rules['visibility'] ) && 'roles' === $rules['visibility'] && ! empty( $rules['usr_roles'] ) ) {
+		if ( ! array_intersect( (array) $rules['usr_roles'], (array) $user->roles ) ) {
+			return false;
+		}
+	}
+
+	$products = acfw_rule_product_ids( $rules );
+	if ( $products && function_exists( 'wc_customer_bought_product' ) ) {
+		$bought = false;
+		foreach ( $products as $product_id ) {
+			if ( $uid && wc_customer_bought_product( $user->user_email, $uid, $product_id ) ) {
+				$bought = true;
+				break;
+			}
+		}
+		if ( ! $bought ) {
+			return false;
+		}
+	}
+
+	$min_orders = absint( $rules['vis_min_orders'] ?? 0 );
+	if ( $min_orders && function_exists( 'wc_get_customer_order_count' ) ) {
+		if ( ! $uid || (int) wc_get_customer_order_count( $uid ) < $min_orders ) {
+			return false;
+		}
+	}
+
+	$min_spent = (float) ( $rules['vis_min_spent'] ?? 0 );
+	if ( $min_spent > 0 && function_exists( 'wc_get_customer_total_spent' ) ) {
+		if ( ! $uid || (float) wc_get_customer_total_spent( $uid ) < $min_spent ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * The endpoint customers land on when they open My Account.
+ *
+ * @return string Endpoint key; 'dashboard' when none is set.
+ */
+function acfw_default_endpoint() {
+	$endpoint = acfw_sanitize_key( (string) get_option( 'acfw_default_endpoint', 'dashboard' ) );
+	if ( '' === $endpoint || 'customer-logout' === $endpoint ) {
+		$endpoint = 'dashboard';
+	}
+	return (string) apply_filters( 'acfw_default_endpoint', $endpoint );
+}
+
+/**
+ * URL of the account dashboard.
+ *
+ * When another endpoint is the landing page, the bare My Account URL
+ * redirects there, so the dashboard moves to its own /dashboard/ endpoint.
+ *
+ * @return string
+ */
+function acfw_dashboard_url() {
+	$base = wc_get_page_permalink( 'myaccount' );
+	if ( 'dashboard' === acfw_default_endpoint() ) {
+		return $base;
+	}
+	return wc_get_endpoint_url( 'dashboard', '', $base );
+}
+
+/**
+ * Whether a menu item key is the page being viewed.
+ *
+ * Mirrors WooCommerce's own menu: Orders stays current on a single order,
+ * Payment methods while adding one.
+ *
+ * @param string $key Item key.
+ * @return bool
+ */
+function acfw_is_current_item( $key ) {
+	$current = acfw_get_current_endpoint();
+	if ( $key === $current ) {
+		return true;
+	}
+	$aliases = array(
+		'orders'          => array( 'view-order' ),
+		'payment-methods' => array( 'add-payment-method' ),
+	);
+	return isset( $aliases[ $key ] ) && in_array( $current, $aliases[ $key ], true );
 }
 
 /**
@@ -565,8 +1015,17 @@ function acfw_smart_tags() {
 			'{order_count}'     => __( 'Order count', 'my-account-dashboard-builder' ),
 			'{download_count}'  => __( 'Download count', 'my-account-dashboard-builder' ),
 			'{last_login}'      => __( 'Last login date', 'my-account-dashboard-builder' ),
+			'{member_since}'    => __( 'Registration date', 'my-account-dashboard-builder' ),
+			'{total_spent}'     => __( 'Total spent', 'my-account-dashboard-builder' ),
+			'{cart_count}'      => __( 'Items in cart', 'my-account-dashboard-builder' ),
+			'{billing_phone}'   => __( 'Billing phone', 'my-account-dashboard-builder' ),
+			'{billing_city}'    => __( 'Billing city', 'my-account-dashboard-builder' ),
+			'{billing_country}' => __( 'Billing country', 'my-account-dashboard-builder' ),
 			'{points_balance}'  => __( 'Points balance', 'my-account-dashboard-builder' ),
 			'{membership_plan}' => __( 'Membership plan', 'my-account-dashboard-builder' ),
+			'{account_url}'     => __( 'My Account URL', 'my-account-dashboard-builder' ),
+			'{shop_url}'        => __( 'Shop URL', 'my-account-dashboard-builder' ),
+			'{site_url}'        => __( 'Site URL', 'my-account-dashboard-builder' ),
 		)
 	);
 }
@@ -574,32 +1033,163 @@ function acfw_smart_tags() {
 /**
  * Dynamic item count for a menu key ( orders / downloads ), for badges.
  *
+ * Counted once per request: the menu, the dashboard tiles, the stats and the
+ * smart tags can all ask for the same number on one page.
+ *
  * @param string $key  Endpoint key.
  * @param int    $uid  User ID ( 0 = current ).
  * @return int|null Count, or null when not a countable endpoint.
  */
 function acfw_endpoint_count( $key, $uid = 0 ) {
-	$uid = $uid ? $uid : get_current_user_id();
-	if ( ! $uid ) {
+	static $memo = array();
+
+	$uid = $uid ? (int) $uid : get_current_user_id();
+	if ( ! $uid || ! in_array( $key, array( 'orders', 'downloads' ), true ) ) {
 		return null;
 	}
+
+	$memo_key = $key . '|' . $uid;
+	if ( array_key_exists( $memo_key, $memo ) ) {
+		return $memo[ $memo_key ];
+	}
+
+	$count = null;
 	if ( 'orders' === $key && function_exists( 'wc_get_customer_order_count' ) ) {
-		return (int) wc_get_customer_order_count( $uid );
+		$count = (int) wc_get_customer_order_count( $uid );
+	} elseif ( 'downloads' === $key && function_exists( 'wc_get_customer_available_downloads' ) ) {
+		$count = count( wc_get_customer_available_downloads( $uid ) );
 	}
-	if ( 'downloads' === $key && function_exists( 'wc_get_customer_available_downloads' ) ) {
-		return count( wc_get_customer_available_downloads( $uid ) );
+
+	$memo[ $memo_key ] = $count;
+	return $count;
+}
+
+/**
+ * Plain-text price ( wc_price() output without its markup or entities ).
+ *
+ * @param float $amount Amount.
+ * @return string
+ */
+function acfw_plain_price( $amount ) {
+	if ( ! function_exists( 'wc_price' ) ) {
+		return (string) $amount;
 	}
-	return null;
+	return trim( html_entity_decode( wp_strip_all_tags( wc_price( $amount ) ), ENT_QUOTES, 'UTF-8' ) );
+}
+
+/**
+ * Resolve one smart tag for a user.
+ *
+ * Values that cost a query are remembered for the rest of the request.
+ *
+ * @param string  $token Token, e.g. "{first_name}".
+ * @param WP_User $user  User.
+ * @return string|null Null for an unknown token ( it is left in place ).
+ */
+function acfw_smart_tag_value( $token, $user ) {
+	static $memo = array();
+
+	$uid      = acfw_user_id( $user );
+	$memo_key = $uid . '|' . $token;
+	$costly   = array( '{order_count}', '{download_count}', '{total_spent}', '{points_balance}', '{membership_plan}' );
+
+	if ( in_array( $token, $costly, true ) && array_key_exists( $memo_key, $memo ) ) {
+		return $memo[ $memo_key ];
+	}
+
+	switch ( $token ) {
+		case '{display_name}':
+		case '%%customer_name%%':
+			$value = $user->display_name ?? '';
+			break;
+		case '{first_name}':
+			$value = $user->first_name ?? '';
+			break;
+		case '{last_name}':
+			$value = $user->last_name ?? '';
+			break;
+		case '{username}':
+			$value = $user->user_login ?? '';
+			break;
+		case '{user_email}':
+			$value = $user->user_email ?? '';
+			break;
+		case '{site_title}':
+			$value = get_bloginfo( 'name' );
+			break;
+		case '{order_count}':
+			$value = (string) ( $uid ? (int) acfw_endpoint_count( 'orders', $uid ) : 0 );
+			break;
+		case '{download_count}':
+			$value = (string) ( $uid ? (int) acfw_endpoint_count( 'downloads', $uid ) : 0 );
+			break;
+		case '{last_login}':
+			$last  = $uid ? (int) get_user_meta( $uid, 'acfw_last_login', true ) : 0;
+			$value = $last ? wp_date( get_option( 'date_format' ), $last ) : '';
+			break;
+		case '{member_since}':
+			$registered = ! empty( $user->user_registered ) ? strtotime( $user->user_registered . ' UTC' ) : false;
+			$value      = $registered ? wp_date( get_option( 'date_format' ), $registered ) : '';
+			break;
+		case '{total_spent}':
+			$value = ( $uid && function_exists( 'wc_get_customer_total_spent' ) ) ? acfw_plain_price( wc_get_customer_total_spent( $uid ) ) : '';
+			break;
+		case '{cart_count}':
+			$value = ( function_exists( 'WC' ) && WC()->cart ) ? (string) WC()->cart->get_cart_contents_count() : '0';
+			break;
+		case '{billing_phone}':
+			$value = $uid ? (string) get_user_meta( $uid, 'billing_phone', true ) : '';
+			break;
+		case '{billing_city}':
+			$value = $uid ? (string) get_user_meta( $uid, 'billing_city', true ) : '';
+			break;
+		case '{billing_country}':
+			$code      = $uid ? (string) get_user_meta( $uid, 'billing_country', true ) : '';
+			$countries = ( '' !== $code && function_exists( 'WC' ) && WC()->countries ) ? WC()->countries->get_countries() : array();
+			$value     = isset( $countries[ $code ] ) ? html_entity_decode( $countries[ $code ], ENT_QUOTES, 'UTF-8' ) : $code;
+			break;
+		case '{points_balance}':
+			$value = acfw_points_balance( $uid );
+			break;
+		case '{membership_plan}':
+			$value = acfw_membership_plan( $uid );
+			break;
+		case '{account_url}':
+			$value = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : '';
+			break;
+		case '{shop_url}':
+			$value = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : '';
+			break;
+		case '{site_url}':
+			$value = home_url( '/' );
+			break;
+		default:
+			$value = null;
+	}
+
+	if ( in_array( $token, $costly, true ) ) {
+		$memo[ $memo_key ] = $value;
+	}
+
+	return $value;
 }
 
 /**
  * Replace smart tags in a string with the current user's values.
  *
+ * Only the tokens present in the string are resolved, so an order or
+ * download count is never queried for text that does not show it.
+ *
  * @param string       $content Raw content.
  * @param WP_User|null $user    User ( defaults to current ).
+ * @param bool         $escape  HTML-escape the values ( for HTML content ).
+ *                              Pass false for plain text that is escaped
+ *                              as a whole afterwards.
  * @return string
  */
-function acfw_apply_smart_tags( $content, $user = null ) {
+function acfw_apply_smart_tags( $content, $user = null, $escape = true ) {
+
+	$content = (string) $content;
 
 	if ( false === strpos( $content, '{' ) && false === strpos( $content, '%%' ) ) {
 		return $content;
@@ -607,32 +1197,32 @@ function acfw_apply_smart_tags( $content, $user = null ) {
 
 	$user = $user ? $user : wp_get_current_user();
 
-	$orders = 0;
-	if ( ! empty( $user->ID ) && function_exists( 'wc_get_customer_order_count' ) ) {
-		$orders = wc_get_customer_order_count( $user->ID );
-	}
-	$downloads  = ! empty( $user->ID ) ? acfw_endpoint_count( 'downloads', $user->ID ) : null;
-	$last_login = ! empty( $user->ID ) ? get_user_meta( $user->ID, 'acfw_last_login', true ) : '';
-
-	$map = array(
-		'{display_name}'    => $user->display_name ?? '',
-		'{first_name}'      => $user->first_name ?? '',
-		'{last_name}'       => $user->last_name ?? '',
-		'{username}'        => $user->user_login ?? '',
-		'{user_email}'      => $user->user_email ?? '',
-		'{site_title}'      => get_bloginfo( 'name' ),
-		'{order_count}'     => (string) $orders,
-		'{download_count}'  => (string) ( null === $downloads ? 0 : $downloads ),
-		'{last_login}'      => $last_login ? date_i18n( get_option( 'date_format' ), (int) $last_login ) : '',
-		'{points_balance}'  => acfw_points_balance( $user ),
-		'{membership_plan}' => acfw_membership_plan( $user ),
+	preg_match_all( '/\{[a-z0-9_]+\}/', $content, $found );
+	$tokens = array_unique( $found[0] );
+	if ( false !== strpos( $content, '%%customer_name%%' ) ) {
 		// Back-compat token.
-		'%%customer_name%%' => $user->display_name ?? '',
-	);
+		$tokens[] = '%%customer_name%%';
+	}
+
+	$map = array();
+	foreach ( $tokens as $token ) {
+		$value = acfw_smart_tag_value( $token, $user );
+		if ( null !== $value ) {
+			$map[ $token ] = (string) $value;
+		}
+	}
 
 	$map = apply_filters( 'acfw_smart_tag_values', $map, $user );
+	if ( empty( $map ) || ! is_array( $map ) ) {
+		return $content;
+	}
 
-	return str_replace( array_keys( $map ), array_map( 'esc_html', array_values( $map ) ), $content );
+	$values = array_map( 'strval', array_values( $map ) );
+	if ( $escape ) {
+		$values = array_map( 'esc_html', $values );
+	}
+
+	return str_replace( array_keys( $map ), $values, $content );
 }
 
 /**
@@ -659,6 +1249,22 @@ function acfw_default_endpoint_options( $key = '' ) {
 		'banner_slug'      => '',       // Deprecated single value, still read for data saved before 1.0.
 		'banner_slugs'     => array(),
 		'banner_position'  => 'top',    // top | bottom.
+		'badge'            => '',       // Custom pill text; replaces the item count.
+	) + acfw_default_rule_options();
+}
+
+/**
+ * Default visibility rules shared by every item type.
+ *
+ * @return array
+ */
+function acfw_default_rule_options() {
+	return array(
+		'vis_from'       => '',
+		'vis_to'         => '',
+		'vis_products'   => array(),
+		'vis_min_orders' => 0,
+		'vis_min_spent'  => 0,
 	);
 }
 
@@ -783,7 +1389,7 @@ function acfw_default_group_options() {
 		'usr_roles'   => array(),
 		'class'       => '',
 		'children'    => array(),
-	);
+	) + acfw_default_rule_options();
 }
 
 /**
@@ -804,5 +1410,28 @@ function acfw_default_link_options() {
 		'visibility'   => 'all',
 		'usr_roles'    => array(),
 		'class'        => '',
-	);
+		'badge'        => '',
+	) + acfw_default_rule_options();
+}
+
+/**
+ * Default option set for a page item ( links to an existing WordPress page ).
+ *
+ * @return array
+ */
+function acfw_default_page_options() {
+	return array(
+		'type'         => 'page',
+		'label'        => '',
+		'icon'         => '',
+		'icon_url'     => '',
+		'icon_source'  => 'choose',
+		'active'       => true,
+		'page_id'      => 0,
+		'target_blank' => false,
+		'visibility'   => 'all',
+		'usr_roles'    => array(),
+		'class'        => '',
+		'badge'        => '',
+	) + acfw_default_rule_options();
 }

@@ -21,4 +21,7 @@ define( 'ACFW_ASSETS_URL', ACFW_URL . 'assets' );
 define( 'ACFW_SLUG', 'my-account-dashboard-builder' );
 
 require_once ACFW_DIR . 'includes/helper/functions-acfw.php';
+// Class definitions only: nothing here runs a constructor or adds a hook.
+require_once ACFW_DIR . 'includes/class-acfw-items.php';
+require_once ACFW_DIR . 'includes/class-acfw-banners.php';
 require_once ACFW_DIR . 'includes/admin/class-acfw-import-export.php';

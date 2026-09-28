@@ -40,7 +40,13 @@ npx gulp zip          # build + package dist/my-account-dashboard-builder.zip  (
 - Icon fields: `icon_source` = `choose|upload`. On save, when `upload`, the `choose` FA class is cleared (and vice-versa) so a stale icon doesn't render.
 - `[hidden]` attribute is overridden by `display:grid/flex` — hidden `.acfw-field`/rows need an explicit `[hidden]{display:none}` rule to actually hide (used for banner type/link conditional fields).
 - Banner forms: two exist on the page (`__new__` create + each existing). Never emit duplicate element `id`s across them (broke `<label for>` radios) — buttonset wraps the input in the label instead.
-- Color control = vanilla port of the reference React control: round checkerboard swatch → popover (native picker + opacity + hex), stores hex or `rgba()`.
+- Color control = vanilla port of the reference React control: round checkerboard swatch → popover (native picker + opacity + hex), stores hex or `rgba()`. Banner colours go through `acfw_sanitize_color()` (not `sanitize_hex_color()`) so the alpha survives.
+- Item keys: new keys come from `acfw_unique_item_key()` (ASCII, never a WooCommerce/WordPress/reserved name, never a key or slug already in the menu). Never run `sanitize_text_field()`/`sanitize_textarea_field()` on a key or on the posted order JSON: they strip `%xx` octets. Decode the order and pass it to `acfw_sanitize_order_tree()`; read posted keys with `sanitize_title()`.
+- Custom endpoints need a `woocommerce_account_{key}_endpoint` handler, or `woocommerce_account_content()` prints the dashboard under them. `ACFW_Frontend::setup_endpoint_content()` adds an empty one.
+- CSS tokens: the static fallbacks sit in `:where(.woocommerce-MyAccount-navigation.acfw-menu)` (zero specificity) so the inline Customizer values (`.acfw-menu{…}`) win. Don't give the fallback rule real specificity again. The inline tokens are also declared on the dashboard widgets, banners and notice.
+- Visibility rules (roles, dates in the site timezone, products, min orders, min spent) are evaluated by `acfw_visibility_passes()` for items and banners alike.
+- Items tab detail pane: sections (General / Content / Visibility / Advanced) are ARIA tabs; select2 must be refreshed (`change.select2`) whenever a pane or section becomes visible, or multi-select placeholders measure 0px. `repaintClassicEditor()` rebuilds TinyMCE via `wp.editor.initialize()` and re-attaches the "Add smart tags" button.
+- Icon pickers print only the current option; the library is sent once as `window.acfwIconChoices` and searched by a select2 `ajax.transport`. Use `icon_picker()` for any new picker.
 
 ## Release / QA
 

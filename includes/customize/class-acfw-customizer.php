@@ -299,6 +299,34 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 					};
 				}
 			}
+
+			// The individual stat cards only matter while the stats block is on.
+			foreach ( self::stat_controls() as $dep ) {
+				$ctrl = $wp_customize->get_control( $dep );
+				if ( $ctrl ) {
+					$ctrl->active_callback = function () {
+						return 'yes' === get_option( 'acfw_dashboard_stats', 'no' );
+					};
+				}
+			}
+		}
+
+		/**
+		 * The per-card stat toggles that depend on "Dashboard stat widgets".
+		 *
+		 * @return array
+		 */
+		public static function stat_controls() {
+			return array(
+				'acfw_stat_orders',
+				'acfw_stat_pending',
+				'acfw_stat_spent',
+				'acfw_stat_downloads',
+				'acfw_stat_refunds',
+				'acfw_stat_points',
+				'acfw_stat_latest',
+				'acfw_stat_piechart',
+			);
 		}
 
 		/**

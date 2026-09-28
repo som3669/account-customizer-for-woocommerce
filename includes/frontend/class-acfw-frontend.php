@@ -30,10 +30,18 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		protected $is_account = false;
 
 		/**
+		 * Whether the menu being rendered offers the pin-to-top star.
+		 *
+		 * @var bool
+		 */
+		protected $pinnable = false;
+
+		/**
 		 * Constructor.
 		 */
 		public function __construct() {
 			add_action( 'wp', array( $this, 'setup' ), 20 );
+			add_action( 'template_redirect', array( $this, 'maybe_redirect_to_default_endpoint' ), 20 );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ), 15 );
 
 			// Login / logout redirects + guest message.
@@ -104,6 +112,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				update_option( 'acfw_endpoint_views', $views, false );
 			}
 
+			$this->register_endpoint_titles();
+
 			// Remove the default WooCommerce navigation so ours takes over.
 			$priority = has_action( 'woocommerce_account_navigation', 'woocommerce_account_navigation' );
 			if ( false !== $priority ) {
@@ -112,19 +122,85 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		}
 
 		/**
-		 * Filter a set of items by active flag + role visibility.
+		 * Give endpoints that WooCommerce has no title for their menu label as
+		 * the page title, instead of the generic "My account".
+		 *
+		 * Runs early ( priority 9 ) so a plugin that titles its own endpoint
+		 * still has the last word.
+		 */
+		protected function register_endpoint_titles() {
+			foreach ( acfw_flatten_items( $this->menu_items ) as $key => $item ) {
+				if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || 'customer-logout' === $key || empty( $item['label'] ) ) {
+					continue;
+				}
+				$label = (string) $item['label'];
+				add_filter(
+					'woocommerce_endpoint_' . $key . '_title',
+					static function ( $title ) use ( $label ) {
+						return '' === (string) $title ? $label : $title;
+					},
+					9
+				);
+			}
+		}
+
+		/**
+		 * Send customers to the landing endpoint when they open My Account.
+		 *
+		 * Only the bare account URL on a plain GET redirects: any endpoint
+		 * ( /dashboard/ included ), form post, query string or Customizer
+		 * preview is left alone.
+		 */
+		public function maybe_redirect_to_default_endpoint() {
+
+			if ( ! $this->is_account || ! is_user_logged_in() || is_customize_preview() || wp_doing_ajax() ) {
+				return;
+			}
+
+			$method = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : 'GET';
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only check that the URL carries no query string.
+			if ( 'GET' !== $method || ! empty( $_GET ) || ! function_exists( 'WC' ) || '' !== WC()->query->get_current_endpoint() ) {
+				return;
+			}
+
+			$target = acfw_default_endpoint();
+			if ( 'dashboard' === $target ) {
+				return;
+			}
+
+			$flat = acfw_flatten_items( $this->menu_items );
+			if ( ! isset( $flat[ $target ] ) || 'endpoint' !== ( $flat[ $target ]['type'] ?? 'endpoint' ) ) {
+				return;
+			}
+
+			wp_safe_redirect( wc_get_account_endpoint_url( $target ) );
+			exit;
+		}
+
+		/**
+		 * Filter a set of items by active flag + visibility rules.
+		 *
+		 * Built-in endpoints whose feature is switched off are dropped, and so
+		 * is a group left with no visible children.
 		 *
 		 * @param array $items Items to filter.
 		 * @return array
 		 */
 		protected function filter_visible( $items ) {
+			$off = class_exists( 'ACFW_Commerce' ) ? ACFW_Commerce::disabled_keys() : array();
+
 			foreach ( $items as $key => $item ) {
-				if ( ! $this->is_visible( $item ) ) {
+				if ( in_array( (string) $key, $off, true ) || ! $this->is_visible( $item ) ) {
 					unset( $items[ $key ] );
 					continue;
 				}
-				if ( ! empty( $item['children'] ) ) {
-					$items[ $key ]['children'] = $this->filter_visible( $item['children'] );
+				if ( 'group' === ( $item['type'] ?? '' ) ) {
+					$children = ! empty( $item['children'] ) ? $this->filter_visible( $item['children'] ) : array();
+					if ( empty( $children ) ) {
+						unset( $items[ $key ] );
+						continue;
+					}
+					$items[ $key ]['children'] = $children;
 				}
 			}
 			return $items;
@@ -142,36 +218,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				return false;
 			}
 
-			// Date-range visibility.
-			$now = time();
-			if ( ! empty( $item['vis_from'] ) && $now < strtotime( $item['vis_from'] . ' 00:00:00' ) ) {
-				return false;
-			}
-			if ( ! empty( $item['vis_to'] ) && $now > strtotime( $item['vis_to'] . ' 23:59:59' ) ) {
-				return false;
-			}
-
-			// Purchased-product visibility.
-			if ( ! empty( $item['vis_product'] ) && function_exists( 'wc_customer_bought_product' ) && ! current_user_can( 'manage_woocommerce' ) ) {
-				$u = wp_get_current_user();
-				if ( empty( $u->ID ) || ! wc_customer_bought_product( $u->user_email, $u->ID, (int) $item['vis_product'] ) ) {
-					return false;
-				}
-			}
-
-			$visible = true;
-
-			if ( isset( $item['visibility'] ) && 'roles' === $item['visibility'] && ! empty( $item['usr_roles'] ) ) {
-				if ( current_user_can( 'manage_woocommerce' ) ) {
-					$visible = true;
-				} else {
-					$user    = wp_get_current_user();
-					$roles   = (array) $user->roles;
-					$visible = (bool) array_intersect( $item['usr_roles'], $roles );
-				}
-			}
-
-			return apply_filters( 'acfw_item_is_visible', $visible, $item );
+			return (bool) apply_filters( 'acfw_item_is_visible', acfw_visibility_passes( $item ), $item );
 		}
 
 		/**
@@ -235,6 +282,12 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'logoutConfirm'     => 'yes' === get_option( 'acfw_logout_confirm', 'no' ),
 					'logoutMsg'         => __( 'Are you sure you want to log out?', 'my-account-dashboard-builder' ),
 					'searchPlaceholder' => __( 'Search…', 'my-account-dashboard-builder' ),
+					'searchEmpty'       => __( 'No matching menu items.', 'my-account-dashboard-builder' ),
+					/* translators: %s: menu item label. */
+					'pinLabel'          => __( 'Pin %s to the top', 'my-account-dashboard-builder' ),
+					/* translators: %s: menu item label. */
+					'unpinLabel'        => __( 'Unpin %s', 'my-account-dashboard-builder' ),
+					'userId'            => get_current_user_id(),
 					'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 					'avatarNonce'       => wp_create_nonce( ACFW_Avatar::NONCE ),
 					'avatarRemoveMsg'   => __( 'Remove your profile picture?', 'my-account-dashboard-builder' ),
@@ -247,7 +300,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * Build inline CSS variables from the style options.
 		 *
 		 * The static stylesheet consumes these tokens, so all theming flows
-		 * through a single source of truth.
+		 * through a single source of truth. They are declared on every block
+		 * the plugin renders, dashboard widgets included, so the accent colour
+		 * and corner radius reach the stats, tiles, meter and banners too.
 		 *
 		 * @return string
 		 */
@@ -270,8 +325,25 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$active   = sanitize_hex_color( get_option( 'acfw_active_color', '' ) );
 			$active   = $active ? $active : $accent;
 
+			$scope = implode(
+				',',
+				array(
+					'.acfw-menu',
+					'.acfw-avatar-block',
+					'.acfw-buyagain',
+					'.acfw-recent',
+					'.acfw-dashboard-title',
+					'.acfw-dashboard-notice',
+					'.acfw-dashboard-stats',
+					'.acfw-tiles',
+					'.acfw-profile-meter',
+					'.acfw-commerce-widget',
+					'.acfw-banner',
+				)
+			);
+
 			$vars = sprintf(
-				'.acfw-menu,.acfw-avatar-block,.acfw-buyagain,.acfw-recent{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;--acfw-active:%10$s;',
+				'%11$s{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;--acfw-active:%10$s;',
 				$accent,
 				$text,
 				$tint,
@@ -281,7 +353,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$avatar ? $avatar : 72,
 				$fsize ? $fsize : 15,
 				$fweight,
-				$active
+				$active,
+				$scope
 			);
 			if ( $menu_bg ) {
 				$vars .= '--acfw-menu-bg:' . $menu_bg . ';';
@@ -303,6 +376,14 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			if ( isset( $fonts[ $ff ] ) ) {
 				$vars .= '.acfw-menu{font-family:var(--acfw-font-family);}';
+			}
+
+			// A chosen text colour reaches the menu labels. It is set on the nav so
+			// the items inherit it and their hover / active colours still win. The
+			// default is left out: the menu then keeps the theme's text colour,
+			// which stays readable on a dark theme. "Theme style" always inherits.
+			if ( '#383838' !== strtolower( $text ) ) {
+				$vars .= '.acfw-menu:not(.layout-theme){color:var(--acfw-text);}';
 			}
 
 			return $vars;
@@ -331,7 +412,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 */
 		protected function enqueue_block_styles() {
 			$has_block = false;
-			foreach ( (array) $this->menu_items as $it ) {
+			// Endpoints inside a group count too.
+			foreach ( acfw_flatten_items( $this->menu_items ) as $it ) {
 				if ( 'block' === ( $it['editor_type'] ?? 'classic' ) && ! empty( $it['content'] ) ) {
 					$has_block = true;
 					break;
@@ -444,6 +526,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		/**
 		 * Render dashboard stat widgets ( orders, spent, downloads, points,
 		 * latest order and an orders-by-status pie chart ).
+		 *
+		 * Counts come from ACFW_Order_Stats, cached per customer, and each card
+		 * links to the endpoint it summarises when that endpoint is in the menu.
 		 */
 		public function render_dashboard_stats() {
 
@@ -451,46 +536,36 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				return;
 			}
 
-			$user_id = get_current_user_id();
-			if ( ! $user_id || ! function_exists( 'wc_get_orders' ) ) {
+			$user    = wp_get_current_user();
+			$user_id = (int) $user->ID;
+			if ( ! $user_id || ! class_exists( 'ACFW_Order_Stats' ) ) {
 				return;
 			}
 
-			$align = get_option( 'acfw_dashboard_align', 'left' );
-			$cards = array();
-
-			// Gather orders once for counts / statuses.
-			$orders    = wc_get_orders(
-				array(
-					'customer_id' => $user_id,
-					'limit'       => -1,
-					'return'      => 'objects',
-				)
-			);
-			$by_status = array();
-			foreach ( $orders as $o ) {
-				$st               = $o->get_status();
-				$by_status[ $st ] = ( $by_status[ $st ] ?? 0 ) + 1;
-			}
+			$align      = get_option( 'acfw_dashboard_align', 'left' );
+			$stats      = ACFW_Order_Stats::get( $user_id );
+			$by_status  = $stats['by_status'];
+			$orders_url = $this->visible_endpoint_url( 'orders' );
+			$cards      = array();
 
 			if ( 'yes' === get_option( 'acfw_stat_orders', 'yes' ) ) {
-				$cards[] = $this->stat_card( 'cart', __( 'Total orders', 'my-account-dashboard-builder' ), count( $orders ) );
+				$cards[] = $this->stat_card( 'cart', __( 'Total orders', 'my-account-dashboard-builder' ), (int) $stats['total'], $orders_url );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_pending', 'yes' ) ) {
 				$pending = ( $by_status['pending'] ?? 0 ) + ( $by_status['processing'] ?? 0 ) + ( $by_status['on-hold'] ?? 0 );
-				$cards[] = $this->stat_card( 'clock', __( 'Pending orders', 'my-account-dashboard-builder' ), $pending );
+				$cards[] = $this->stat_card( 'clock', __( 'Pending orders', 'my-account-dashboard-builder' ), $pending, $orders_url );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_spent', 'yes' ) && function_exists( 'wc_get_customer_total_spent' ) ) {
-				$cards[] = $this->stat_card( 'money', __( 'Total spent', 'my-account-dashboard-builder' ), wc_price( wc_get_customer_total_spent( $user_id ) ) );
+				$cards[] = $this->stat_card( 'money', __( 'Total spent', 'my-account-dashboard-builder' ), wc_price( wc_get_customer_total_spent( $user_id ) ), $orders_url );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_refunds', 'no' ) ) {
-				$cards[] = $this->stat_card( 'undo', __( 'Refunds', 'my-account-dashboard-builder' ), $by_status['refunded'] ?? 0 );
+				$cards[] = $this->stat_card( 'undo', __( 'Refunds', 'my-account-dashboard-builder' ), $by_status['refunded'] ?? 0, $orders_url );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_downloads', 'yes' ) && function_exists( 'wc_get_customer_available_downloads' ) ) {
-				$cards[] = $this->stat_card( 'download', __( 'Downloads', 'my-account-dashboard-builder' ), count( wc_get_customer_available_downloads( $user_id ) ) );
+				$cards[] = $this->stat_card( 'download', __( 'Downloads', 'my-account-dashboard-builder' ), (int) acfw_endpoint_count( 'downloads', $user_id ), $this->visible_endpoint_url( 'downloads' ) );
 			}
 			if ( 'yes' === get_option( 'acfw_stat_points', 'no' ) ) {
-				$cards[] = $this->stat_card( 'star-filled', __( 'Reward points', 'my-account-dashboard-builder' ), acfw_points_balance( $user_id ) );
+				$cards[] = $this->stat_card( 'star-filled', __( 'Reward points', 'my-account-dashboard-builder' ), acfw_points_balance( $user ) );
 			}
 
 			$html = '';
@@ -499,9 +574,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			// Latest order block.
-			if ( 'yes' === get_option( 'acfw_stat_latest', 'no' ) && ! empty( $orders ) ) {
-				$latest = $orders[0];
-				$html  .= sprintf(
+			$latest = ( 'yes' === get_option( 'acfw_stat_latest', 'no' ) && ! empty( $stats['latest'] ) ) ? wc_get_order( $stats['latest'] ) : false;
+			if ( $latest ) {
+				$html .= sprintf(
 					'<div class="acfw-stat-latest"><span class="acfw-stat-latest-label">%s</span> <a href="%s">#%s</a> — %s <span class="acfw-badge">%s</span></div>',
 					esc_html__( 'Latest order', 'my-account-dashboard-builder' ),
 					esc_url( $latest->get_view_order_url() ),
@@ -527,15 +602,36 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * @param string $icon  Dashicon slug ( without prefix ).
 		 * @param string $label Card label.
 		 * @param mixed  $value Display value ( pre-escaped/price markup allowed ).
+		 * @param string $url   Optional link target; the card becomes a link.
 		 * @return string
 		 */
-		protected function stat_card( $icon, $label, $value ) {
-			return sprintf(
-				'<div class="acfw-stat"><span class="acfw-stat-icon dashicons dashicons-%s"></span><span class="acfw-stat-value">%s</span><span class="acfw-stat-label">%s</span></div>',
+		protected function stat_card( $icon, $label, $value, $url = '' ) {
+			$inner = sprintf(
+				'<span class="acfw-stat-icon dashicons dashicons-%s" aria-hidden="true"></span><span class="acfw-stat-value">%s</span><span class="acfw-stat-label">%s</span>',
 				esc_attr( $icon ),
 				wp_kses_post( (string) $value ),
 				esc_html( $label )
 			);
+
+			if ( '' !== (string) $url ) {
+				return sprintf( '<a class="acfw-stat acfw-stat-link" href="%s">%s</a>', esc_url( $url ), $inner );
+			}
+
+			return '<div class="acfw-stat">' . $inner . '</div>';
+		}
+
+		/**
+		 * URL of an endpoint, only when it is in the menu this customer sees.
+		 *
+		 * @param string $key Endpoint key.
+		 * @return string Empty when the endpoint is hidden or not an endpoint.
+		 */
+		protected function visible_endpoint_url( $key ) {
+			$flat = acfw_flatten_items( $this->menu_items );
+			if ( ! isset( $flat[ $key ] ) || 'endpoint' !== ( $flat[ $key ]['type'] ?? 'endpoint' ) ) {
+				return '';
+			}
+			return 'dashboard' === $key ? acfw_dashboard_url() : wc_get_account_endpoint_url( $key );
 		}
 
 		/**
@@ -594,21 +690,22 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				return;
 			}
 
-			$base  = wc_get_page_permalink( 'myaccount' );
 			$tiles = '';
-			foreach ( $this->menu_items as $key => $item ) {
+			// Endpoints inside a group get a tile too.
+			foreach ( acfw_flatten_items( $this->menu_items ) as $key => $item ) {
 				if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || in_array( $key, array( 'dashboard', 'customer-logout' ), true ) ) {
 					continue;
 				}
-				$url    = wc_get_endpoint_url( $key, '', $base );
-				$count  = acfw_endpoint_count( $key );
+				$badge  = $this->item_badge( $item );
+				$count  = '' === $badge ? acfw_endpoint_count( $key ) : null;
+				$pill   = '' !== $badge ? $badge : ( null !== $count ? (string) $count : '' );
 				$icon   = acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-tile-icon' );
 				$tiles .= sprintf(
 					'<a class="acfw-tile" href="%s">%s<span class="acfw-tile-label">%s</span>%s</a>',
-					esc_url( $url ),
+					esc_url( wc_get_account_endpoint_url( $key ) ),
 					$icon,
 					esc_html( $item['label'] ),
-					null !== $count ? '<span class="acfw-tile-count">' . esc_html( $count ) . '</span>' : ''
+					'' !== $pill ? '<span class="acfw-tile-count">' . esc_html( $pill ) . '</span>' : ''
 				);
 			}
 
@@ -716,7 +813,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		public function login_redirect( $redirect ) {
 			$ep = get_option( 'acfw_login_redirect', '' );
 			if ( $ep && function_exists( 'wc_get_account_endpoint_url' ) ) {
-				return ( 'dashboard' === $ep ) ? wc_get_page_permalink( 'myaccount' ) : wc_get_account_endpoint_url( $ep );
+				return ( 'dashboard' === $ep ) ? acfw_dashboard_url() : wc_get_account_endpoint_url( $ep );
 			}
 			return $redirect;
 		}
@@ -750,34 +847,101 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		}
 
 		/**
+		 * The profile fields the completeness meter checks.
+		 *
+		 * @param WP_User $user User.
+		 * @return array[] key => array{ label, done, url }
+		 */
+		protected function profile_fields( $user ) {
+			$uid     = (int) $user->ID;
+			$account = wc_get_account_endpoint_url( 'edit-account' );
+			$billing = wc_get_endpoint_url( 'edit-address', 'billing', wc_get_page_permalink( 'myaccount' ) );
+
+			$fields = array(
+				'first_name'        => array(
+					'label' => __( 'First name', 'my-account-dashboard-builder' ),
+					'done'  => ! empty( $user->first_name ),
+					'url'   => $account,
+				),
+				'last_name'         => array(
+					'label' => __( 'Last name', 'my-account-dashboard-builder' ),
+					'done'  => ! empty( $user->last_name ),
+					'url'   => $account,
+				),
+				'user_email'        => array(
+					'label' => __( 'Email address', 'my-account-dashboard-builder' ),
+					'done'  => ! empty( $user->user_email ),
+					'url'   => $account,
+				),
+				'billing_phone'     => array(
+					'label' => __( 'Phone number', 'my-account-dashboard-builder' ),
+					'done'  => '' !== (string) get_user_meta( $uid, 'billing_phone', true ),
+					'url'   => $billing,
+				),
+				'billing_address_1' => array(
+					'label' => __( 'Billing address', 'my-account-dashboard-builder' ),
+					'done'  => '' !== (string) get_user_meta( $uid, 'billing_address_1', true ),
+					'url'   => $billing,
+				),
+			);
+
+			/**
+			 * Filter the fields the profile completeness meter checks.
+			 *
+			 * @param array[] $fields key => array{ label: string, done: bool, url: string }.
+			 * @param WP_User $user   Customer.
+			 */
+			$fields = apply_filters( 'acfw_profile_meter_fields', $fields, $user );
+
+			return is_array( $fields ) ? $fields : array();
+		}
+
+		/**
 		 * Render a profile-completeness meter on the dashboard.
+		 *
+		 * Below the bar it lists what is still missing, each linked to the
+		 * form where the customer can fill it in.
 		 */
 		public function render_profile_meter() {
 			if ( 'yes' !== get_option( 'acfw_profile_meter', 'no' ) ) {
 				return;
 			}
-			$uid = get_current_user_id();
-			if ( ! $uid ) {
+			$user = wp_get_current_user();
+			if ( empty( $user->ID ) ) {
 				return;
 			}
-			$user   = wp_get_current_user();
-			$checks = array(
-				! empty( $user->first_name ),
-				! empty( $user->last_name ),
-				! empty( $user->user_email ),
-				! empty( get_user_meta( $uid, 'billing_phone', true ) ),
-				! empty( get_user_meta( $uid, 'billing_address_1', true ) ),
+
+			$fields  = $this->profile_fields( $user );
+			$total   = count( $fields );
+			$missing = array_filter(
+				$fields,
+				static function ( $field ) {
+					return empty( $field['done'] );
+				}
 			);
-			$total  = count( $checks );
-			$done   = count( array_filter( $checks ) );
-			$pct    = $total ? (int) round( $done / $total * 100 ) : 0;
+			$pct     = $total ? (int) round( ( $total - count( $missing ) ) / $total * 100 ) : 0;
 			?>
 			<div class="acfw-profile-meter">
 				<div class="acfw-pm-head">
-					<strong><?php esc_html_e( 'Profile completeness', 'my-account-dashboard-builder' ); ?></strong>
+					<strong id="acfw-pm-label"><?php esc_html_e( 'Profile completeness', 'my-account-dashboard-builder' ); ?></strong>
 					<span><?php echo esc_html( $pct ); ?>%</span>
 				</div>
-				<div class="acfw-pm-bar"><span style="width:<?php echo esc_attr( $pct ); ?>%"></span></div>
+				<div class="acfw-pm-bar" role="progressbar" aria-labelledby="acfw-pm-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( $pct ); ?>"><span style="width:<?php echo esc_attr( $pct ); ?>%"></span></div>
+				<?php if ( $missing ) : ?>
+					<p class="acfw-pm-missing">
+						<?php esc_html_e( 'Still missing:', 'my-account-dashboard-builder' ); ?>
+						<?php
+						$links = array();
+						foreach ( $missing as $field ) {
+							$label   = isset( $field['label'] ) ? (string) $field['label'] : '';
+							$links[] = ! empty( $field['url'] )
+								? '<a href="' . esc_url( $field['url'] ) . '">' . esc_html( $label ) . '</a>'
+								: esc_html( $label );
+						}
+						echo implode( ', ', $links ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+						?>
+					</p>
+				<?php endif; ?>
 			</div>
 			<?php
 		}
@@ -807,6 +971,21 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			$position                = get_option( 'acfw_menu_position', 'vertical-left' );
 			list( $layout, $preset ) = acfw_menu_style_resolve( get_option( 'acfw_menu_style', 'simple' ) );
+			$this->pinnable          = 'yes' === get_option( 'acfw_pin_enable', 'no' );
+
+			// A group holding the current page opens, so the active item shows.
+			$items = $this->menu_items;
+			foreach ( $items as $key => $item ) {
+				if ( 'group' !== ( $item['type'] ?? '' ) || empty( $item['children'] ) ) {
+					continue;
+				}
+				foreach ( array_keys( $item['children'] ) as $child_key ) {
+					if ( acfw_is_current_item( (string) $child_key ) ) {
+						$items[ $key ]['has_current'] = true;
+						break;
+					}
+				}
+			}
 
 			ob_start();
 			$this->render_avatar();
@@ -816,7 +995,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				'myaccount-menu.php',
 				array(
 					'avatar_html' => $avatar_html,
-					'items'       => $this->menu_items,
+					'items'       => $items,
 					'current'     => acfw_get_current_endpoint(),
 					'position'    => $position,
 					'layout'      => $layout,
@@ -830,7 +1009,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'anim'        => get_option( 'acfw_hover_anim', 'none' ),
 					'scheme'      => get_option( 'acfw_color_scheme', 'light' ),
 					'collapsible' => 'yes' === get_option( 'acfw_collapsible', 'no' ),
-					'pinnable'    => 'yes' === get_option( 'acfw_pin_enable', 'no' ),
+					'pinnable'    => $this->pinnable,
 					'frontend'    => $this,
 				)
 			);
@@ -859,7 +1038,17 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 */
 		public function setup_endpoint_content() {
 
+			$key  = acfw_get_current_endpoint();
 			$item = $this->current_item();
+
+			// A custom endpoint has no WooCommerce handler, and when
+			// woocommerce_account_content() finds none it prints the dashboard,
+			// greeting and widgets included, under the endpoint's own content.
+			// An empty handler makes the endpoint show only what it was given.
+			if ( $item && 'dashboard' !== $key && 'endpoint' === ( $item['type'] ?? 'endpoint' ) && ! has_action( 'woocommerce_account_' . $key . '_endpoint' ) ) {
+				add_action( 'woocommerce_account_' . $key . '_endpoint', '__return_null' );
+			}
+
 			if ( empty( $item['content'] ) ) {
 				return;
 			}
@@ -914,16 +1103,30 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		}
 
 		/**
+		 * The custom badge text of an item, smart tags resolved.
+		 *
+		 * @param array $item Item options.
+		 * @return string Plain text; empty when the item has no badge.
+		 */
+		protected function item_badge( $item ) {
+			if ( empty( $item['badge'] ) ) {
+				return '';
+			}
+			return trim( wp_strip_all_tags( acfw_apply_smart_tags( (string) $item['badge'], null, false ) ) );
+		}
+
+		/**
 		 * Render a single menu item (used by the template).
 		 *
-		 * @param string $key  Item key.
-		 * @param array  $item Item options.
+		 * @param string $key   Item key.
+		 * @param array  $item  Item options.
+		 * @param int    $depth 0 for a top-level item, 1 inside a group.
 		 */
-		public function render_item( $key, $item ) {
+		public function render_item( $key, $item, $depth = 0 ) {
 
-			$type    = isset( $item['type'] ) ? $item['type'] : 'endpoint';
-			$current = acfw_get_current_endpoint();
-			$classes = array( 'acfw-menu-item', 'acfw-type-' . $type );
+			$type       = isset( $item['type'] ) ? $item['type'] : 'endpoint';
+			$classes    = array( 'acfw-menu-item', 'acfw-type-' . $type );
+			$is_current = 'endpoint' === $type && acfw_is_current_item( (string) $key );
 
 			// Keep WooCommerce's own item classes on every row. Core templates
 			// emit woocommerce-MyAccount-navigation-link--{endpoint}, and themes,
@@ -935,7 +1138,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			if ( ! empty( $item['class'] ) ) {
 				$classes[] = sanitize_html_class( $item['class'] );
 			}
-			if ( $key === $current ) {
+			if ( $is_current ) {
 				$classes[] = 'is-active';
 				$classes[] = 'woocommerce-MyAccount-navigation-link--active';
 			}
@@ -947,12 +1150,15 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$url    = ! empty( $item['page_id'] ) ? esc_url( get_permalink( (int) $item['page_id'] ) ) : '#';
 				$target = ! empty( $item['target_blank'] ) ? ' target="_blank" rel="noopener"' : '';
 			} else {
-				$base   = wc_get_page_permalink( 'myaccount' );
-				$url    = ( 'dashboard' === $key ) ? $base : wc_get_endpoint_url( $key, '', $base );
+				// wc_get_account_endpoint_url() adds the logout nonce, so Log out
+				// signs the customer out instead of stopping at WooCommerce's
+				// "Are you sure you want to log out?" page.
+				$url    = ( 'dashboard' === $key ) ? acfw_dashboard_url() : wc_get_account_endpoint_url( $key );
 				$target = '';
 			}
 
-			$count = ( 'no' !== get_option( 'acfw_show_counts', 'yes' ) ) ? acfw_endpoint_count( $key ) : null;
+			$badge = $this->item_badge( $item );
+			$count = ( '' === $badge && 'no' !== get_option( 'acfw_show_counts', 'yes' ) ) ? acfw_endpoint_count( $key ) : null;
 
 			// Fall back to a type-based default icon ( group = folder, page = file ).
 			if ( empty( $item['icon'] ) && empty( $item['icon_url'] ) ) {
@@ -962,12 +1168,16 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			acfw_get_template(
 				'myaccount-menu-item.php',
 				array(
-					'key'     => $key,
-					'item'    => $item,
-					'url'     => $url,
-					'target'  => $target,
-					'count'   => $count,
-					'classes' => implode( ' ', apply_filters( 'acfw_item_classes', $classes, $key, $item ) ),
+					'key'        => $key,
+					'item'       => $item,
+					'url'        => $url,
+					'target'     => $target,
+					'count'      => $count,
+					'badge'      => $badge,
+					'is_current' => $is_current,
+					// Pinning reorders the top level only, so group children get no star.
+					'pinnable'   => $this->pinnable && 0 === (int) $depth,
+					'classes'    => implode( ' ', apply_filters( 'acfw_item_classes', $classes, $key, $item ) ),
 				)
 			);
 		}

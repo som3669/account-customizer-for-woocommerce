@@ -2,9 +2,9 @@
 /**
  * Uninstall cleanup: removes every trace of the plugin.
  *
- * Deleting the plugin drops all `acfw_` options, the two user meta keys the
- * plugin writes, and the avatar images customers uploaded through it. Nothing
- * is removed on deactivation.
+ * Deleting the plugin drops all `acfw_` options and transients, the user meta
+ * keys the plugin writes, and the avatar images customers uploaded through it.
+ * Nothing is removed on deactivation.
  *
  * @package AccountCustomizerForWooCommerce
  */
@@ -16,7 +16,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
  *
  * @var array
  */
-$acfw_user_meta = array( 'acfw_avatar_id', 'acfw_last_login' );
+$acfw_user_meta = array( 'acfw_avatar_id', 'acfw_last_login', 'acfw_order_stats' );
 
 /**
  * Delete the plugin's per-site data: options, transients and avatar files.
@@ -52,8 +52,14 @@ function acfw_uninstall_site() {
 		$wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $acfw_like )
 	);
 
-	// Transients live under a prefixed option name, so delete them by hand.
+	// Transients live under a prefixed option name ( _transient_acfw_… ),
+	// which the pattern above does not match.
 	delete_transient( 'acfw_import_notice' );
+	foreach ( array( '_transient_acfw_', '_transient_timeout_acfw_' ) as $acfw_prefix ) {
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $acfw_prefix ) . '%' )
+		);
+	}
 
 	wp_cache_flush();
 }
