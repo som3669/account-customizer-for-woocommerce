@@ -4,16 +4,23 @@ Unreleased
 * New - Design Studio ( My Account → Design ): ready-made looks and your saved looks, controls grouped by what customers see, and the real account page beside them at desktop, tablet and phone widths. Live values change the preview as you pick them; the rest reload it from your unsaved draft, which only you see. Save or discard in one bar.
 * New - Accent contrast check against WCAG AA, and one Density choice with a fine-tune option.
 * Tweak - The Customizer panel and the Templates tab make way for the Studio; Appearance → Customize keeps a link to it.
+* Fix - A warning in the admin sat on top of the floating Save button ( e.g. after an endpoint URL was refused ), so saving again meant closing it first. Notices now sit above the save bar.
+* Fix - Saving the Settings tab showed no confirmation.
+* Fix - Picking a Density preset in the Design Studio opened Fine-tune spacing.
+* Tweak - The Visibility tab now says that an item's dates apply to shop managers too.
 * Fix - Dashicons load for customers, who get no admin bar: the mobile menu button, pin stars, stat icons and avatar camera were blank.
 * New - Menu items: an editable endpoint URL for custom endpoints, checked against WooCommerce's endpoints, WordPress query vars and the rest of the menu.
 * New - Menu items: a badge ( e.g. "New", or "{points_balance} pts" ) shown in place of the item count.
 * New - Visibility rules: "bought any of" with a product search, a minimum number of orders and a minimum total spent. Dates now follow the site timezone.
 * New - Groups: a "Start expanded" switch per group; a group holding the current page opens on its own.
+* New - Design Studio: an info icon beside every control; hover it ( or focus the control ) for what it changes.
+* Tweak - Banners: settings in General / Style / Link / Visibility tabs, like a menu item's, with a count of visibility rules.
 * New - Banners: choose what the count badge shows ( orders, downloads, items in cart, reward points ), set the link text, and schedule a banner with show-from / show-until dates.
 * New - Dashboard: stat cards link to the page they summarise, and the profile meter lists what is missing with a link to each form.
 * New - Smart tags: {total_spent}, {member_since}, {cart_count}, {billing_phone}, {billing_city}, {billing_country}, {account_url}, {shop_url}, {site_url}.
 * New - Custom endpoints get their menu label as the page title.
-* New - Menu Items screen: settings split into General / Content / Visibility / Advanced tabs, a live "What customers see" preview, badge and restriction markers in the list, a save bar that says when there are unsaved changes, and a warning before leaving with unsaved edits.
+* New - Menu Items screen: the menu is drawn the way customers see it, in the look saved in the Design Studio. Drag an item to reorder it or into a group ( Alt + arrow keys from the keyboard ); "Add to menu" adds an endpoint, group, link or page; every item has its on/off switch, with Duplicate and Delete on hover; each item says who can see it ( e.g. "Customer · 2+ orders" ); switched-off items stay visible, dimmed. The item's settings open beside it in General / Content / Visibility / Advanced tabs, with its on/off switch, Duplicate and Delete. A save bar says when there are unsaved changes, and leaving with unsaved edits asks first.
+* Tweak - The header's Add endpoint / Add group / Add link / Add page buttons make way for "Add to menu" under the menu.
 * Tweak - AJAX navigation handles Back / Forward, opens new tabs on Ctrl / Cmd-click, moves the active state and keeps focus for screen readers.
 * Tweak - Menu search keeps a group when one of its items matches; pinning favourites works without a reload and per customer.
 * Tweak - Order counts for the dashboard are cached per customer and cleared when their orders change.

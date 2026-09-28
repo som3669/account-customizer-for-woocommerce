@@ -56,7 +56,8 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 		 * Keys per field: group, type ( color | toggle | choice | range | text |
 		 * css | image ), label, default, and where relevant choices, min, max,
 		 * step, hint. `live` is true when the preview can apply the value
-		 * without reloading the page.
+		 * without reloading the page. `tip` ( from tips() ) is the tooltip on
+		 * the control's label.
 		 *
 		 * @return array
 		 */
@@ -357,12 +358,75 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 			}
 			$fields['acfw_avatar_upload_max']['parent'] = 'acfw_avatar_upload';
 
+			foreach ( self::tips() as $tip_key => $tip ) {
+				if ( isset( $fields[ $tip_key ] ) ) {
+					$fields[ $tip_key ]['tip'] = $tip;
+				}
+			}
+
 			/**
 			 * Filter the design options the Studio edits.
 			 *
 			 * @param array $fields option name => field definition.
 			 */
 			return apply_filters( 'acfw_design_fields', $fields );
+		}
+
+		/**
+		 * What each control does, in a sentence: the tooltip on its label.
+		 *
+		 * @return array option name => text
+		 */
+		public static function tips() {
+			return array(
+				'acfw_accent_color'      => __( 'The main colour of the account area.', 'my-account-dashboard-builder' ),
+				'acfw_text_color'        => __( 'The colour of the menu labels.', 'my-account-dashboard-builder' ),
+				'acfw_color_scheme'      => __( 'A light or dark menu and widgets. Follow device switches with the customer’s system setting.', 'my-account-dashboard-builder' ),
+				'acfw_font_family'       => __( 'The typeface of the menu. Theme keeps your theme’s font.', 'my-account-dashboard-builder' ),
+				'acfw_font_size'         => __( 'How big the menu labels are.', 'my-account-dashboard-builder' ),
+				'acfw_font_weight'       => __( 'How heavy the menu labels are.', 'my-account-dashboard-builder' ),
+				'acfw_menu_radius'       => __( 'How rounded the corners of menu items, cards and badges are.', 'my-account-dashboard-builder' ),
+				'acfw_item_padding'      => __( 'The space above and below each menu label. More makes taller items.', 'my-account-dashboard-builder' ),
+				'acfw_menu_gap'          => __( 'The space between one menu item and the next.', 'my-account-dashboard-builder' ),
+				'acfw_menu_style'        => __( 'The overall look of the menu: its borders, backgrounds and shape.', 'my-account-dashboard-builder' ),
+				'acfw_menu_position'     => __( 'Where the menu sits beside the page content. Above lays the items out in a row.', 'my-account-dashboard-builder' ),
+				'acfw_active_indicator'  => __( 'How the page the customer is on is marked in the menu.', 'my-account-dashboard-builder' ),
+				'acfw_hover_anim'        => __( 'What a menu item does when the pointer is over it.', 'my-account-dashboard-builder' ),
+				'acfw_active_color'      => __( 'The colour of the current page’s label and marker.', 'my-account-dashboard-builder' ),
+				'acfw_menu_bg'           => __( 'A background colour for every menu item. Empty leaves them see-through.', 'my-account-dashboard-builder' ),
+				'acfw_hover_bg'          => __( 'The background of a menu item under the pointer.', 'my-account-dashboard-builder' ),
+				'acfw_show_icons'        => __( 'Show the icon beside each menu label.', 'my-account-dashboard-builder' ),
+				'acfw_show_counts'       => __( 'Show how many orders and downloads the customer has, beside those items.', 'my-account-dashboard-builder' ),
+				'acfw_menu_search'       => __( 'A search box above the menu that filters its items as the customer types.', 'my-account-dashboard-builder' ),
+				'acfw_pin_enable'        => __( 'Customers can star items to keep them at the top of their own menu.', 'my-account-dashboard-builder' ),
+				'acfw_collapsible'       => __( 'Customers can shrink the menu to a rail of icons.', 'my-account-dashboard-builder' ),
+				'acfw_sticky_menu'       => __( 'The menu stays on screen while the customer scrolls a long page.', 'my-account-dashboard-builder' ),
+				'acfw_group_open'        => __( 'Every group starts open, not only the one holding the current page.', 'my-account-dashboard-builder' ),
+				'acfw_logout_confirm'    => __( 'Customers confirm before they are logged out.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_enable'     => __( 'A card above the menu with the customer’s picture and name.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_image'      => __( 'The picture shown for customers who have none of their own.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_shape'      => __( 'The shape of the profile picture.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_align'      => __( 'Where the picture and name sit in the card.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_size'       => __( 'How big the profile picture is.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_show_name'  => __( 'Show the customer’s name under the picture.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_show_role'  => __( 'Show the customer’s role under their name.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_upload'     => __( 'Customers can upload their own picture from the card.', 'my-account-dashboard-builder' ),
+				'acfw_avatar_upload_max' => __( 'The biggest picture file a customer can upload.', 'my-account-dashboard-builder' ),
+				'acfw_dashboard_title'   => __( 'The heading at the top of the dashboard.', 'my-account-dashboard-builder' ),
+				'acfw_dashboard_align'   => __( 'Where the dashboard heading sits.', 'my-account-dashboard-builder' ),
+				'acfw_dashboard_stats'   => __( 'A row of number cards at the top of the dashboard.', 'my-account-dashboard-builder' ),
+				'acfw_stat_orders'       => __( 'How many orders the customer has placed.', 'my-account-dashboard-builder' ),
+				'acfw_stat_pending'      => __( 'Orders that are not finished yet.', 'my-account-dashboard-builder' ),
+				'acfw_stat_spent'        => __( 'How much the customer has spent in all.', 'my-account-dashboard-builder' ),
+				'acfw_stat_downloads'    => __( 'How many files the customer can download.', 'my-account-dashboard-builder' ),
+				'acfw_stat_refunds'      => __( 'How many refunds the customer has had.', 'my-account-dashboard-builder' ),
+				'acfw_stat_points'       => __( 'The customer’s reward points balance.', 'my-account-dashboard-builder' ),
+				'acfw_stat_latest'       => __( 'The customer’s most recent order.', 'my-account-dashboard-builder' ),
+				'acfw_stat_piechart'     => __( 'A chart of the customer’s orders by status.', 'my-account-dashboard-builder' ),
+				'acfw_dashboard_tiles'   => __( 'A grid of shortcuts to the pages in the menu.', 'my-account-dashboard-builder' ),
+				'acfw_profile_meter'     => __( 'How complete the customer’s profile is, and what is still missing.', 'my-account-dashboard-builder' ),
+				'acfw_custom_css'        => __( 'Your own CSS, for anything the controls here do not cover.', 'my-account-dashboard-builder' ),
+			);
 		}
 
 		/**

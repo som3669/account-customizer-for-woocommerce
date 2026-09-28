@@ -26,34 +26,16 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 			switch ( $action ) {
 
 				case 'add_item':
-					$type  = isset( $_POST['item_type'] ) ? sanitize_key( wp_unslash( $_POST['item_type'] ) ) : 'endpoint';
-					$type  = in_array( $type, ACFW_Items::ITEM_TYPES, true ) ? $type : 'endpoint';
-					$label = isset( $_POST['item_label'] ) ? sanitize_text_field( wp_unslash( $_POST['item_label'] ) ) : '';
-					if ( '' !== $label ) {
-						// Never reuse a key: "Orders" must not overwrite the Orders endpoint.
-						$key = acfw_unique_item_key( $label, $type, $items->used_names() );
-						$items->save_item(
-							$key,
-							$type,
-							array(
-								'label'  => $label,
-								'slug'   => $key,
-								'active' => true,
-							),
-							false
-						);
-						$order = json_decode( get_option( 'acfw_items_order', '[]' ), true );
-						$order = is_array( $order ) ? $order : array();
-						// Seed with current items so the new one lands at the end
-						// ( otherwise default items append after it ).
-						if ( empty( $order ) ) {
-							foreach ( $items->get_items() as $existing_key => $existing ) {
-								$order[ $existing_key ] = array( 'type' => $existing['type'] ?? 'endpoint' );
-							}
-						}
-						$order[ $key ] = array( 'type' => $type );
-						$items->save_order( $order );
-						$this->redirect_args['select'] = $key;
+					// The add form of earlier versions ( the canvas posts save_all instead ).
+					$added = $this->add_from_canvas(
+						array(
+							'type'  => isset( $_POST['item_type'] ) ? sanitize_key( wp_unslash( $_POST['item_type'] ) ) : 'endpoint',
+							'label' => isset( $_POST['item_label'] ) ? sanitize_text_field( wp_unslash( $_POST['item_label'] ) ) : '',
+						),
+						$items
+					);
+					if ( '' !== $added ) {
+						$this->redirect_args['select'] = $added;
 					}
 					break;
 
@@ -128,6 +110,14 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					}
 
 					$selected = isset( $_POST['acfw_selected'] ) ? acfw_sanitize_key( sanitize_title( wp_unslash( $_POST['acfw_selected'] ) ) ) : '';
+
+					// "+" in the canvas posts the whole form, so what was typed elsewhere
+					// is saved first; then the new item goes where "+" was clicked.
+					if ( isset( $_POST['acfw_add_submit'], $_POST['acfw_add'] ) && is_array( $_POST['acfw_add'] ) ) {
+						$added    = $this->add_from_canvas( wp_unslash( $_POST['acfw_add'] ), $items ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- each field sanitized in add_from_canvas().
+						$selected = '' !== $added ? $added : $selected;
+					}
+
 					if ( '' !== $selected ) {
 						$this->redirect_args['select'] = $selected;
 					}
@@ -268,94 +258,76 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 		}
 
 		/**
-		 * Render the Menu Items builder tab: left selectable list + right options form.
+		 * Add the item asked for in the canvas' "+" popover, at the spot it was
+		 * opened from: below an item, at the end of a group, or at the end.
+		 *
+		 * @param array      $add   Popover fields ( type, label, after, parent ), unslashed.
+		 * @param ACFW_Items $items Menu items manager.
+		 * @return string The new item's key, or '' when there was no label.
+		 */
+		protected function add_from_canvas( $add, $items ) {
+			$label = isset( $add['label'] ) ? sanitize_text_field( (string) $add['label'] ) : '';
+			if ( '' === $label ) {
+				return '';
+			}
+			$type   = isset( $add['type'] ) ? sanitize_key( (string) $add['type'] ) : 'endpoint';
+			$type   = in_array( $type, ACFW_Items::ITEM_TYPES, true ) ? $type : 'endpoint';
+			$after  = isset( $add['after'] ) ? acfw_sanitize_key( (string) $add['after'] ) : '';
+			$parent = isset( $add['parent'] ) ? acfw_sanitize_key( (string) $add['parent'] ) : '';
+
+			// Never reuse a key: "Orders" must not overwrite the Orders endpoint.
+			$key = acfw_unique_item_key( $label, $type, $items->used_names() );
+			$items->save_item(
+				$key,
+				$type,
+				array(
+					'label'  => $label,
+					'slug'   => $key,
+					'active' => true,
+				),
+				false
+			);
+			$items->save_order( acfw_order_insert( acfw_order_from_items( $items->get_items() ), $key, $type, $after, $parent ) );
+
+			return $key;
+		}
+
+		/**
+		 * Render the Menu Items tab: the customer's menu as an editable canvas,
+		 * with an inspector for the item being edited.
+		 *
+		 * The canvas is drawn with the storefront's own stylesheet ( scoped into
+		 * .acfw-canvas-page ) and the Design Studio's tokens, so what the admin
+		 * arranges here is what customers get.
 		 */
 		public function render() {
 
-			$items = ACFW()->items->get_items();
+			$items                   = ACFW()->items->get_items();
+			list( $layout, $preset ) = acfw_menu_style_resolve( get_option( 'acfw_menu_style', 'simple' ) );
+
+			// A menu across the top of the page ( or Tabs ) leaves no room to show
+			// what sits inside a group, so the canvas draws it as a list.
+			$as_list = 'tabs' === $layout || 'horizontal' === get_option( 'acfw_menu_position', 'vertical-left' );
+			if ( 'tabs' === $layout ) {
+				list( $layout, $preset ) = acfw_menu_style_resolve( 'simple' );
+			}
+
+			$nav_classes = array(
+				'woocommerce-MyAccount-navigation',
+				'acfw-menu',
+				'acfw-canvas-menu',
+				'position-vertical-left',
+				'layout-' . sanitize_html_class( $layout ),
+				'acfw-preset-' . sanitize_html_class( $preset ),
+				'acfw-ind-' . sanitize_html_class( get_option( 'acfw_active_indicator', 'bar' ) ),
+				'acfw-anim-none',
+				'acfw-scheme-' . sanitize_html_class( get_option( 'acfw_color_scheme', 'light' ) ),
+			);
+			if ( 'no' === get_option( 'acfw_show_icons', 'yes' ) ) {
+				$nav_classes[] = 'acfw-hide-icons';
+			}
 			?>
-			<div class="acfw-builder">
-
-				<div class="acfw-builder-bar">
-					<form method="post" class="acfw-add-form" style="display:none;">
-						<?php wp_nonce_field( self::NONCE ); ?>
-						<input type="hidden" name="acfw_action" value="add_item" />
-						<input type="hidden" name="item_type" class="acfw-add-type" value="endpoint" />
-						<input type="text" name="item_label" class="acfw-add-label" placeholder="<?php esc_attr_e( 'New item label', 'my-account-dashboard-builder' ); ?>" required />
-						<button type="submit" class="button button-primary"><?php esc_html_e( 'Create', 'my-account-dashboard-builder' ); ?></button>
-						<button type="button" class="button acfw-add-cancel"><?php esc_html_e( 'Cancel', 'my-account-dashboard-builder' ); ?></button>
-					</form>
-				</div>
-
-				<form method="post" class="acfw-items-form" novalidate>
-					<?php wp_nonce_field( self::NONCE ); ?>
-					<input type="hidden" name="acfw_action" value="save_all" />
-					<input type="hidden" name="acfw_order" class="acfw-order-input" value="" />
-					<input type="hidden" name="acfw_selected" class="acfw-selected-input" value="" />
-
-					<div class="acfw-builder-layout">
-
-						<div class="acfw-card acfw-builder-list">
-							<div class="acfw-panel-head">
-								<span class="acfw-panel-icon dashicons dashicons-menu-alt" aria-hidden="true"></span>
-								<div class="acfw-panel-heading">
-									<h2><?php esc_html_e( 'Menu Items', 'my-account-dashboard-builder' ); ?></h2>
-									<p><?php esc_html_e( 'Manage your account menu structure', 'my-account-dashboard-builder' ); ?></p>
-								</div>
-							</div>
-
-							<div class="acfw-panel-tools">
-								<span class="acfw-search-wrap">
-									<span class="dashicons dashicons-search" aria-hidden="true"></span>
-									<input type="search" class="acfw-item-search" placeholder="<?php esc_attr_e( 'Search menu items…', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Search menu items', 'my-account-dashboard-builder' ); ?>" />
-								</span>
-								<button type="button" class="acfw-filter-toggle" aria-pressed="false" title="<?php esc_attr_e( 'Show enabled items only', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Show enabled items only', 'my-account-dashboard-builder' ); ?>">
-									<span class="dashicons dashicons-filter" aria-hidden="true"></span>
-								</button>
-							</div>
-
-							<ol class="acfw-sortable acfw-sortable-root">
-								<?php
-								foreach ( $items as $key => $item ) {
-									$this->render_item_row( $key, $item );
-								}
-								?>
-							</ol>
-
-							<p class="acfw-list-empty" hidden><?php esc_html_e( 'No menu items match that search.', 'my-account-dashboard-builder' ); ?></p>
-
-							<div class="acfw-list-hint">
-								<span class="dashicons dashicons-info-outline" aria-hidden="true"></span>
-								<?php esc_html_e( 'Drag and drop to reorder menu items', 'my-account-dashboard-builder' ); ?>
-							</div>
-						</div>
-
-						<div class="acfw-card acfw-builder-detail">
-							<div class="acfw-detail-empty">
-								<span class="dashicons dashicons-arrow-left-alt"></span>
-								<p><?php esc_html_e( 'Select a menu item on the left to edit its options.', 'my-account-dashboard-builder' ); ?></p>
-							</div>
-							<?php
-							$render_details = function ( $list ) use ( &$render_details ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.listFound -- retained from original.
-								foreach ( $list as $k => $it ) {
-									$this->render_item_detail( $k, $it );
-									if ( ! empty( $it['children'] ) ) {
-										$render_details( $it['children'] );
-									}
-								}
-							};
-							$render_details( $items );
-			?>
-						</div>
-					</div>
-
-					<div class="acfw-form-footer acfw-savebar">
-						<span class="acfw-savebar-status" role="status"><span class="acfw-savebar-dirty" hidden><?php esc_html_e( 'Unsaved changes', 'my-account-dashboard-builder' ); ?></span></span>
-						<button type="submit" class="button button-primary acfw-save-all">
-							<span class="dashicons dashicons-saved" aria-hidden="true"></span> <?php esc_html_e( 'Save changes', 'my-account-dashboard-builder' ); ?>
-						</button>
-					</div>
-				</form>
+			<div class="acfw-builder acfw-canvas-builder">
 
 				<form method="post" class="acfw-delete-form" style="display:none;">
 					<?php wp_nonce_field( self::NONCE ); ?>
@@ -368,12 +340,198 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					<input type="hidden" name="acfw_action" value="duplicate_item" />
 					<input type="hidden" name="item_key" class="acfw-duplicate-key" value="" />
 				</form>
+
+				<form method="post" class="acfw-items-form" novalidate>
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="save_all" />
+					<input type="hidden" name="acfw_order" class="acfw-order-input" value="" />
+					<input type="hidden" name="acfw_selected" class="acfw-selected-input" value="" />
+
+					<div class="acfw-canvas-layout">
+
+						<section class="acfw-card acfw-canvas" aria-labelledby="acfw-canvas-title">
+							<div class="acfw-canvas-head">
+								<div class="acfw-canvas-heading">
+									<h2 id="acfw-canvas-title"><?php esc_html_e( 'Your account menu', 'my-account-dashboard-builder' ); ?></h2>
+									<p id="acfw-canvas-help"><?php esc_html_e( 'Drawn the way customers see it. Drag an item to move it or into a group; click it to edit it.', 'my-account-dashboard-builder' ); ?></p>
+								</div>
+								<div class="acfw-panel-tools">
+									<span class="acfw-search-wrap">
+										<span class="dashicons dashicons-search" aria-hidden="true"></span>
+										<input type="search" class="acfw-item-search" placeholder="<?php esc_attr_e( 'Find an item…', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Find a menu item', 'my-account-dashboard-builder' ); ?>" />
+									</span>
+									<button type="button" class="acfw-filter-toggle" aria-pressed="false" title="<?php esc_attr_e( 'Show switched-on items only', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Show switched-on items only', 'my-account-dashboard-builder' ); ?>">
+										<span class="dashicons dashicons-filter" aria-hidden="true"></span>
+									</button>
+								</div>
+							</div>
+
+							<div class="acfw-canvas-stage">
+								<div class="acfw-canvas-page">
+									<nav class="<?php echo esc_attr( implode( ' ', $nav_classes ) ); ?>" aria-labelledby="acfw-canvas-title" aria-describedby="acfw-canvas-help acfw-canvas-keys">
+										<ul class="acfw-sortable acfw-sortable-root">
+											<?php
+											foreach ( $items as $key => $item ) {
+												$this->render_item_row( $key, $item );
+											}
+											?>
+										</ul>
+										<p class="acfw-list-empty" hidden><?php esc_html_e( 'No menu items match that search.', 'my-account-dashboard-builder' ); ?></p>
+										<button type="button" class="acfw-canvas-add-end acfw-canvas-add" aria-haspopup="dialog" aria-expanded="false">
+											<span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span>
+											<?php esc_html_e( 'Add to menu', 'my-account-dashboard-builder' ); ?>
+										</button>
+									</nav>
+								</div>
+							</div>
+
+							<p class="acfw-canvas-keys" id="acfw-canvas-keys">
+								<?php
+								printf(
+									/* translators: 1: "Alt + ↑ / ↓" keys, 2: "Alt + → / ←" keys. */
+									esc_html__( 'Keyboard: %1$s moves the focused item, %2$s moves it into or out of a group.', 'my-account-dashboard-builder' ),
+									'<kbd>Alt</kbd> + <kbd>&uarr;</kbd> / <kbd>&darr;</kbd>',
+									'<kbd>Alt</kbd> + <kbd>&rarr;</kbd> / <kbd>&larr;</kbd>'
+								);
+								?>
+							</p>
+
+							<?php if ( $as_list ) : ?>
+								<p class="acfw-canvas-note"><span class="dashicons dashicons-info-outline" aria-hidden="true"></span><?php esc_html_e( 'Customers see this menu across the top of the page. It is drawn as a list here so what sits in each group stays easy to edit.', 'my-account-dashboard-builder' ); ?></p>
+							<?php endif; ?>
+
+						</section>
+
+						<aside class="acfw-card acfw-builder-detail acfw-inspector" aria-label="<?php esc_attr_e( 'Item settings', 'my-account-dashboard-builder' ); ?>">
+							<div class="acfw-detail-empty">
+								<span class="dashicons dashicons-edit" aria-hidden="true"></span>
+								<p><?php esc_html_e( 'Pick an item in the menu to edit it.', 'my-account-dashboard-builder' ); ?></p>
+							</div>
+							<?php $this->render_item_details( $items ); ?>
+						</aside>
+					</div>
+
+					<div class="acfw-form-footer acfw-savebar">
+						<span class="acfw-savebar-status" role="status"><span class="acfw-savebar-dirty" hidden><?php esc_html_e( 'Unsaved changes', 'my-account-dashboard-builder' ); ?></span></span>
+						<button type="submit" class="button button-primary acfw-save-all">
+							<span class="dashicons dashicons-saved" aria-hidden="true"></span> <?php esc_html_e( 'Save menu', 'my-account-dashboard-builder' ); ?>
+						</button>
+					</div>
+
+					<?php // After the save button, so Enter in a field still saves ( the first submit button is the default ). ?>
+					<div class="acfw-add-overlay" hidden>
+						<div class="acfw-add-pop" role="dialog" aria-modal="true" aria-labelledby="acfw-add-title" aria-describedby="acfw-add-where">
+							<div class="acfw-add-head">
+								<h3 id="acfw-add-title" class="acfw-add-title"><?php esc_html_e( 'Add to the menu', 'my-account-dashboard-builder' ); ?></h3>
+								<button type="button" class="acfw-add-close" aria-label="<?php esc_attr_e( 'Close', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-no-alt" aria-hidden="true"></span></button>
+							</div>
+							<p class="acfw-add-where" id="acfw-add-where"><?php esc_html_e( 'It goes at the end of the menu. Drag it anywhere afterwards, or into a group.', 'my-account-dashboard-builder' ); ?></p>
+							<div class="acfw-segments acfw-add-types" role="radiogroup" aria-label="<?php esc_attr_e( 'What to add', 'my-account-dashboard-builder' ); ?>">
+								<?php
+								$acfw_types = array(
+									'endpoint' => array( __( 'Endpoint', 'my-account-dashboard-builder' ), __( 'A page of its own under My Account, with your content.', 'my-account-dashboard-builder' ) ),
+									'group'    => array( __( 'Group', 'my-account-dashboard-builder' ), __( 'A heading that opens to show the items you drop into it.', 'my-account-dashboard-builder' ) ),
+									'link'     => array( __( 'Link', 'my-account-dashboard-builder' ), __( 'Any address, on this site or another.', 'my-account-dashboard-builder' ) ),
+									'page'     => array( __( 'Page', 'my-account-dashboard-builder' ), __( 'One of your WordPress pages.', 'my-account-dashboard-builder' ) ),
+								);
+								foreach ( $acfw_types as $acfw_type => $acfw_meta ) :
+									?>
+									<label class="acfw-segment">
+										<input type="radio" name="acfw_add[type]" value="<?php echo esc_attr( $acfw_type ); ?>" data-hint="<?php echo esc_attr( $acfw_meta[1] ); ?>" <?php checked( 'endpoint', $acfw_type ); ?> />
+										<span><?php echo esc_html( $acfw_meta[0] ); ?></span>
+									</label>
+								<?php endforeach; ?>
+							</div>
+							<p class="acfw-add-hint"><?php echo esc_html( $acfw_types['endpoint'][1] ); ?></p>
+							<label class="acfw-add-label-field">
+								<span><?php esc_html_e( 'Label', 'my-account-dashboard-builder' ); ?></span>
+								<input type="text" name="acfw_add[label]" class="acfw-add-label" autocomplete="off" />
+							</label>
+							<p class="acfw-add-error" role="alert" hidden><?php esc_html_e( 'Give the item a label first.', 'my-account-dashboard-builder' ); ?></p>
+							<div class="acfw-add-actions">
+								<button type="button" class="button acfw-add-cancel"><?php esc_html_e( 'Cancel', 'my-account-dashboard-builder' ); ?></button>
+								<button type="submit" class="button button-primary acfw-add-submit" name="acfw_add_submit" value="1"><?php esc_html_e( 'Add item', 'my-account-dashboard-builder' ); ?></button>
+							</div>
+							<p class="acfw-add-note"><?php esc_html_e( 'Your other changes are saved with it.', 'my-account-dashboard-builder' ); ?></p>
+						</div>
+					</div>
+				</form>
 			</div>
 			<?php
 		}
 
 		/**
-		 * Render a single row in the left list (recurses into group children).
+		 * Every item's settings pane, group children included ( one is shown at a time ).
+		 *
+		 * @param array $items Items tree.
+		 */
+		protected function render_item_details( $items ) {
+			foreach ( $items as $key => $item ) {
+				$this->render_item_detail( $key, $item );
+				if ( ! empty( $item['children'] ) ) {
+					$this->render_item_details( $item['children'] );
+				}
+			}
+		}
+
+		/**
+		 * Who can see an item, in words ( "Customer · 2+ orders" ).
+		 *
+		 * @param array $item Item options.
+		 * @return string[] One phrase per rule.
+		 */
+		protected function rule_summary( $item ) {
+			$parts = array();
+
+			if ( ! empty( $item['usr_roles'] ) ) {
+				$names = wp_roles()->get_names();
+				$roles = array();
+				foreach ( (array) $item['usr_roles'] as $role ) {
+					$roles[] = isset( $names[ $role ] ) ? translate_user_role( $names[ $role ] ) : $role;
+				}
+				$parts[] = implode( ', ', $roles );
+			}
+
+			$orders = absint( $item['vis_min_orders'] ?? 0 );
+			if ( $orders ) {
+				/* translators: %d: minimum number of orders. */
+				$parts[] = sprintf( _n( '%d+ order', '%d+ orders', $orders, 'my-account-dashboard-builder' ), $orders );
+			}
+
+			$spent = (float) ( $item['vis_min_spent'] ?? 0 );
+			if ( $spent > 0 ) {
+				/* translators: %s: minimum amount spent, with its currency. */
+				$parts[] = sprintf( __( '%s+ spent', 'my-account-dashboard-builder' ), acfw_plain_price( $spent ) );
+			}
+
+			$products = count( acfw_rule_product_ids( $item ) );
+			if ( 1 === $products ) {
+				$parts[] = __( 'Bought 1 product', 'my-account-dashboard-builder' );
+			} elseif ( $products > 1 ) {
+				/* translators: %d: number of products. */
+				$parts[] = sprintf( __( 'Bought one of %d products', 'my-account-dashboard-builder' ), $products );
+			}
+
+			$from = ! empty( $item['vis_from'] ) ? strtotime( $item['vis_from'] ) : false;
+			$to   = ! empty( $item['vis_to'] ) ? strtotime( $item['vis_to'] ) : false;
+			if ( $from && $to ) {
+				/* translators: 1: first day, 2: last day. */
+				$parts[] = sprintf( __( '%1$s – %2$s', 'my-account-dashboard-builder' ), date_i18n( 'j M', $from ), date_i18n( 'j M', $to ) );
+			} elseif ( $from ) {
+				/* translators: %s: first day. */
+				$parts[] = sprintf( __( 'From %s', 'my-account-dashboard-builder' ), date_i18n( 'j M', $from ) );
+			} elseif ( $to ) {
+				/* translators: %s: last day. */
+				$parts[] = sprintf( __( 'Until %s', 'my-account-dashboard-builder' ), date_i18n( 'j M', $to ) );
+			}
+
+			return $parts;
+		}
+
+		/**
+		 * One item in the canvas, drawn with the storefront's markup ( a link,
+		 * or a button for a group ) so the storefront's styles apply, plus the
+		 * editing tools beside it. Groups recurse into their children.
 		 *
 		 * @param string $key  Item key.
 		 * @param array  $item Item options.
@@ -381,38 +539,60 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 		protected function render_item_row( $key, $item ) {
 
 			$type       = $item['type'] ?? 'endpoint';
-			$defaults   = ACFW()->items->get_defaults();
-			$is_default = array_key_exists( $key, $defaults );
+			$is_default = ACFW()->items->is_default( $key );
 			$active     = ! empty( $item['active'] );
-			?>
-			<li class="acfw-node acfw-type-<?php echo esc_attr( $type ); ?> <?php echo $active ? '' : 'is-inactive'; ?>"
-				data-key="<?php echo esc_attr( $key ); ?>" data-type="<?php echo esc_attr( $type ); ?>">
+			$label      = (string) $item['label'];
+			$rules      = $this->rule_summary( $item );
+			$off        = class_exists( 'ACFW_Commerce' ) && in_array( (string) $key, ACFW_Commerce::disabled_keys(), true );
+			$classes    = array( 'acfw-menu-item', 'acfw-node', 'acfw-type-' . $type );
+			if ( ! $active ) {
+				$classes[] = 'is-inactive';
+			}
+			if ( 'group' === $type ) {
+				$classes[] = 'is-open';
+			}
 
-				<div class="acfw-node-head">
-					<span class="acfw-drag dashicons dashicons-menu" title="<?php esc_attr_e( 'Drag', 'my-account-dashboard-builder' ); ?>"></span>
-					<?php echo $this->icon_markup( $item, 'acfw-node-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<span class="acfw-node-title"><?php echo esc_html( $item['label'] ); ?></span>
-					<span class="acfw-node-chip"<?php echo empty( $item['badge'] ) ? ' hidden' : ''; ?>><?php echo esc_html( $item['badge'] ?? '' ); ?></span>
-					<span class="acfw-node-lock dashicons dashicons-lock" title="<?php esc_attr_e( 'Only some customers see this item', 'my-account-dashboard-builder' ); ?>"<?php echo $this->rule_count( $item ) ? '' : ' hidden'; ?>></span>
-					<?php if ( class_exists( 'ACFW_Commerce' ) && in_array( (string) $key, ACFW_Commerce::disabled_keys(), true ) ) : ?>
-						<span class="acfw-node-note" title="<?php esc_attr_e( 'This feature is switched off in Settings, so customers do not see this item.', 'my-account-dashboard-builder' ); ?>"><?php esc_html_e( 'Off in Settings', 'my-account-dashboard-builder' ); ?></span>
+			ob_start();
+			echo $this->icon_markup( $item, 'acfw-icon' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in the helper.
+			?>
+			<span class="acfw-label"><?php echo esc_html( $label ); ?></span>
+			<span class="acfw-canvas-off dashicons dashicons-hidden" title="<?php esc_attr_e( 'Hidden from the menu', 'my-account-dashboard-builder' ); ?>"></span>
+			<span class="acfw-canvas-rules" title="<?php echo esc_attr( implode( ' · ', $rules ) ); ?>"<?php echo $rules ? '' : ' hidden'; ?>><span class="dashicons dashicons-lock" aria-hidden="true"></span><span class="acfw-canvas-rules-text"><?php echo esc_html( implode( ' · ', $rules ) ); ?></span></span>
+			<?php if ( $off ) : ?>
+				<span class="acfw-canvas-flag" title="<?php esc_attr_e( 'This feature is switched off in Settings, so customers do not see this item.', 'my-account-dashboard-builder' ); ?>"><?php esc_html_e( 'Off in Settings', 'my-account-dashboard-builder' ); ?></span>
+			<?php endif; ?>
+			<?php if ( 'group' !== $type ) : ?>
+				<span class="acfw-count acfw-count-text"<?php echo empty( $item['badge'] ) ? ' hidden' : ''; ?>><?php echo esc_html( $item['badge'] ?? '' ); ?></span>
+			<?php endif; ?>
+			<?php
+			$inner = ob_get_clean();
+			?>
+			<li class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" data-key="<?php echo esc_attr( $key ); ?>" data-type="<?php echo esc_attr( $type ); ?>">
+				<?php if ( 'group' === $type ) : ?>
+					<button type="button" class="acfw-group-toggle acfw-canvas-link" aria-pressed="false"><?php echo $inner; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above. ?></button>
+				<?php else : ?>
+					<a href="#<?php echo esc_attr( 'item-' . $key ); ?>" class="acfw-canvas-link" role="button" aria-pressed="false"><?php echo $inner; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above. ?></a>
+				<?php endif; ?>
+
+				<?php // Duplicate and Delete show on hover ( and on the item being edited ); the switch always shows. ?>
+				<span class="acfw-canvas-tools">
+					<?php /* translators: %s: menu item label. */ ?>
+					<button type="button" class="acfw-canvas-tool acfw-node-duplicate" data-key="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Duplicate', 'my-account-dashboard-builder' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Duplicate %s', 'my-account-dashboard-builder' ), $label ) ); ?>"><span class="dashicons dashicons-admin-page" aria-hidden="true"></span></button>
+					<?php if ( $is_default ) : ?>
+						<button type="button" class="acfw-canvas-tool acfw-node-remove is-disabled" disabled aria-disabled="true" title="<?php esc_attr_e( 'Built-in items can be switched off but not deleted', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Built-in items can be switched off but not deleted', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
+					<?php else : ?>
+						<?php /* translators: %s: menu item label. */ ?>
+						<button type="button" class="acfw-canvas-tool acfw-node-remove" data-key="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Delete', 'my-account-dashboard-builder' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Delete %s', 'my-account-dashboard-builder' ), $label ) ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
 					<?php endif; ?>
-					<span class="acfw-node-spacer"></span>
-					<label class="acfw-switch" title="<?php esc_attr_e( 'Enable / disable', 'my-account-dashboard-builder' ); ?>">
-						<input type="checkbox" class="acfw-active-proxy" data-key="<?php echo esc_attr( $key ); ?>" <?php checked( $active ); ?> />
+					<label class="acfw-switch" title="<?php esc_attr_e( 'Show in the menu', 'my-account-dashboard-builder' ); ?>">
+						<?php /* translators: %s: menu item label. */ ?>
+						<input type="checkbox" class="acfw-active-proxy" data-key="<?php echo esc_attr( $key ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Show %s in the menu', 'my-account-dashboard-builder' ), $label ) ); ?>" <?php checked( $active ); ?> />
 						<span class="acfw-switch-slider"></span>
 					</label>
-					<button type="button" class="acfw-node-edit dashicons dashicons-edit" title="<?php esc_attr_e( 'Edit', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Edit', 'my-account-dashboard-builder' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
-					<button type="button" class="acfw-node-duplicate dashicons dashicons-admin-page" title="<?php esc_attr_e( 'Duplicate', 'my-account-dashboard-builder' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
-					<?php if ( $is_default ) : ?>
-						<button type="button" class="acfw-node-remove is-disabled dashicons dashicons-trash" title="<?php esc_attr_e( 'Default items cannot be deleted', 'my-account-dashboard-builder' ); ?>" disabled aria-disabled="true"></button>
-					<?php else : ?>
-						<button type="button" class="acfw-node-remove dashicons dashicons-trash" title="<?php esc_attr_e( 'Delete', 'my-account-dashboard-builder' ); ?>" data-key="<?php echo esc_attr( $key ); ?>"></button>
-					<?php endif; ?>
-				</div>
+				</span>
 
 				<?php if ( 'group' === $type ) : ?>
-					<ol class="acfw-sortable acfw-sortable-children">
+					<ul class="acfw-submenu acfw-sortable acfw-sortable-children" data-empty="<?php esc_attr_e( 'Drag items here', 'my-account-dashboard-builder' ); ?>">
 						<?php
 						if ( ! empty( $item['children'] ) ) {
 							foreach ( $item['children'] as $child_key => $child_item ) {
@@ -420,7 +600,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 							}
 						}
 						?>
-					</ol>
+					</ul>
 				<?php endif; ?>
 			</li>
 			<?php
@@ -442,7 +622,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 		}
 
 		/**
-		 * The address an item points to, for the preview strip.
+		 * The address an item points to, shown in the inspector.
 		 *
 		 * @param string $key  Item key.
 		 * @param array  $item Item options.
@@ -512,49 +692,38 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					<h2 class="acfw-detail-title"><?php echo esc_html( $item['label'] ); ?></h2>
 					<span class="acfw-node-badge acfw-badge-<?php echo esc_attr( $type ); ?>"><?php echo esc_html( $type_labels[ $type ] ?? $type ); ?></span>
 					<span class="acfw-detail-spacer"></span>
+					<label class="acfw-switch acfw-inspector-switch" title="<?php esc_attr_e( 'Show in the menu', 'my-account-dashboard-builder' ); ?>">
+						<?php /* translators: %s: menu item label. */ ?>
+						<input type="checkbox" class="acfw-active-proxy" data-key="<?php echo esc_attr( $key ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Show %s in the menu', 'my-account-dashboard-builder' ), $item['label'] ) ); ?>" <?php checked( $active ); ?> />
+						<span class="acfw-switch-slider"></span>
+					</label>
+					<?php /* translators: %s: menu item label. */ ?>
+					<button type="button" class="acfw-icon-btn acfw-node-duplicate" data-key="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Duplicate', 'my-account-dashboard-builder' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Duplicate %s', 'my-account-dashboard-builder' ), $item['label'] ) ); ?>"><span class="dashicons dashicons-admin-page" aria-hidden="true"></span></button>
+					<?php if ( ACFW()->items->is_default( $key ) ) : ?>
+						<button type="button" class="acfw-icon-btn acfw-node-remove is-disabled" disabled aria-disabled="true" title="<?php esc_attr_e( 'Built-in items can be switched off but not deleted', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Built-in items can be switched off but not deleted', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
+					<?php else : ?>
+						<?php /* translators: %s: menu item label. */ ?>
+						<button type="button" class="acfw-icon-btn acfw-node-remove" data-key="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Delete', 'my-account-dashboard-builder' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Delete %s', 'my-account-dashboard-builder' ), $item['label'] ) ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
+					<?php endif; ?>
 					<button type="button" class="acfw-back-to-menu">
 						<span class="dashicons dashicons-arrow-left-alt" aria-hidden="true"></span>
 						<?php esc_html_e( 'Back to menu', 'my-account-dashboard-builder' ); ?>
 					</button>
 				</div>
 
-				<?php // The item as it will read in the customer's menu; mirrors the fields below, so it is hidden from assistive tech. ?>
-				<?php
-				$acfw_pv_accent = sanitize_hex_color( get_option( 'acfw_accent_color', '#2563eb' ) );
-				$acfw_pv_style  = '--acfw-pv-accent:' . ( $acfw_pv_accent ? $acfw_pv_accent : '#2563eb' ) . ';--acfw-pv-radius:' . absint( get_option( 'acfw_menu_radius', 8 ) ) . 'px;';
-				?>
-				<div class="acfw-preview<?php echo $active ? '' : ' is-off'; ?>" aria-hidden="true" data-base="<?php echo esc_attr( $base ); ?>" style="<?php echo esc_attr( $acfw_pv_style ); ?>">
-					<span class="acfw-preview-eyebrow"><?php esc_html_e( 'What customers see', 'my-account-dashboard-builder' ); ?></span>
-					<span class="acfw-preview-row">
-						<span class="acfw-preview-item">
-							<span class="acfw-preview-icon"><?php echo $this->icon_markup( $item, 'acfw-preview-glyph' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-							<span class="acfw-preview-label"><?php echo esc_html( $item['label'] ); ?></span>
-							<span class="acfw-preview-pill"<?php echo empty( $item['badge'] ) ? ' hidden' : ''; ?>><?php echo esc_html( $item['badge'] ?? '' ); ?></span>
-							<?php if ( 'group' === $type ) : ?>
-								<span class="acfw-preview-caret"></span>
-							<?php endif; ?>
-						</span>
-						<span class="acfw-preview-meta">
-							<?php $acfw_preview_url = $this->preview_url( $key, $item, $type ); ?>
-							<code class="acfw-preview-url"<?php echo '' === $acfw_preview_url ? ' hidden' : ''; ?>><?php echo esc_html( $acfw_preview_url ); ?></code>
-							<span class="acfw-preview-flag acfw-preview-locked"<?php echo $rules ? '' : ' hidden'; ?>><span class="dashicons dashicons-lock"></span><?php esc_html_e( 'Some customers only', 'my-account-dashboard-builder' ); ?></span>
-							<span class="acfw-preview-flag acfw-preview-hidden"><span class="dashicons dashicons-hidden"></span><?php esc_html_e( 'Hidden from the menu', 'my-account-dashboard-builder' ); ?></span>
-						</span>
-					</span>
+				<?php $acfw_url = $this->preview_url( $key, $item, $type ); ?>
+				<div class="acfw-inspector-meta" data-base="<?php echo esc_attr( $base ); ?>">
+					<code class="acfw-inspector-url"<?php echo '' === $acfw_url ? ' hidden' : ''; ?>><?php echo esc_html( $acfw_url ); ?></code>
+					<span class="acfw-inspector-off"<?php echo $active ? ' hidden' : ''; ?>><span class="dashicons dashicons-hidden" aria-hidden="true"></span><?php esc_html_e( 'Hidden from the menu', 'my-account-dashboard-builder' ); ?></span>
 				</div>
 
-				<div class="acfw-section-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Item settings', 'my-account-dashboard-builder' ); ?>">
-					<?php foreach ( $sections as $section => $section_label ) : ?>
-						<?php $acfw_first = 'general' === $section; ?>
-						<button type="button" class="acfw-section-tab<?php echo $acfw_first ? ' is-active' : ''; ?>" role="tab" id="<?php echo esc_attr( $uid . '-tab-' . $section ); ?>" aria-controls="<?php echo esc_attr( $uid . '-' . $section ); ?>" aria-selected="<?php echo $acfw_first ? 'true' : 'false'; ?>" tabindex="<?php echo $acfw_first ? '0' : '-1'; ?>" data-section="<?php echo esc_attr( $section ); ?>">
-							<span class="acfw-section-tab-icon dashicons dashicons-<?php echo esc_attr( $section_icons[ $section ] ?? 'admin-generic' ); ?>" aria-hidden="true"></span>
-							<span class="acfw-section-tab-label"><?php echo esc_html( $section_label ); ?></span>
-							<?php if ( 'visibility' === $section ) : ?>
-								<span class="acfw-section-count"<?php echo $rules ? '' : ' hidden'; ?>><?php echo esc_html( $rules ); ?></span>
-							<?php endif; ?>
-						</button>
-					<?php endforeach; ?>
-				</div>
+				<?php
+				$acfw_tabs = array();
+				foreach ( $sections as $section => $section_label ) {
+					$acfw_tabs[ $section ] = array( $section_label, $section_icons[ $section ] ?? 'admin-generic' );
+				}
+				$this->section_tabs( $uid, $acfw_tabs, __( 'Item settings', 'my-account-dashboard-builder' ), array( 'visibility' => $rules ) );
+				?>
 
 				<?php // ---- General ---- ?>
 				<section class="acfw-section is-active" id="<?php echo esc_attr( $uid . '-general' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-general' ); ?>" data-section="general">
@@ -741,7 +910,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 
 				<?php // ---- Visibility ---- ?>
 				<section class="acfw-section acfw-rules" id="<?php echo esc_attr( $uid . '-visibility' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-visibility' ); ?>" data-section="visibility">
-					<p class="acfw-section-intro"><?php esc_html_e( 'Everyone sees this item until a rule below narrows it down. A customer has to pass every rule you set. Shop managers always see every item, so they can preview it.', 'my-account-dashboard-builder' ); ?></p>
+					<p class="acfw-section-intro"><?php esc_html_e( 'Everyone sees this item until a rule below narrows it down. A customer has to pass every rule you set. Shop managers skip the rules so they can preview the item, except the dates: outside them it is hidden for everyone.', 'my-account-dashboard-builder' ); ?></p>
 
 					<div class="acfw-field">
 						<label for="<?php echo esc_attr( $uid . '-roles' ); ?>"><?php esc_html_e( 'User roles', 'my-account-dashboard-builder' ); ?></label>

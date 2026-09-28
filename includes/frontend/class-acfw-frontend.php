@@ -254,7 +254,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				array( 'acfw-fontawesome', 'dashicons' ),
 				$fe_css_ver
 			);
-			wp_add_inline_style( 'acfw-frontend', $this->dynamic_css() );
+			wp_add_inline_style( 'acfw-frontend', self::design_css() );
 
 			$custom_css = get_option( 'acfw_custom_css', '' );
 			if ( $custom_css ) {
@@ -302,13 +302,14 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * Build inline CSS variables from the style options.
 		 *
 		 * The static stylesheet consumes these tokens, so all theming flows
-		 * through a single source of truth. They are declared on every block
+		 * through a single source of truth. The Menu Items canvas in wp-admin
+		 * prints the same rule, so it draws the menu exactly as customers see it. They are declared on every block
 		 * the plugin renders, dashboard widgets included, so the accent colour
 		 * and corner radius reach the stats, tiles, meter and banners too.
 		 *
 		 * @return string
 		 */
-		protected function dynamic_css() {
+		public static function design_css() {
 			$accent  = sanitize_hex_color( get_option( 'acfw_accent_color', '#2563eb' ) );
 			$text    = sanitize_hex_color( get_option( 'acfw_text_color', '#383838' ) );
 			$accent  = $accent ? $accent : '#2563eb';
@@ -320,7 +321,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$fsize   = absint( get_option( 'acfw_font_size', 15 ) );
 			$fweight = preg_replace( '/[^0-9]/', '', (string) get_option( 'acfw_font_weight', '500' ) );
 			$fweight = $fweight ? $fweight : '500';
-			$tint    = $this->hex_to_rgba( $accent, 0.10 );
+			$tint    = self::hex_to_rgba( $accent, 0.10 );
 
 			$menu_bg  = sanitize_hex_color( get_option( 'acfw_menu_bg', '' ) );
 			$hover_bg = sanitize_hex_color( get_option( 'acfw_hover_bg', '' ) );
@@ -418,7 +419,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * @param float  $alpha Alpha channel 0..1.
 		 * @return string
 		 */
-		protected function hex_to_rgba( $hex, $alpha = 1 ) {
+		protected static function hex_to_rgba( $hex, $alpha = 1 ) {
 			$hex = ltrim( $hex, '#' );
 			if ( 3 === strlen( $hex ) ) {
 				$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];

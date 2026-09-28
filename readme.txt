@@ -19,11 +19,11 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 = Build the menu =
 
 * Add unlimited items: **endpoints** (own URL + content), **pages**, **links** (internal or external) and **groups** (collapsible parents).
-* Drag to reorder; toggle any default WooCommerce endpoint on or off.
+* Build it on a canvas drawn the way customers see it: drag to reorder or nest, switch any item on or off, duplicate or delete it in place.
 * Rename every item, give a custom endpoint its own URL, and pick an icon from the bundled Font Awesome library, a Dashicon, or upload your own.
 * Add a **badge** to any item: "New", or a live value such as `{points_balance} pts`.
 * Control who sees what: by **user role**, **date range**, **products the customer bought**, **number of orders** or **total spent**.
-* A live preview in the builder shows each item as customers will see it.
+* Each item on the canvas says who can see it ( e.g. "Customer · 2+ orders" ).
 * Set the landing endpoint customers open on, plus login and logout redirects.
 
 = Fill it with content =
@@ -107,7 +107,7 @@ Options prefixed `acfw_`, plus three user meta keys (`acfw_avatar_id`, `acfw_las
 
 == Screenshots ==
 
-1. The Menu Items builder — drag to reorder, toggle items, edit any one in the right-hand pane.
+1. The Menu Items canvas — the account menu as customers see it; drag to reorder, switch items on or off, and edit any item beside it.
 2. Editing an item: label, icon, visibility rules by role, date and purchased product, and the content editor.
 3. Ready-made looks at the top of the Design Studio.
 4. The Design Studio: controls grouped by what customers see, beside a live preview of the account page.
@@ -120,7 +120,7 @@ Options prefixed `acfw_`, plus three user meta keys (`acfw_avatar_id`, `acfw_las
 
 = Unreleased =
 * New: endpoint URLs, item badges, product / order-count / spend visibility rules, per-group "start expanded", banner schedules, badge sources and link text, clickable dashboard stats, an actionable profile meter and nine new smart tags.
-* New: the Menu Items screen is organised in tabs with a live customer preview, list markers and an unsaved-changes save bar.
+* New: the Menu Items screen is a canvas of the menu as customers see it: drag ( or Alt + arrow keys ) to reorder and nest, on/off switches, Duplicate and Delete on every item, a line on each item saying who can see it, and the item's settings in tabs beside it with an unsaved-changes save bar.
 * New: the Design Studio replaces the Customizer panel and the Templates tab: looks, grouped controls, a live preview at three widths, and save / discard.
 * Fix: Dashicons now load for customers, so the mobile menu button, pin stars and stat icons show.
 * Fix: custom endpoints no longer show the dashboard underneath; banner position saves; non-Latin labels no longer vanish; items and banners can no longer overwrite each other; nested endpoints resolve; the chosen colours and radius reach the menu; rgba banner colours, the Reward points stat, the landing endpoint and one-step logout work.

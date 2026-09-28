@@ -325,8 +325,8 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 			}
 			?>
 			<div class="acfw-sf acfw-sf-density">
-				<span class="acfw-sf-label" id="acfw-density-label"><?php esc_html_e( 'Density', 'my-account-dashboard-builder' ); ?></span>
-				<div class="acfw-segments" role="radiogroup" aria-labelledby="acfw-density-label">
+				<span class="acfw-sf-label" id="acfw-density-label"><?php esc_html_e( 'Density', 'my-account-dashboard-builder' ); ?><?php echo $this->help( __( 'How much room each menu item gets. Fine-tune sets the item height and the gaps yourself.', 'my-account-dashboard-builder' ), 'acfw-density' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></span>
+				<div class="acfw-segments" role="radiogroup" aria-labelledby="acfw-density-label" aria-describedby="acfw-density-tip">
 					<?php foreach ( self::densities() as $slug => $density ) : ?>
 						<label class="acfw-segment">
 							<input type="radio" name="acfw_studio_density" value="<?php echo esc_attr( $slug ); ?>" <?php checked( $current, $slug ); ?> />
@@ -358,15 +358,17 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 				$parent ? ' data-parent="' . esc_attr( $parent ) . '"' : ''
 			);
 			$hint   = ! empty( $field['hint'] ) ? '<p class="acfw-sf-hint">' . esc_html( $field['hint'] ) . '</p>' : '';
+			$help   = $this->help( $field['tip'] ?? '', $id );
+			$descr  = $help ? ' aria-describedby="' . esc_attr( $id . '-tip' ) . '"' : '';
 
 			switch ( $field['type'] ) {
 				case 'toggle':
 					?>
 					<div class="acfw-sf acfw-sf-toggle"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
 						<label class="acfw-sf-toggle-row" for="<?php echo esc_attr( $id ); ?>">
-							<span class="acfw-sf-label"><?php echo esc_html( $field['label'] ); ?></span>
+							<span class="acfw-sf-label"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></span>
 							<span class="acfw-switch">
-								<input type="checkbox" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input" <?php checked( 'yes', $value ); ?> />
+								<input type="checkbox" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?> <?php checked( 'yes', $value ); ?> />
 								<span class="acfw-switch-slider"></span>
 							</span>
 						</label>
@@ -378,11 +380,14 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 				case 'color':
 					?>
 					<div class="acfw-sf acfw-sf-color"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
-						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
+						<span class="acfw-sf-head">
+							<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></label>
+							<?php $acfw_reset = sprintf( /* translators: %s: control label. */ __( 'Reset %s', 'my-account-dashboard-builder' ), $field['label'] ); ?>
+							<button type="button" class="acfw-sf-reset" title="<?php echo esc_attr( $acfw_reset ); ?>" aria-label="<?php echo esc_attr( $acfw_reset ); ?>"><span class="dashicons dashicons-image-rotate" aria-hidden="true"></span></button>
+						</span>
 						<span class="acfw-sf-color-row">
 							<input type="color" class="acfw-sf-swatch" value="<?php echo esc_attr( $value ? $value : ( $field['default'] ? $field['default'] : '#ffffff' ) ); ?>" aria-label="<?php echo esc_attr( $field['label'] ); ?>" tabindex="-1" />
-							<input type="text" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input acfw-sf-hex" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo esc_attr( $field['default'] ? $field['default'] : __( 'Default', 'my-account-dashboard-builder' ) ); ?>" spellcheck="false" autocomplete="off" maxlength="7" />
-							<button type="button" class="acfw-sf-reset" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: control label. */ __( 'Reset %s', 'my-account-dashboard-builder' ), $field['label'] ) ); ?>"><span class="dashicons dashicons-image-rotate" aria-hidden="true"></span></button>
+							<input type="text" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input acfw-sf-hex"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?> value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo esc_attr( $field['default'] ? $field['default'] : __( 'Default', 'my-account-dashboard-builder' ) ); ?>" spellcheck="false" autocomplete="off" maxlength="7" />
 						</span>
 						<?php echo $hint; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
 						<?php if ( 'acfw_accent_color' === $key ) : ?>
@@ -396,9 +401,9 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 					$step = isset( $field['step'] ) ? (int) $field['step'] : 1;
 					?>
 					<div class="acfw-sf acfw-sf-range"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
-						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
+						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></label>
 						<span class="acfw-sf-range-row">
-							<input type="range" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input" min="<?php echo esc_attr( $field['min'] ); ?>" max="<?php echo esc_attr( $field['max'] ); ?>" step="<?php echo esc_attr( $step ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+							<input type="range" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?> min="<?php echo esc_attr( $field['min'] ); ?>" max="<?php echo esc_attr( $field['max'] ); ?>" step="<?php echo esc_attr( $step ); ?>" value="<?php echo esc_attr( $value ); ?>" />
 							<output class="acfw-sf-output" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $value . ( $field['unit'] ?? '' ) ); ?></output>
 						</span>
 						<?php echo $hint; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
@@ -410,8 +415,8 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 					$visual = in_array( $key, array( 'acfw_menu_style', 'acfw_menu_position', 'acfw_active_indicator' ), true );
 					?>
 					<div class="acfw-sf acfw-sf-choice<?php echo $visual ? ' acfw-sf-visual' : ''; ?>"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
-						<span class="acfw-sf-label" id="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></span>
-						<div class="<?php echo $visual ? 'acfw-tiles-pick acfw-pick-' . esc_attr( str_replace( '_', '-', substr( $key, 5 ) ) ) : 'acfw-segments'; ?>" role="radiogroup" aria-labelledby="<?php echo esc_attr( $id ); ?>">
+						<span class="acfw-sf-label" id="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></span>
+						<div class="<?php echo $visual ? 'acfw-tiles-pick acfw-pick-' . esc_attr( str_replace( '_', '-', substr( $key, 5 ) ) ) : 'acfw-segments'; ?>" role="radiogroup" aria-labelledby="<?php echo esc_attr( $id ); ?>"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
 							<?php foreach ( $field['choices'] as $choice => $choice_label ) : ?>
 								<label class="<?php echo $visual ? 'acfw-tile-pick' : 'acfw-segment'; ?>">
 									<input type="radio" class="acfw-sf-input" name="<?php echo esc_attr( 'studio_' . $key ); ?>" value="<?php echo esc_attr( $choice ); ?>" <?php checked( (string) $value, (string) $choice ); ?> />
@@ -434,10 +439,10 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 				case 'image':
 					?>
 					<div class="acfw-sf acfw-sf-image"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
-						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
+						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></label>
 						<span class="acfw-sf-image-row">
 							<img class="acfw-sf-thumb" src="<?php echo esc_url( $value ); ?>" alt=""<?php echo $value ? '' : ' hidden'; ?> />
-							<input type="url" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input" value="<?php echo esc_attr( $value ); ?>" placeholder="https://" />
+							<input type="url" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?> value="<?php echo esc_attr( $value ); ?>" placeholder="https://" />
 							<button type="button" class="button acfw-sf-media"><?php esc_html_e( 'Choose', 'my-account-dashboard-builder' ); ?></button>
 						</span>
 						<?php echo $hint; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
@@ -448,8 +453,8 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 				case 'css':
 					?>
 					<div class="acfw-sf acfw-sf-css"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
-						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
-						<textarea id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input code" rows="10" spellcheck="false"><?php echo esc_textarea( $value ); ?></textarea>
+						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></label>
+						<textarea id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input code"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?> rows="10" spellcheck="false"><?php echo esc_textarea( $value ); ?></textarea>
 						<?php echo $hint; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
 					</div>
 					<?php
@@ -459,8 +464,8 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 				default:
 					?>
 					<div class="acfw-sf acfw-sf-text"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
-						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
-						<input type="text" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input" value="<?php echo esc_attr( $value ); ?>" />
+						<label class="acfw-sf-label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></label>
+						<input type="text" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?> value="<?php echo esc_attr( $value ); ?>" />
 						<?php echo $hint; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
 					</div>
 					<?php

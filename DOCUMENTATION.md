@@ -32,30 +32,46 @@ The header bar contains:
 
 - **Tab navigation** — *Menu Items, Design, Settings, Banners* (Import / Export sits under Settings).
 - **Action buttons** (top‑right), which change per tab:
-  - *Menu Items:* **Add endpoint**, **Add group**, **Add link**, **Add page**.
   - *Banners:* **Add banner**.
+  - *Menu Items* has none: items are added with **Add to menu**, under the menu (see below).
 - **Floating buttons** (pinned to the right edge, always available):
   - **Preview** — opens the live My Account page in an in‑page overlay.
   - **View My Account** — opens the live page in a new browser tab.
 
 ### 2. Left Panel
 
-On **Menu Items** and **Banners**, the left panel is the **ordered list** of items.
-Each row shows the icon, label, a type badge, an enable/disable switch, and
-duplicate/delete controls. Drag the handle to reorder or to nest items into groups.
+On **Menu Items**, the left panel is the **menu canvas**: your account menu drawn the
+way customers see it, in the style, colours and spacing saved in the Design Studio.
+
+- Click an item to edit it. It is marked the way the storefront marks the page a
+  customer is on.
+- Drag an item to reorder it or to drop it into a group. From the keyboard,
+  **Alt + ↑ / ↓** moves the focused item and **Alt + → / ←** moves it into the group
+  above it or back out.
+- Every item has its **on/off** switch on the right. Hover an item (or select it) for
+  **Duplicate** and **Delete**.
+- **Add to menu**, under the menu, opens a small dialog: pick the type, type a label,
+  **Add item**. The item goes at the end of the menu; drag it where it belongs, or into
+  a group.
+- Switched-off items stay on the canvas, dimmed and marked with an eye.
+- When rules limit who sees an item, a line under it says so, e.g. *Customer · 2+ orders*.
+- A menu shown across the top of the page (or in the Tabs style) is drawn as a list
+  here, so groups stay easy to edit.
+
+On **Banners**, the left panel lists your banners; select one to edit it.
 
 ### 3. Main Content Area
 
-Selecting a row opens its **options** in the main area on the right. At the top, a
-**What customers see** strip shows the item the way it will read in the customer's
-menu (icon, label, badge, its address, and a lock when rules limit who sees it). It
-updates as you type. Below it, the options are grouped in tabs: **General**,
-**Content** (endpoints), **Visibility** and **Advanced** (see *Endpoints
-Customization Options*).
+Selecting an item opens its **options** on the right. The head shows its name and
+type, an on/off switch, **Duplicate** and **Delete** (built-in items can be switched
+off but not deleted), and the address it opens. The options are grouped in tabs:
+**General**, **Content** (endpoints), **Visibility** and **Advanced** (see *Endpoints
+Customization Options*). The canvas follows as you type: the label, badge, icon and
+visibility line change at once.
 
 ### 4. Bottom Section
 
-Each editor ends with a **Save changes** action. As soon as something changes, the
+Each editor ends with a save action (**Save menu** on Menu Items). As soon as something changes, the
 save bar floats at the bottom of the window with an **Unsaved changes** marker, and
 leaving the page asks first. A **toast** confirms the save, and you land back on the
 item you were editing. Warnings and errors stay on screen until you close them. On
@@ -74,12 +90,13 @@ Menu items are managed on the **Menu Items** tab. There are four item types:
 
 ### Endpoint Controls
 
-For each item in the left list:
+For each item on the canvas:
 
-- **Drag handle** — reorder items, or drag an item onto a group to nest it (one level deep).
-- **Enable/disable switch** — show or hide the item without deleting it.
-- **Duplicate** — copy an item.
-- **Delete** — remove a custom item. *Default WooCommerce items can be disabled but not deleted.*
+- **Drag** — reorder items, or drop an item into a group to nest it (one level deep).
+  **Alt + arrow keys** do the same from the keyboard.
+- **Enable/disable switch** — show or hide the item without deleting it (on the item, and in its options).
+- **Duplicate** — copy an item (on hover, or in its options).
+- **Delete** — remove a custom item (on hover, or in its options). *Default WooCommerce items can be disabled but not deleted.*
 - **Markers** — a badge chip shows an item's badge text, a lock shows that visibility rules
   limit who sees it, and *Off in Settings* marks Buy again / Recently viewed while that
   feature is switched off.
@@ -114,7 +131,8 @@ Selecting an item reveals its options, grouped in tabs.
 - **Show banners** + **Banner position** — attach saved banners at the top or bottom, in the order picked.
 
 **Visibility** — the tab shows how many rules are set. A customer must pass every rule;
-shop managers always see every item so they can preview it.
+shop managers skip the rules so they can preview the item, except the dates: outside
+them the item is hidden for everyone.
 
 - **User roles** — restrict the item to selected roles (empty = everyone).
 - **Dates** — *From … until …*, whole days in the site timezone. Either end can stay open.
@@ -130,29 +148,30 @@ shop managers always see every item so they can preview it.
 
 ### How to Add a New Endpoint?
 
-1. On **Menu Items**, click **Add endpoint** (top‑right).
-2. Enter a label and click **Create**. The new endpoint is added at the end of the list
-   and opens for editing. Its key and URL come from the label; a label that matches an
+1. On **Menu Items**, click **Add to menu** under the menu.
+2. Pick **Endpoint**, enter a label and click **Add item** (or press Enter). The endpoint
+   is added at the end of the menu and opens for editing (drag it where it belongs);
+   anything else you changed is saved with it. Its key and URL come from the label; a label that matches an
    existing item (e.g. "Orders") gets a numbered key instead of overwriting it, and a
    label with no Latin letters gets a short ASCII key you can rename under **Endpoint URL**.
 3. Set its icon, content, visibility and banners.
-4. Click **Save changes**. The endpoint's page title is its label.
+4. Click **Save menu**. The endpoint's page title is its label.
 
 ### Add Group
 
-1. Click **Add group**, enter a name, and **Create**.
-2. Drag other items onto the group to nest them.
+1. Click **Add to menu**, pick **Group**, enter a name and click **Add item**.
+2. Drag items into the group.
 3. Groups expand/collapse on the front end (default folder icon) and can be opened from the keyboard.
    Use **Start expanded** on a group, or **Open every group** in the Design Studio (Menu), to keep them open.
 
 ### Add Link
 
-1. Click **Add link**, enter a label, and **Create**.
+1. Click **Add to menu**, pick **Link**, enter a label and click **Add item**.
 2. Set the **URL** and optionally **Open in new tab**.
 
 ### Add Page
 
-1. Click **Add page**, enter a label, and **Create**.
+1. Click **Add to menu**, pick **Page**, enter a label and click **Add item**.
 2. Choose an existing WordPress **Page** from the dropdown (links to that page’s permalink). Optionally **Open in new tab**.
 
 ---
@@ -162,7 +181,7 @@ shop managers always see every item so they can preview it.
 Everything about how the account area looks is set on **My Account → Design**:
 the controls on the left, the real My Account page on the right. The page shows your
 own account, so it has real data. Nothing changes on your site until you click
-**Save design**.
+**Save design**. Hover the ⓘ beside a control to see what it changes.
 
 ### Start from a look
 
@@ -233,7 +252,10 @@ saved design, and leaving the page with unsaved changes asks first.
 
 ## Banners
 
-Reusable promotional blocks attached to endpoints, on the **Banners** tab.
+Reusable promotional blocks attached to endpoints, on the **Banners** tab. A banner's
+settings are split into tabs like a menu item's: **General** (name, type, icon, text or
+image), **Style** (width, colours, count badge; widget banners only), **Link** and
+**Visibility**.
 
 1. Click **Add banner** (header, or below the list).
 2. Choose a **Banner type** — the form shows only the relevant fields:
@@ -295,7 +317,7 @@ pnpm zip              # build + package the distributable ZIP
 
 ### Save Changes
 
-- **Menu Items** — one **Save changes** button saves the entire list + order.
+- **Menu Items** — one **Save menu** button saves every item and the order.
 - **Settings** — **Save changes** stores the general options.
 - **Banners** — **Create / Save banner** per banner.
 - All saves confirm with a toast notification.

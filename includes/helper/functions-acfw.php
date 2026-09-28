@@ -564,6 +564,99 @@ function acfw_sanitize_order_tree( $tree, $depth = 0 ) {
 }
 
 /**
+ * The menu order tree ( key => { type, children? } ) of a resolved items tree.
+ *
+ * @param array $items Items tree ( as ACFW_Items::get_items() returns it ).
+ * @return array
+ */
+function acfw_order_from_items( $items ) {
+	$order = array();
+	foreach ( (array) $items as $key => $item ) {
+		$node = array( 'type' => isset( $item['type'] ) ? (string) $item['type'] : 'endpoint' );
+		if ( ! empty( $item['children'] ) && is_array( $item['children'] ) ) {
+			$node['children'] = acfw_order_from_items( $item['children'] );
+		}
+		$order[ (string) $key ] = $node;
+	}
+	return $order;
+}
+
+/**
+ * Put a new item into the menu order tree.
+ *
+ * It lands right below $after when that item is in the tree ( at the top
+ * level or inside a group ), else at the end of the group $group, else at the
+ * end of the menu. A group never goes inside another group: it lands below
+ * that group instead.
+ *
+ * @param array  $order  Order tree: key => { type, children? }.
+ * @param string $key    New item's key.
+ * @param string $type   New item's type.
+ * @param string $after  Key of the item to place it below ( optional ).
+ * @param string $group  Key of the group to place it in ( optional ).
+ * @return array
+ */
+function acfw_order_insert( $order, $key, $type, $after = '', $group = '' ) {
+	$order = is_array( $order ) ? $order : array();
+	$key   = (string) $key;
+	$after = (string) $after;
+	$group = (string) $group;
+	$node  = array( 'type' => (string) $type );
+	$nests = 'group' !== $type;
+
+	if ( '' !== $after ) {
+		if ( array_key_exists( $after, $order ) ) {
+			return acfw_array_insert_after( $order, $after, $key, $node );
+		}
+		foreach ( $order as $group_key => $entry ) {
+			if ( ! empty( $entry['children'] ) && is_array( $entry['children'] ) && array_key_exists( $after, $entry['children'] ) ) {
+				if ( ! $nests ) {
+					return acfw_array_insert_after( $order, (string) $group_key, $key, $node );
+				}
+				$order[ $group_key ]['children'] = acfw_array_insert_after( $entry['children'], $after, $key, $node );
+				return $order;
+			}
+		}
+	}
+
+	if ( '' !== $group && isset( $order[ $group ]['type'] ) && 'group' === $order[ $group ]['type'] ) {
+		if ( ! $nests ) {
+			return acfw_array_insert_after( $order, $group, $key, $node );
+		}
+		$children                    = isset( $order[ $group ]['children'] ) && is_array( $order[ $group ]['children'] ) ? $order[ $group ]['children'] : array();
+		$children[ $key ]            = $node;
+		$order[ $group ]['children'] = $children;
+		return $order;
+	}
+
+	$order[ $key ] = $node;
+	return $order;
+}
+
+/**
+ * Insert an entry into an associative array right after a given key.
+ *
+ * @param array  $entries Array.
+ * @param string $after Existing key.
+ * @param string $key   New key.
+ * @param mixed  $value New value.
+ * @return array The array with the entry added ( at the end when $after is missing ).
+ */
+function acfw_array_insert_after( $entries, $after, $key, $value ) {
+	$out = array();
+	foreach ( $entries as $k => $v ) {
+		$out[ $k ] = $v;
+		if ( (string) $k === (string) $after ) {
+			$out[ $key ] = $value;
+		}
+	}
+	if ( ! array_key_exists( $key, $out ) ) {
+		$out[ $key ] = $value;
+	}
+	return $out;
+}
+
+/**
  * Flatten a menu items tree into key => item, children included.
  *
  * @param array $items Items tree ( as ACFW_Items::get_items() returns it ).

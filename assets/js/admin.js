@@ -261,41 +261,6 @@
 
 		var $details = $( '.acfw-builder-detail' );
 
-		/* ---- Add item ( split-button dropdown ) ---- */
-		var $addForm = $( '.acfw-add-form' );
-
-		function closeAddMenu() {
-			$( '.acfw-add-dropdown' ).prop( 'hidden', true );
-			$( '.acfw-add-toggle' ).attr( 'aria-expanded', 'false' ).removeClass( 'is-open' );
-		}
-
-		$( document ).on( 'click', '.acfw-add-toggle', function ( e ) {
-			e.stopPropagation();
-			var $dd = $( this ).siblings( '.acfw-add-dropdown' );
-			var wasHidden = $dd.prop( 'hidden' );
-			closeAddMenu();
-			if ( wasHidden ) {
-				$dd.prop( 'hidden', false );
-				$( this ).attr( 'aria-expanded', 'true' ).addClass( 'is-open' );
-			}
-		} );
-
-		$( document ).on( 'click', function ( e ) {
-			if ( ! $( e.target ).closest( '.acfw-add-menu' ).length ) {
-				closeAddMenu();
-			}
-		} );
-
-		$( document ).on( 'click', '.acfw-add-btn', function () {
-			closeAddMenu();
-			$addForm.find( '.acfw-add-type' ).val( $( this ).data( 'type' ) );
-			$addForm.show().find( '.acfw-add-label' ).val( '' ).focus();
-		} );
-
-		$( '.acfw-add-cancel' ).on( 'click', function () {
-			$addForm.hide();
-		} );
-
 		/* ---- Add banner (banners tab) ---- */
 		/* ---- Add banner: ask for a name first, then open the full form ---- */
 		var $addModal   = $( '#acfw-add-banner-modal' );
@@ -336,6 +301,8 @@
 			selectItem( '__new__' );
 
 			var $form = $( '.acfw-detail[data-key="__new__"]' );
+			// The name field is under General.
+			lastSection = showSection( $form, 'general', false );
 			$form.find( 'input[name="banner_title"]' ).val( name ).trigger( 'change' ).trigger( 'focus' );
 		}
 
@@ -448,15 +415,17 @@
 		}
 
 		function showSection( $detail, section, focus ) {
-			var $tabs = $detail.find( '.acfw-section-tab' );
+			var $all  = $detail.find( '.acfw-section-tab' );
+			var $tabs = $all.not( '[hidden]' );
 			var $tab  = $tabs.filter( '[data-section="' + section + '"]' );
 			if ( ! $tab.length ) {
-				// Not every item type has every section ( only endpoints have Content ).
+				// Not every pane has every section ( only endpoints have Content,
+				// only widget banners have Style ).
 				$tab    = $tabs.first();
 				section = String( $tab.data( 'section' ) );
 			}
 
-			$tabs.removeClass( 'is-active' ).attr( { 'aria-selected': 'false', tabindex: '-1' } );
+			$all.removeClass( 'is-active' ).attr( { 'aria-selected': 'false', tabindex: '-1' } );
 			$tab.addClass( 'is-active' ).attr( { 'aria-selected': 'true', tabindex: '0' } );
 			$detail.find( '.acfw-section' ).removeClass( 'is-active' );
 			var $panel = $detail.find( '.acfw-section[data-section="' + section + '"]' ).addClass( 'is-active' );
@@ -482,7 +451,7 @@
 				return;
 			}
 			e.preventDefault();
-			var $tabs = $( this ).closest( '.acfw-section-tabs' ).find( '.acfw-section-tab' );
+			var $tabs = $( this ).closest( '.acfw-section-tabs' ).find( '.acfw-section-tab' ).not( '[hidden]' );
 			var count = $tabs.length;
 			var at    = $tabs.index( this );
 			var move  = moves[ e.key ];
@@ -492,12 +461,17 @@
 
 		function selectItem( key ) {
 			$( '.acfw-node' ).removeClass( 'is-selected' );
-			byKey( '.acfw-node', key ).first().addClass( 'is-selected' );
+			var $node = byKey( '.acfw-node', key ).first().addClass( 'is-selected' );
+
+			// The canvas marks the item being edited the way the storefront marks
+			// the page a customer is on.
+			$( '.acfw-canvas-menu .acfw-menu-item' ).removeClass( 'is-active' ).children( '.acfw-canvas-link' ).attr( 'aria-pressed', 'false' );
+			$node.filter( '.acfw-menu-item' ).addClass( 'is-active' ).children( '.acfw-canvas-link' ).attr( 'aria-pressed', 'true' );
 
 			$details.find( '.acfw-detail-empty' ).hide();
 			$details.find( '.acfw-detail' ).attr( 'hidden', 'hidden' );
 			var $detail = byKey( '.acfw-builder-detail .acfw-detail', key ).removeAttr( 'hidden' );
-			$( '.acfw-builder-layout' ).addClass( 'is-editing' );
+			$( '.acfw-builder-layout, .acfw-canvas-layout' ).addClass( 'is-editing' );
 
 			// Saving the menu lands back on this item.
 			$( '.acfw-selected-input' ).val( key );
@@ -512,13 +486,35 @@
 			}
 		}
 
-		/* ---- Live preview: the pane, its preview strip and the list row follow the fields ---- */
+		/* ---- Live preview: the canvas row and the inspector follow the fields ---- */
 		function paneOf( el ) {
 			return $( el ).closest( '.acfw-item-form' );
 		}
 
 		function rowOf( $pane ) {
 			return byKey( '.acfw-node', $pane.data( 'key' ) ).first();
+		}
+
+		// A row's own link ( a group's toggle ), not the links of its children.
+		function linkOf( $row ) {
+			return $row.children( '.acfw-canvas-link' );
+		}
+
+		// "%s", "%d", "%1$s" and "%2$s" in a translated string, in one pass, so a
+		// "$" or "%s" typed in a label is never read as a placeholder.
+		function fmt( tpl, a, b ) {
+			return String( tpl || '' ).replace( /%([12])\$[sd]|%[sd]/g, function ( match, n ) {
+				return String( '2' === n ? b : a );
+			} );
+		}
+
+		// An amount the way wc_price() prints it: the store's decimals,
+		// separators and currency position.
+		function money( raw ) {
+			var c     = acfwAdmin.canvas || {};
+			var parts = parseFloat( raw ).toFixed( undefined === c.decimals ? 2 : c.decimals ).split( '.' );
+			parts[ 0 ] = parts[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, c.thousandSep || '' );
+			return fmt( c.price || '%1$s%2$s', c.currency || '', parts.join( c.decimalSep || '.' ) );
 		}
 
 		function iconMarkup( cls, url, wrapper ) {
@@ -535,39 +531,40 @@
 			var upload = 'upload' === $pane.find( '.acfw-icon-source input:checked' ).val();
 			var url    = upload ? $.trim( $pane.find( '.acfw-icon-upload .acfw-media-input' ).val() || '' ) : '';
 			var cls    = upload ? '' : ( $pane.find( '.acfw-icon-select' ).val() || '' );
-			var $row   = rowOf( $pane );
+			var $link  = linkOf( rowOf( $pane ) );
 
 			if ( ! url && ! cls ) {
 				// Nothing picked yet: keep what the server drew ( the type's default ).
 				return;
 			}
-			$pane.find( '.acfw-preview-icon' ).empty().append( iconMarkup( cls, url, 'acfw-preview-glyph' ) );
 			$pane.find( '.acfw-detail-head .acfw-detail-icon' ).replaceWith( iconMarkup( cls, url, 'acfw-detail-icon' ) );
-			$row.find( '> .acfw-node-head .acfw-node-icon' ).replaceWith( iconMarkup( cls, url, 'acfw-node-icon' ) );
+			if ( $link.children( '.acfw-icon' ).length ) {
+				$link.children( '.acfw-icon' ).replaceWith( iconMarkup( cls, url, 'acfw-icon' ) );
+			} else {
+				$link.prepend( iconMarkup( cls, url, 'acfw-icon' ) );
+			}
 		}
 
 		$( document ).on( 'input', '.acfw-item-form .acfw-label-input', function () {
 			var $pane = paneOf( this );
-			$pane.find( '.acfw-detail-title, .acfw-preview-label' ).text( this.value );
-			rowOf( $pane ).find( '> .acfw-node-head .acfw-node-title' ).text( this.value );
+			$pane.find( '.acfw-detail-title' ).text( this.value );
+			linkOf( rowOf( $pane ) ).children( '.acfw-label' ).text( this.value );
 		} );
 
 		$( document ).on( 'input', '.acfw-item-form .acfw-badge-input', function () {
-			var $pane = paneOf( this );
-			var text  = $.trim( this.value );
-			$pane.find( '.acfw-preview-pill' ).text( text ).prop( 'hidden', ! text );
-			rowOf( $pane ).find( '> .acfw-node-head .acfw-node-chip' ).text( text ).prop( 'hidden', ! text );
+			var text = $.trim( this.value );
+			linkOf( rowOf( paneOf( this ) ) ).children( '.acfw-count' ).text( text ).prop( 'hidden', ! text );
 		} );
 
 		$( document ).on( 'input', '.acfw-item-form .acfw-slug-input', function () {
-			var $preview = paneOf( this ).find( '.acfw-preview' );
-			var slug     = this.value.toLowerCase().trim().replace( /[\s_]+/g, '-' ).replace( /[^a-z0-9-]/g, '' );
-			$preview.find( '.acfw-preview-url' ).text( String( $preview.data( 'base' ) || '' ) + ( slug ? slug + '/' : '' ) );
+			var $meta = paneOf( this ).find( '.acfw-inspector-meta' );
+			var slug  = this.value.toLowerCase().trim().replace( /[\s_]+/g, '-' ).replace( /[^a-z0-9-]/g, '' );
+			$meta.find( '.acfw-inspector-url' ).text( String( $meta.data( 'base' ) || '' ) + ( slug ? slug + '/' : '' ) );
 		} );
 
 		$( document ).on( 'input', '.acfw-item-form .acfw-url-input', function () {
 			var url = $.trim( this.value );
-			paneOf( this ).find( '.acfw-preview-url' ).text( url ).prop( 'hidden', ! url );
+			paneOf( this ).find( '.acfw-inspector-url' ).text( url ).prop( 'hidden', ! url );
 		} );
 
 		$( document ).on( 'change', '.acfw-item-form .acfw-icon-select, .acfw-item-form .acfw-icon-source input', function () {
@@ -589,12 +586,62 @@
 			return n;
 		}
 
+		// "j M", the way date_i18n() prints it for the chip on the server.
+		function shortDay( value ) {
+			var m      = /^(\d{4})-(\d{2})-(\d{2})$/.exec( value || '' );
+			var months = ( acfwAdmin.canvas && acfwAdmin.canvas.months ) || [];
+			if ( ! m ) {
+				return value;
+			}
+			return parseInt( m[ 3 ], 10 ) + ' ' + ( months[ parseInt( m[ 2 ], 10 ) - 1 ] || m[ 2 ] );
+		}
+
+		// Who can see an item, in words ( the chip on its row ). Mirrors
+		// ACFW_Tab_Items::rule_summary().
+		function ruleSummary( $pane ) {
+			var c        = acfwAdmin.canvas || {};
+			var parts    = [];
+			var roles    = $pane.find( '.acfw-roles-select option:selected' ).map( function () {
+				return $.trim( $( this ).text() );
+			} ).get();
+			var orders   = parseInt( $pane.find( 'input[name$="[vis_min_orders]"]' ).val(), 10 ) || 0;
+			var spent    = $.trim( $pane.find( 'input[name$="[vis_min_spent]"]' ).val() || '' );
+			var products = ( $pane.find( '.acfw-product-select' ).val() || [] ).length;
+			var from     = $pane.find( 'input[name$="[vis_from]"]' ).val();
+			var to       = $pane.find( 'input[name$="[vis_to]"]' ).val();
+
+			if ( roles.length ) {
+				parts.push( roles.join( ', ' ) );
+			}
+			if ( orders > 0 ) {
+				parts.push( fmt( 1 === orders ? c.order : c.orders, orders ) );
+			}
+			if ( parseFloat( spent ) > 0 ) {
+				parts.push( fmt( c.spent, money( spent ) ) );
+			}
+			if ( 1 === products ) {
+				parts.push( c.product );
+			} else if ( products > 1 ) {
+				parts.push( fmt( c.products, products ) );
+			}
+			if ( from && to ) {
+				parts.push( fmt( c.range, shortDay( from ), shortDay( to ) ) );
+			} else if ( from ) {
+				parts.push( fmt( c.from, shortDay( from ) ) );
+			} else if ( to ) {
+				parts.push( fmt( c.until, shortDay( to ) ) );
+			}
+			return parts;
+		}
+
 		$( document ).on( 'input change', '.acfw-item-form .acfw-rule-input', function () {
 			var $pane = paneOf( this );
 			var n     = countRules( $pane );
+			var text  = ruleSummary( $pane ).join( ' \u00b7 ' );
+			var $chip = linkOf( rowOf( $pane ) ).children( '.acfw-canvas-rules' );
+
 			$pane.find( '.acfw-section-count' ).text( n ).prop( 'hidden', ! n );
-			$pane.find( '.acfw-preview-locked' ).prop( 'hidden', ! n );
-			rowOf( $pane ).find( '> .acfw-node-head .acfw-node-lock' ).prop( 'hidden', ! n );
+			$chip.prop( 'hidden', ! text ).attr( 'title', text ).find( '.acfw-canvas-rules-text' ).text( text );
 		} );
 
 		/* ---- Unsaved changes: say so, and warn before leaving the page ---- */
@@ -612,8 +659,9 @@
 
 		if ( $itemsForm.length ) {
 			$itemsForm.on( 'input change', ':input', function ( e ) {
-				// Searching and filtering the list changes nothing that is saved.
-				if ( ! $( e.target ).closest( '.acfw-panel-tools' ).length ) {
+				// Searching the menu, or typing a new item's label, changes nothing
+				// that is saved ( "Add item" saves on its own ).
+				if ( ! $( e.target ).closest( '.acfw-panel-tools, .acfw-add-pop' ).length ) {
 					markDirty();
 				}
 			} );
@@ -670,7 +718,7 @@
 
 		/* ---- Search + "enabled only" filter over the menu-item list ---- */
 		function nodeMatches( $node, term, only ) {
-			var label = $node.find( '> .acfw-node-head .acfw-node-title' ).first().text().toLowerCase();
+			var label = $node.children( '.acfw-canvas-link' ).children( '.acfw-label' ).text().toLowerCase();
 			return ( ! term || -1 !== label.indexOf( term ) ) && ( ! only || ! $node.hasClass( 'is-inactive' ) );
 		}
 
@@ -704,8 +752,11 @@
 			} );
 
 			$( '.acfw-list-empty' ).attr( 'hidden', visible ? 'hidden' : null );
-			// Reordering a filtered list would save a misleading order.
-			$( '.acfw-list-hint' ).toggle( ! term && ! only );
+
+			// Moving items in a filtered menu would save a misleading order.
+			var filtering = !! ( term || only );
+			$( '.acfw-canvas' ).toggleClass( 'is-filtering', filtering );
+			$( '.acfw-canvas .acfw-sortable.ui-sortable' ).sortable( 'option', 'disabled', filtering );
 		}
 
 		$( document ).on( 'input', '.acfw-item-search', filterItems );
@@ -717,20 +768,14 @@
 			filterItems();
 		} );
 
-		/* ---- Pencil opens the same detail pane as clicking the row ---- */
-		$( document ).on( 'click', '.acfw-node-edit', function ( e ) {
-			e.preventDefault();
-			e.stopPropagation();
-			selectItem( $( this ).data( 'key' ) );
-		} );
-
 		/* ---- Back to menu: collapse the detail pane, useful on narrow screens ---- */
 		$( document ).on( 'click', '.acfw-back-to-menu', function () {
 			$( '.acfw-node' ).removeClass( 'is-selected' );
 			$details.find( '.acfw-detail' ).attr( 'hidden', 'hidden' );
 			$details.find( '.acfw-detail-empty' ).show();
-			$( '.acfw-builder-layout' ).removeClass( 'is-editing' );
-			$( 'html, body' ).animate( { scrollTop: $( '.acfw-builder-list' ).offset().top - 60 }, 200 );
+			$( '.acfw-canvas-menu .acfw-menu-item' ).removeClass( 'is-active' ).children( '.acfw-canvas-link' ).attr( 'aria-pressed', 'false' );
+			$( '.acfw-builder-layout, .acfw-canvas-layout' ).removeClass( 'is-editing' );
+			$( 'html, body' ).animate( { scrollTop: $( '.acfw-builder-list, .acfw-canvas' ).first().offset().top - 60 }, 200 );
 		} );
 
 		$( document ).on( 'click', '.acfw-node-head', function ( e ) {
@@ -755,10 +800,12 @@
 		$( document ).on( 'change', '.acfw-active-proxy', function () {
 			var key = $( this ).data( 'key' );
 			var on = this.checked;
-			$( this ).closest( '.acfw-node' ).toggleClass( 'is-inactive', ! on );
+			// The row's switch and the inspector's stay in step.
+			byKey( '.acfw-active-proxy', key ).not( this ).prop( 'checked', on );
+			byKey( '.acfw-node', key ).toggleClass( 'is-inactive', ! on );
 			var $pane = byKey( '.acfw-builder-detail .acfw-detail', key );
 			$pane.find( '.acfw-active-input' ).val( on ? '1' : '0' );
-			$pane.find( '.acfw-preview' ).toggleClass( 'is-off', ! on );
+			$pane.find( '.acfw-inspector-off' ).prop( 'hidden', on );
 		} );
 
 		/* ---- Radio-box groups (reference-style radio controls) ---- */
@@ -782,10 +829,24 @@
 			$form.find( '.acfw-blink-text' ).attr( 'hidden', widget && 'none' !== link ? null : 'hidden' );
 			$form.find( '.acfw-bcount' ).attr( 'hidden', widget && $form.find( '.acfw-banner-count-toggle' ).is( ':checked' ) ? null : 'hidden' );
 
+			// Everything under Style is for widget banners.
+			var $style = $form.find( '.acfw-section-tab[data-section="style"]' ).prop( 'hidden', ! widget );
+			if ( ! widget && $style.hasClass( 'is-active' ) ) {
+				lastSection = showSection( $form, 'general', false );
+			}
+
 			$form.find( '.acfw-detail-head .acfw-node-badge' )
 				.attr( 'class', 'acfw-node-badge acfw-badge-' + type )
 				.text( type );
 		}
+
+		// Banner Visibility: how many rules narrow it down ( roles, dates ).
+		$( document ).on( 'input change', '.acfw-banner-form .acfw-rule-input', function () {
+			var $form = $( this ).closest( '.acfw-banner-form' );
+			var n     = ( $form.find( '.acfw-roles-select' ).val() || [] ).length ? 1 : 0;
+			n += ( $form.find( 'input[name="banner_vis_from"]' ).val() || $form.find( 'input[name="banner_vis_to"]' ).val() ) ? 1 : 0;
+			$form.find( '.acfw-section-count' ).text( n ).prop( 'hidden', ! n );
+		} );
 
 		$( document ).on( 'change', 'input[name="banner_type"], input[name="banner_link_type"], .acfw-banner-count-toggle', function () {
 			refreshBannerForm( $( this ).closest( '.acfw-detail' ) );
@@ -977,18 +1038,244 @@
 			}
 		}
 
+		/* ---- Menu canvas: the customer's menu, edited in place ---- */
+		var $canvas = $( '.acfw-canvas' );
+		var canvasText = acfwAdmin.canvas || {};
+
+		function canvasLabel( $node ) {
+			return $.trim( $node.children( '.acfw-canvas-link' ).children( '.acfw-label' ).text() );
+		}
+
+		function speak( message ) {
+			if ( message && window.wp && window.wp.a11y && window.wp.a11y.speak ) {
+				window.wp.a11y.speak( message, 'assertive' );
+			}
+		}
+
+		// An empty group shows where to drop items into it.
+		function refreshGroups() {
+			$canvas.find( '.acfw-sortable-children' ).each( function () {
+				$( this ).toggleClass( 'is-empty', ! $( this ).children( '.acfw-node' ).length );
+			} );
+		}
+		refreshGroups();
+
+		// Click ( or Enter / Space ) opens the item in the inspector.
+		$( document ).on( 'click', '.acfw-canvas-link', function ( e ) {
+			e.preventDefault();
+			selectItem( $( this ).closest( '.acfw-node' ).data( 'key' ) );
+			// jQuery UI cancels the mousedown ( the row is a drag handle ), which
+			// also stops the click from focusing it; without focus, Alt + arrow
+			// keys had nothing to move. Focus from a mouse click ( detail > 0 )
+			// is marked so it draws no keyboard ring.
+			$( this ).toggleClass( 'is-pointer-focus', !! ( e.originalEvent && e.originalEvent.detail ) );
+			this.focus( { preventScroll: true } );
+			// Stacked layout: the inspector is below the menu, so bring it up.
+			if ( window.matchMedia && window.matchMedia( '(max-width: 900px)' ).matches ) {
+				var $open = $details.find( '.acfw-detail:not([hidden])' );
+				if ( $open.length ) {
+					$open[ 0 ].scrollIntoView( { behavior: 'smooth', block: 'start' } );
+				}
+			}
+		} );
+
+		/* Alt + arrow keys move the focused item: up and down among its
+		 * neighbours, right into the group above it, left out of its group. */
+		function moveNode( $node, key ) {
+			var $list  = $node.parent();
+			var nested = $list.hasClass( 'acfw-sortable-children' );
+			var $prev  = $node.prev( '.acfw-node' );
+			var $next  = $node.next( '.acfw-node' );
+			var label  = canvasLabel( $node );
+
+			if ( 'ArrowUp' === key && $prev.length ) {
+				$node.insertBefore( $prev );
+				return fmt( canvasText.movedUp, label );
+			}
+			if ( 'ArrowDown' === key && $next.length ) {
+				$node.insertAfter( $next );
+				return fmt( canvasText.movedDown, label );
+			}
+			if ( 'ArrowRight' === key && ! nested && 'group' !== $node.data( 'type' ) && 'group' === $prev.data( 'type' ) ) {
+				$prev.children( '.acfw-sortable-children' ).append( $node );
+				return fmt( canvasText.movedIn, label, canvasLabel( $prev ) );
+			}
+			if ( 'ArrowLeft' === key && nested ) {
+				$node.insertAfter( $list.closest( '.acfw-node' ) );
+				return fmt( canvasText.movedOut, label );
+			}
+			return '';
+		}
+
+		// The ring comes back once the keyboard is in use, and goes with the focus.
+		$( document ).on( 'focusout', '.acfw-canvas-link', function () {
+			$( this ).removeClass( 'is-pointer-focus' );
+		} );
+
+		$( document ).on( 'keydown', '.acfw-canvas-link', function ( e ) {
+			$( this ).removeClass( 'is-pointer-focus' );
+			// A link acting as a button answers Space too.
+			if ( ' ' === e.key && 'A' === this.tagName && ! e.altKey ) {
+				e.preventDefault();
+				$( this ).trigger( 'click' );
+				return;
+			}
+			var arrows = [ 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight' ];
+			if ( ! e.altKey || -1 === arrows.indexOf( e.key ) ) {
+				return;
+			}
+			// Alt + Left / Right would otherwise go Back / Forward.
+			e.preventDefault();
+
+			var key = e.key;
+			if ( 'rtl' === document.documentElement.dir && ( 'ArrowLeft' === key || 'ArrowRight' === key ) ) {
+				key = 'ArrowLeft' === key ? 'ArrowRight' : 'ArrowLeft';
+			}
+			var $node = $( this ).closest( '.acfw-node' );
+			var moved = $canvas.hasClass( 'is-filtering' ) ? '' : moveNode( $node, key );
+
+			if ( ! moved ) {
+				speak( canvasText.cantMove );
+				return;
+			}
+			refreshGroups();
+			markDirty();
+			// Moving an element takes the focus off it.
+			$node.children( '.acfw-canvas-link' ).trigger( 'focus' );
+			speak( moved );
+		} );
+
 		/* ---- Drag & drop (nestable, 1 level into groups) ---- */
-		$( '.acfw-sortable' ).sortable( {
-			handle: '.acfw-drag',
+		$canvas.find( '.acfw-sortable' ).sortable( {
+			// The row itself is the handle; a short move tells a drag from a click.
+			handle: '> .acfw-canvas-link',
+			cancel: 'input, textarea, select, option',
+			distance: 6,
 			items: '> .acfw-node',
-			placeholder: 'acfw-node-placeholder',
-			connectWith: '.acfw-sortable',
+			placeholder: 'acfw-canvas-placeholder',
+			forcePlaceholderSize: true,
+			connectWith: '.acfw-canvas .acfw-sortable',
 			tolerance: 'pointer',
 			cursor: 'grabbing',
+			start: function ( event, ui ) {
+				var group = 'group' === ui.item.data( 'type' );
+				$canvas.addClass( 'is-dragging' ).toggleClass( 'is-dragging-group', group );
+				// Groups do not go inside groups, so their lists sit this one out.
+				if ( group ) {
+					$canvas.find( '.acfw-sortable-children' ).sortable( 'option', 'disabled', true );
+				}
+				// The drop areas just opened up, so measure the lists again.
+				$( this ).sortable( 'refresh' );
+			},
 			receive: function ( event, ui ) {
 				if ( $( this ).hasClass( 'acfw-sortable-children' ) && 'group' === ui.item.data( 'type' ) ) {
 					$( ui.sender ).sortable( 'cancel' );
 				}
+			},
+			stop: function () {
+				$canvas.removeClass( 'is-dragging is-dragging-group' );
+				$canvas.find( '.acfw-sortable-children' ).sortable( 'option', 'disabled', $canvas.hasClass( 'is-filtering' ) );
+				refreshGroups();
+			}
+		} );
+
+		/* ---- "Add to menu": an endpoint, group, link or page, at the end ---- */
+		// A dialog in the middle of the window.
+		var $addOverlay = $( '.acfw-add-overlay' );
+		var $addPop     = $addOverlay.find( '.acfw-add-pop' );
+		var addReturn   = null;
+
+		function closeAddPop( restoreFocus ) {
+			if ( $addOverlay.prop( 'hidden' ) ) {
+				return;
+			}
+			$addOverlay.prop( 'hidden', true );
+			$( 'body' ).removeClass( 'acfw-dialog-open' );
+			$( '.acfw-canvas-add' ).removeClass( 'is-open' ).attr( 'aria-expanded', 'false' );
+			if ( restoreFocus && addReturn ) {
+				$( addReturn ).trigger( 'focus' );
+			}
+			addReturn = null;
+		}
+
+		function setAddType( $radio ) {
+			$radio.prop( 'checked', true );
+			$addPop.find( '.acfw-add-hint' ).text( String( $radio.data( 'hint' ) || '' ) );
+		}
+
+		function openAddPop( btn ) {
+			$addPop.find( '.acfw-add-error' ).prop( 'hidden', true );
+			$addPop.find( '.acfw-add-label' ).val( '' ).removeAttr( 'aria-invalid' );
+			$addOverlay.prop( 'hidden', false );
+			$( 'body' ).addClass( 'acfw-dialog-open' );
+			$( btn ).addClass( 'is-open' ).attr( 'aria-expanded', 'true' );
+			addReturn = btn;
+			$addPop.find( '.acfw-add-label' ).trigger( 'focus' );
+		}
+
+		$( document ).on( 'click', '.acfw-canvas-add', function ( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			if ( addReturn === this ) {
+				closeAddPop( true );
+				return;
+			}
+			openAddPop( this );
+		} );
+
+		$addPop.on( 'change', 'input[name="acfw_add[type]"]', function () {
+			setAddType( $( this ) );
+		} );
+
+		$addPop.on( 'click', '.acfw-add-cancel, .acfw-add-close', function () {
+			closeAddPop( true );
+		} );
+
+		// A click on the backdrop, not the dialog, closes it.
+		$addOverlay.on( 'click', function ( e ) {
+			if ( e.target === this ) {
+				closeAddPop( true );
+			}
+		} );
+
+		// Tab stays inside the dialog while it is open.
+		$addOverlay.on( 'keydown', function ( e ) {
+			if ( 'Tab' !== e.key ) {
+				return;
+			}
+			var $stops = $addPop.find( 'button, input[type="text"], input[type="radio"]:checked' ).filter( ':visible:not(:disabled)' );
+			var first  = $stops.get( 0 );
+			var last   = $stops.get( $stops.length - 1 );
+			if ( e.shiftKey && document.activeElement === first ) {
+				e.preventDefault();
+				last.focus();
+			} else if ( ! e.shiftKey && document.activeElement === last ) {
+				e.preventDefault();
+				first.focus();
+			}
+		} );
+
+		// "Add item" posts the whole form, so nothing typed elsewhere is lost.
+		$addPop.on( 'click', '.acfw-add-submit', function ( e ) {
+			var $label = $addPop.find( '.acfw-add-label' );
+			if ( ! $.trim( $label.val() ) ) {
+				e.preventDefault();
+				$addPop.find( '.acfw-add-error' ).prop( 'hidden', false );
+				$label.attr( 'aria-invalid', 'true' ).trigger( 'focus' );
+			}
+		} );
+
+		// Enter in the label adds the item ( the form's default button is Save ).
+		$addPop.on( 'keydown', '.acfw-add-label', function ( e ) {
+			if ( 'Enter' === e.key ) {
+				e.preventDefault();
+				$addPop.find( '.acfw-add-submit' ).trigger( 'click' );
+			}
+		} );
+
+		$( document ).on( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key && ! $addOverlay.prop( 'hidden' ) ) {
+				closeAddPop( true );
 			}
 		} );
 

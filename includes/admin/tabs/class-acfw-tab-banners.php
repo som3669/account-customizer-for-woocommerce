@@ -194,6 +194,14 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 			$roles     = wp_roles()->get_names();
 			$sel_roles = (array) ( $banner['roles'] ?? array() );
 			$key       = $is_new ? '__new__' : $slug;
+			$uid       = 'acfw-b' . substr( md5( (string) $key ), 0, 8 );
+			$rules     = ( $sel_roles ? 1 : 0 ) + ( ( ! empty( $banner['vis_from'] ) || ! empty( $banner['vis_to'] ) ) ? 1 : 0 );
+			$sections  = array(
+				'general'    => array( __( 'General', 'my-account-dashboard-builder' ), 'admin-settings' ),
+				'style'      => array( __( 'Style', 'my-account-dashboard-builder' ), 'art' ),
+				'link'       => array( __( 'Link', 'my-account-dashboard-builder' ), 'admin-links' ),
+				'visibility' => array( __( 'Visibility', 'my-account-dashboard-builder' ), 'visibility' ),
+			);
 			?>
 			<div class="acfw-detail" data-key="<?php echo esc_attr( $key ); ?>" hidden>
 			<form method="post" class="acfw-banner-form">
@@ -211,153 +219,154 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 					<?php endif; ?>
 				</div>
 
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Banner name', 'my-account-dashboard-builder' ); ?></label>
-					<input type="text" name="banner_title" value="<?php echo esc_attr( $banner['title'] ); ?>" />
-					<p class="acfw-hint"><?php esc_html_e( 'Enter a unique name for this banner.', 'my-account-dashboard-builder' ); ?></p>
-				</div>
+				<?php $this->section_tabs( $uid, $sections, __( 'Banner settings', 'my-account-dashboard-builder' ), array( 'visibility' => $rules ) ); ?>
 
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Banner type', 'my-account-dashboard-builder' ); ?></label>
-					<?php
-					$this->buttonset(
-						'banner_type',
-						$banner['type'],
-						array(
-							'widget' => __( 'Widget', 'my-account-dashboard-builder' ),
-							'image'  => __( 'Image', 'my-account-dashboard-builder' ),
-						),
-						'widget',
-						array(
-							'widget' => 'widget',
-							'image'  => 'image',
-						)
-					);
-					?>
-				</div>
-
-				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Banner icon', 'my-account-dashboard-builder' ); ?></label>
-					<?php $b_icon_src = ( 'upload' === ( $banner['icon_source'] ?? 'choose' ) || ! empty( $banner['icon_url'] ) ) ? 'upload' : 'choose'; ?>
-					<div class="acfw-icon-source">
-						<label class="acfw-radio-card <?php echo 'choose' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="choose" <?php checked( $b_icon_src, 'choose' ); ?> /><?php echo wp_kses( acfw_ui_icon( 'widget' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Choose icon', 'my-account-dashboard-builder' ); ?></label>
-						<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><?php echo wp_kses( acfw_ui_icon( 'upload' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?></label>
+				<?php // ---- General ---- ?>
+				<section class="acfw-section is-active" id="<?php echo esc_attr( $uid . '-general' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-general' ); ?>" data-section="general">
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Banner name', 'my-account-dashboard-builder' ); ?></label>
+						<input type="text" name="banner_title" value="<?php echo esc_attr( $banner['title'] ); ?>" />
+						<p class="acfw-hint"><?php esc_html_e( 'Enter a unique name for this banner.', 'my-account-dashboard-builder' ); ?></p>
 					</div>
-					<div class="acfw-icon-choose" <?php echo 'choose' === $b_icon_src ? '' : 'hidden'; ?>>
-						<?php $this->icon_picker( 'banner_icon', $banner['icon'] ?? '' ); ?>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Banner type', 'my-account-dashboard-builder' ); ?></label>
+						<?php
+						$this->buttonset(
+							'banner_type',
+							$banner['type'],
+							array(
+								'widget' => __( 'Widget', 'my-account-dashboard-builder' ),
+								'image'  => __( 'Image', 'my-account-dashboard-builder' ),
+							),
+							'widget',
+							array(
+								'widget' => 'widget',
+								'image'  => 'image',
+							)
+						);
+						?>
 					</div>
-					<div class="acfw-icon-upload" <?php echo 'upload' === $b_icon_src ? '' : 'hidden'; ?>>
-						<?php $this->uploader( 'banner_icon_url', $banner['icon_url'] ?? '' ); ?>
+					<div class="acfw-field acfw-btype acfw-btype-widget">
+						<label><?php esc_html_e( 'Banner icon', 'my-account-dashboard-builder' ); ?></label>
+						<?php $b_icon_src = ( 'upload' === ( $banner['icon_source'] ?? 'choose' ) || ! empty( $banner['icon_url'] ) ) ? 'upload' : 'choose'; ?>
+						<div class="acfw-icon-source">
+							<label class="acfw-radio-card <?php echo 'choose' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="choose" <?php checked( $b_icon_src, 'choose' ); ?> /><?php echo wp_kses( acfw_ui_icon( 'widget' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Choose icon', 'my-account-dashboard-builder' ); ?></label>
+							<label class="acfw-radio-card <?php echo 'upload' === $b_icon_src ? 'is-active' : ''; ?>"><input type="radio" name="banner_icon_source" value="upload" <?php checked( $b_icon_src, 'upload' ); ?> /><?php echo wp_kses( acfw_ui_icon( 'upload' ), acfw_svg_kses() ); ?> <?php esc_html_e( 'Upload icon', 'my-account-dashboard-builder' ); ?></label>
+						</div>
+						<div class="acfw-icon-choose" <?php echo 'choose' === $b_icon_src ? '' : 'hidden'; ?>>
+							<?php $this->icon_picker( 'banner_icon', $banner['icon'] ?? '' ); ?>
+						</div>
+						<div class="acfw-icon-upload" <?php echo 'upload' === $b_icon_src ? '' : 'hidden'; ?>>
+							<?php $this->uploader( 'banner_icon_url', $banner['icon_url'] ?? '' ); ?>
+						</div>
 					</div>
-				</div>
-
-				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Icon width (px)', 'my-account-dashboard-builder' ); ?></label>
-					<input type="number" name="banner_icon_width" min="16" max="100" value="<?php echo esc_attr( $banner['icon_width'] ?? 40 ); ?>" />
-					<p class="acfw-hint"><?php esc_html_e( 'Set the icon width in pixels.', 'my-account-dashboard-builder' ); ?></p>
-				</div>
-
-				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Widget width (px)', 'my-account-dashboard-builder' ); ?></label>
-					<input type="number" name="banner_widget_width" min="200" max="700" value="<?php echo esc_attr( $banner['widget_width'] ?? 250 ); ?>" />
-					<p class="acfw-hint"><?php esc_html_e( 'Set the widget width in pixels.', 'my-account-dashboard-builder' ); ?></p>
-				</div>
-
-				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Widget text', 'my-account-dashboard-builder' ); ?></label>
-					<textarea name="banner_content" rows="3"><?php echo esc_textarea( $banner['content'] ); ?></textarea>
-					<p class="acfw-hint"><?php esc_html_e( 'Optional text to display in the banner widget.', 'my-account-dashboard-builder' ); ?></p>
-				</div>
-
-				<div class="acfw-field acfw-btype acfw-btype-image">
-					<label><?php esc_html_e( 'Image', 'my-account-dashboard-builder' ); ?></label>
-					<?php $this->uploader( 'banner_image_url', $banner['image_url'] ); ?>
-				</div>
-
-				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Banner colors', 'my-account-dashboard-builder' ); ?></label>
-					<div class="acfw-swatch-row">
-						<?php foreach ( ACFW_Banners::color_fields() as $ckey => $clabel ) : ?>
-							<?php $this->color_control( 'banner_' . $ckey, $banner[ $ckey ] ?? '', $clabel ); ?>
-						<?php endforeach; ?>
+					<div class="acfw-field acfw-btype acfw-btype-widget">
+						<label><?php esc_html_e( 'Icon width (px)', 'my-account-dashboard-builder' ); ?></label>
+						<input type="number" name="banner_icon_width" min="16" max="100" value="<?php echo esc_attr( $banner['icon_width'] ?? 40 ); ?>" />
+						<p class="acfw-hint"><?php esc_html_e( 'Set the icon width in pixels.', 'my-account-dashboard-builder' ); ?></p>
 					</div>
-				</div>
+					<div class="acfw-field acfw-btype acfw-btype-widget">
+						<label><?php esc_html_e( 'Widget text', 'my-account-dashboard-builder' ); ?></label>
+						<textarea name="banner_content" rows="3"><?php echo esc_textarea( $banner['content'] ); ?></textarea>
+						<p class="acfw-hint"><?php esc_html_e( 'Optional text to display in the banner widget.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+					<div class="acfw-field acfw-btype acfw-btype-image">
+						<label><?php esc_html_e( 'Image', 'my-account-dashboard-builder' ); ?></label>
+						<?php $this->uploader( 'banner_image_url', $banner['image_url'] ); ?>
+					</div>
+				</section>
 
-				<div class="acfw-field acfw-btype acfw-btype-widget">
-					<label><?php esc_html_e( 'Show item-count badge', 'my-account-dashboard-builder' ); ?></label>
-					<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="banner_show_count" class="acfw-banner-count-toggle" value="yes" <?php checked( 'yes', $banner['show_count'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
-				</div>
+				<?php // ---- Style ---- ?>
+				<section class="acfw-section" id="<?php echo esc_attr( $uid . '-style' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-style' ); ?>" data-section="style">
+					<div class="acfw-field acfw-btype acfw-btype-widget">
+						<label><?php esc_html_e( 'Widget width (px)', 'my-account-dashboard-builder' ); ?></label>
+						<input type="number" name="banner_widget_width" min="200" max="700" value="<?php echo esc_attr( $banner['widget_width'] ?? 250 ); ?>" />
+						<p class="acfw-hint"><?php esc_html_e( 'Set the widget width in pixels.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+					<div class="acfw-field acfw-btype acfw-btype-widget">
+						<label><?php esc_html_e( 'Banner colors', 'my-account-dashboard-builder' ); ?></label>
+						<div class="acfw-swatch-row">
+							<?php foreach ( ACFW_Banners::color_fields() as $ckey => $clabel ) : ?>
+								<?php $this->color_control( 'banner_' . $ckey, $banner[ $ckey ] ?? '', $clabel ); ?>
+							<?php endforeach; ?>
+						</div>
+					</div>
+					<div class="acfw-field acfw-btype acfw-btype-widget">
+						<label><?php esc_html_e( 'Show item-count badge', 'my-account-dashboard-builder' ); ?></label>
+						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" name="banner_show_count" class="acfw-banner-count-toggle" value="yes" <?php checked( 'yes', $banner['show_count'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
+					</div>
+					<div class="acfw-field acfw-btype acfw-btype-widget acfw-bcount">
+						<label><?php esc_html_e( 'Badge shows', 'my-account-dashboard-builder' ); ?></label>
+						<select name="banner_count_source">
+							<?php foreach ( ACFW_Banners::count_sources() as $acfw_source => $acfw_source_label ) : ?>
+								<option value="<?php echo esc_attr( $acfw_source ); ?>" <?php selected( $banner['count_source'] ?? 'orders', $acfw_source ); ?>><?php echo esc_html( $acfw_source_label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<p class="acfw-hint"><?php esc_html_e( 'The number shown in the pill beside the banner title.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+				</section>
 
-				<div class="acfw-field acfw-btype acfw-btype-widget acfw-bcount">
-					<label><?php esc_html_e( 'Badge shows', 'my-account-dashboard-builder' ); ?></label>
-					<select name="banner_count_source">
-						<?php foreach ( ACFW_Banners::count_sources() as $acfw_source => $acfw_source_label ) : ?>
-							<option value="<?php echo esc_attr( $acfw_source ); ?>" <?php selected( $banner['count_source'] ?? 'orders', $acfw_source ); ?>><?php echo esc_html( $acfw_source_label ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<p class="acfw-hint"><?php esc_html_e( 'The number shown in the pill beside the banner title.', 'my-account-dashboard-builder' ); ?></p>
-				</div>
+				<?php // ---- Link ---- ?>
+				<section class="acfw-section" id="<?php echo esc_attr( $uid . '-link' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-link' ); ?>" data-section="link">
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Banner link', 'my-account-dashboard-builder' ); ?></label>
+						<?php
+						$this->buttonset(
+							'banner_link_type',
+							$banner['link_type'] ?? 'none',
+							array(
+								'none'     => __( 'None', 'my-account-dashboard-builder' ),
+								'endpoint' => __( 'Endpoint', 'my-account-dashboard-builder' ),
+								'external' => __( 'External URL', 'my-account-dashboard-builder' ),
+							),
+							'none'
+						);
+						?>
+					</div>
+					<div class="acfw-field acfw-blink acfw-blink-endpoint">
+						<label><?php esc_html_e( 'Link endpoint', 'my-account-dashboard-builder' ); ?></label>
+						<select name="banner_link_endpoint">
+							<option value=""><?php esc_html_e( '— Select —', 'my-account-dashboard-builder' ); ?></option>
+							<?php foreach ( ACFW()->items->get_items() as $ep_key => $ep ) : ?>
+								<?php
+								if ( 'endpoint' !== ( $ep['type'] ?? 'endpoint' ) ) {
+									continue; }
+								?>
+								<option value="<?php echo esc_attr( $ep_key ); ?>" <?php selected( $banner['link_endpoint'] ?? '', $ep_key ); ?>><?php echo esc_html( $ep['label'] ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div class="acfw-field acfw-blink acfw-blink-external">
+						<label><?php esc_html_e( 'External URL', 'my-account-dashboard-builder' ); ?></label>
+						<input type="url" name="banner_link" value="<?php echo esc_attr( $banner['link'] ); ?>" placeholder="https://…" />
+					</div>
+					<div class="acfw-field acfw-btype acfw-btype-widget acfw-blink-text">
+						<label><?php esc_html_e( 'Link text', 'my-account-dashboard-builder' ); ?></label>
+						<input type="text" name="banner_link_text" value="<?php echo esc_attr( $banner['link_text'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Learn more', 'my-account-dashboard-builder' ); ?>" />
+					</div>
+				</section>
 
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Banner link', 'my-account-dashboard-builder' ); ?></label>
-					<?php
-					$this->buttonset(
-						'banner_link_type',
-						$banner['link_type'] ?? 'none',
-						array(
-							'none'     => __( 'None', 'my-account-dashboard-builder' ),
-							'endpoint' => __( 'Endpoint', 'my-account-dashboard-builder' ),
-							'external' => __( 'External URL', 'my-account-dashboard-builder' ),
-						),
-						'none'
-					);
-					?>
-				</div>
-
-				<div class="acfw-field acfw-blink acfw-blink-endpoint">
-					<label><?php esc_html_e( 'Link endpoint', 'my-account-dashboard-builder' ); ?></label>
-					<select name="banner_link_endpoint">
-						<option value=""><?php esc_html_e( '— Select —', 'my-account-dashboard-builder' ); ?></option>
-						<?php foreach ( ACFW()->items->get_items() as $ep_key => $ep ) : ?>
-							<?php
-							if ( 'endpoint' !== ( $ep['type'] ?? 'endpoint' ) ) {
-								continue; }
-							?>
-							<option value="<?php echo esc_attr( $ep_key ); ?>" <?php selected( $banner['link_endpoint'] ?? '', $ep_key ); ?>><?php echo esc_html( $ep['label'] ); ?></option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-
-				<div class="acfw-field acfw-blink acfw-blink-external">
-					<label><?php esc_html_e( 'External URL', 'my-account-dashboard-builder' ); ?></label>
-					<input type="url" name="banner_link" value="<?php echo esc_attr( $banner['link'] ); ?>" placeholder="https://…" />
-				</div>
-
-				<div class="acfw-field acfw-btype acfw-btype-widget acfw-blink-text">
-					<label><?php esc_html_e( 'Link text', 'my-account-dashboard-builder' ); ?></label>
-					<input type="text" name="banner_link_text" value="<?php echo esc_attr( $banner['link_text'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Learn more', 'my-account-dashboard-builder' ); ?>" />
-				</div>
-
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Show banner to', 'my-account-dashboard-builder' ); ?></label>
-					<select name="banner_roles[]" multiple size="4" class="acfw-roles-select">
-						<?php foreach ( $roles as $role_key => $role_label ) : ?>
-							<option value="<?php echo esc_attr( $role_key ); ?>" <?php selected( in_array( $role_key, $sel_roles, true ) ); ?>><?php echo esc_html( $role_label ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show to all users.', 'my-account-dashboard-builder' ); ?></p>
-				</div>
-
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Show from', 'my-account-dashboard-builder' ); ?></label>
-					<input type="date" name="banner_vis_from" value="<?php echo esc_attr( $banner['vis_from'] ?? '' ); ?>" />
-				</div>
-
-				<div class="acfw-field">
-					<label><?php esc_html_e( 'Show until', 'my-account-dashboard-builder' ); ?></label>
-					<input type="date" name="banner_vis_to" value="<?php echo esc_attr( $banner['vis_to'] ?? '' ); ?>" />
-					<p class="acfw-hint"><?php esc_html_e( 'Whole days, in the site timezone. Leave both empty to always show it.', 'my-account-dashboard-builder' ); ?></p>
-				</div>
+				<?php // ---- Visibility ---- ?>
+				<section class="acfw-section" id="<?php echo esc_attr( $uid . '-visibility' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-visibility' ); ?>" data-section="visibility">
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Show banner to', 'my-account-dashboard-builder' ); ?></label>
+						<select name="banner_roles[]" multiple size="4" class="acfw-roles-select acfw-rule-input">
+							<?php foreach ( $roles as $role_key => $role_label ) : ?>
+								<option value="<?php echo esc_attr( $role_key ); ?>" <?php selected( in_array( $role_key, $sel_roles, true ) ); ?>><?php echo esc_html( $role_label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<p class="acfw-hint"><?php esc_html_e( 'Leave empty to show to all users.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Show from', 'my-account-dashboard-builder' ); ?></label>
+						<input type="date" class="acfw-rule-input" name="banner_vis_from" value="<?php echo esc_attr( $banner['vis_from'] ?? '' ); ?>" />
+					</div>
+					<div class="acfw-field">
+						<label><?php esc_html_e( 'Show until', 'my-account-dashboard-builder' ); ?></label>
+						<input type="date" class="acfw-rule-input" name="banner_vis_to" value="<?php echo esc_attr( $banner['vis_to'] ?? '' ); ?>" />
+						<p class="acfw-hint"><?php esc_html_e( 'Whole days, in the site timezone. Leave both empty to always show it.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+				</section>
 
 				<div class="acfw-form-footer">
 					<?php if ( ! $is_new ) : ?>

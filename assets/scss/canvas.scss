@@ -1,0 +1,720 @@
+// =========================================================================
+//  Menu Items canvas ( wp-admin ): the customer's menu, drawn with the
+//  storefront's own stylesheet so what the admin arranges is what customers
+//  get. Every storefront rule is nested under .acfw-canvas-page, so none of it
+//  reaches the rest of wp-admin ( the storefront also styles .acfw-toast, … ).
+//  The editing layer ( tools, drop zones, "+" ) follows.
+// =========================================================================
+
+@use 'sass:meta';
+
+$ink: #0f2545;
+$line: #e6ecf5;
+$soft: #5a6b85;
+$admin-accent: #2563eb;
+
+.acfw-canvas-page {
+	@include meta.load-css('frontend');
+}
+
+// ---- Layout: canvas beside the inspector ------------------------------------
+.acfw-items-form {
+	position: relative;
+}
+
+.acfw-canvas-layout {
+	display: flex;
+	align-items: flex-start;
+	gap: 20px;
+	margin-top: 16px;
+}
+
+.acfw-canvas {
+	flex: 0 0 440px;
+	min-width: 0;
+	margin-top: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+.acfw-canvas-layout .acfw-inspector {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+// Beside the canvas the inspector is always in view, so "Back to menu" is
+// only for the stacked layout.
+.acfw-canvas-layout .acfw-back-to-menu {
+	display: none;
+}
+
+@media (max-width: 960px) {
+	.acfw-canvas-layout {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.acfw-canvas {
+		flex: none;
+		min-width: 0;
+	}
+
+	.acfw-canvas-layout .acfw-back-to-menu {
+		display: inline-flex;
+	}
+}
+
+// ---- Head ---------------------------------------------------------------------
+.acfw-canvas-head {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 18px 20px 16px;
+}
+
+.acfw-canvas-heading h2 {
+	margin: 0 0 4px;
+	color: $ink;
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.acfw-canvas-heading p {
+	margin: 0;
+	color: $soft;
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+.acfw-canvas-head .acfw-panel-tools {
+	padding: 0;
+}
+
+// ---- Stage and page -------------------------------------------------------------
+// The page sits on a dotted stage, so it reads as the storefront, not a form.
+.acfw-canvas-stage {
+	padding: 16px;
+	border-top: 1px solid $line;
+	background-color: #f5f7fb;
+	background-image: radial-gradient(#d8e0ec 1px, transparent 1px);
+	background-size: 16px 16px;
+}
+
+// The menu on its own, at about the width the storefront gives it; centred
+// when the layout stacks and the canvas is wider.
+.acfw-canvas-page {
+	max-width: 408px;
+	margin: 0 auto;
+	padding: 20px;
+	border-radius: 12px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(15, 37, 69, 0.06), 0 8px 24px rgba(15, 37, 69, 0.06);
+	color: #383838;
+	font-size: 15px;
+}
+
+.acfw-canvas-page:has(.acfw-scheme-dark) {
+	background: #16181d;
+	color: #e4e6eb;
+}
+
+// The divider the storefront draws between the menu and the page content
+// has nothing beside it here.
+.acfw-canvas-page .acfw-menu.acfw-canvas-menu.position-vertical-left {
+	padding-right: 0;
+	border-right: 0;
+}
+
+.acfw-canvas-keys {
+	margin: 0;
+	padding: 12px 20px 0;
+	color: #7a879b;
+	font-size: 12px;
+	line-height: 1.7;
+}
+
+.acfw-canvas-keys kbd {
+	padding: 1px 5px;
+	border: 1px solid #d5ddea;
+	border-bottom-width: 2px;
+	border-radius: 4px;
+	background: #fff;
+	color: $ink;
+	font-family: inherit;
+	font-size: 11px;
+}
+
+.acfw-canvas-keys:last-child {
+	padding-bottom: 16px;
+}
+
+.acfw-canvas-note {
+	display: flex;
+	gap: 6px;
+	margin: 0;
+	padding: 8px 20px 16px;
+	color: $soft;
+	font-size: 12.5px;
+}
+
+.acfw-canvas-note .dashicons {
+	flex: 0 0 auto;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+// ---- The menu, as an editor ------------------------------------------------------
+// Below 783px the storefront turns the menu into an off-canvas drawer; the
+// canvas keeps it on the page.
+@media (max-width: 782px) {
+	.acfw-canvas-page .woocommerce-MyAccount-navigation.acfw-menu.acfw-canvas-menu {
+		position: static;
+		z-index: auto;
+		width: auto;
+		max-width: none;
+		padding: 0;
+		overflow: visible;
+		background: transparent;
+		box-shadow: none;
+		transform: none;
+	}
+}
+
+.acfw-canvas-menu [hidden] {
+	display: none !important;
+}
+
+// Admin list styles meet the storefront's here; the storefront's win.
+.acfw-canvas-page .acfw-canvas-menu .acfw-sortable-children {
+	min-height: 0;
+	border-left: 0;
+}
+
+// Groups always show what is in them, and outlines are not clipped.
+.acfw-canvas-page .acfw-canvas-menu .acfw-submenu {
+	max-height: none;
+	overflow: visible;
+}
+
+// Row: the link, then its tools in a column of their own ( so they never
+// cover a badge ); a group's items go below both.
+.acfw-canvas-menu .acfw-menu-item {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+}
+
+// Border-box: the storefront pads the link, and at 100% width that padding
+// pushed the row ( and its hover tint ) past the menu's divider.
+.acfw-canvas-menu .acfw-canvas-link {
+	grid-column: 1;
+	grid-row: 1;
+	flex-wrap: wrap;
+	row-gap: 4px;
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+// Focus that came from a mouse click draws no keyboard ring ( the script
+// marks it ): the item already shows as the one being edited. Any key press
+// brings the ring back.
+.acfw-canvas-page .woocommerce-MyAccount-navigation.acfw-canvas-menu .acfw-canvas-link.is-pointer-focus:focus-visible {
+	outline: none;
+}
+
+// The label takes the free space ( and wraps inside it ), so a badge stays on
+// the first line and only the who-can-see-it line drops below.
+.acfw-canvas-page .acfw-canvas-menu .acfw-canvas-link > .acfw-label {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.acfw-canvas-page .acfw-canvas-menu .acfw-group-toggle {
+	box-sizing: border-box;
+	border: 0;
+	font: inherit;
+	text-align: start;
+}
+
+.acfw-canvas-menu .acfw-menu-item > .acfw-submenu {
+	grid-column: 1 / -1;
+	grid-row: 2;
+}
+
+// The item being edited is marked the way the storefront marks the page a
+// customer is on ( the script adds .is-active ), with no editor ring on top.
+// A group has no such style, so it takes the same tint. Keyboard focus uses
+// the storefront's own inset ring.
+.acfw-canvas-page .acfw-canvas-menu .acfw-type-group.is-selected > .acfw-group-toggle {
+	background: var(--acfw-hover-bg, var(--acfw-accent-tint));
+	color: var(--acfw-active, var(--acfw-accent));
+}
+
+// Hidden from customers: dimmed, with an eye.
+.acfw-canvas-off {
+	display: none;
+	flex: 0 0 auto;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	opacity: 0.8;
+}
+
+.acfw-canvas-menu .is-inactive > .acfw-canvas-link {
+	opacity: 0.5;
+}
+
+.acfw-canvas-menu .is-inactive > .acfw-canvas-link .acfw-canvas-off {
+	display: inline-block;
+}
+
+// Who can see it: a second line under the label.
+.acfw-canvas-rules {
+	display: flex;
+	flex: 1 0 100%;
+	align-items: center;
+	gap: 4px;
+	order: 10;
+	min-width: 0;
+	margin-left: 34px;
+	color: var(--acfw-muted, #6b7280);
+	font-size: 11.5px;
+	font-weight: 500;
+	line-height: 1.3;
+}
+
+.acfw-hide-icons .acfw-canvas-rules {
+	margin-left: 0;
+}
+
+.acfw-canvas-rules .dashicons {
+	flex: 0 0 auto;
+	font-size: 12px;
+	width: 12px;
+	height: 12px;
+}
+
+.acfw-canvas-rules-text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.acfw-canvas-flag {
+	flex: 0 0 auto;
+	padding: 1px 7px;
+	border-radius: 999px;
+	background: #fef3c7;
+	color: #92400e;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 17px;
+}
+
+// ---- Row tools: Duplicate and Delete on hover, the switch always ------------------
+.acfw-canvas-tools {
+	display: flex;
+	grid-column: 2;
+	grid-row: 1;
+	align-items: center;
+	gap: 2px;
+	padding-left: 6px;
+}
+
+.acfw-canvas-tools .acfw-switch {
+	margin-left: 4px;
+}
+
+.acfw-canvas-tool {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--acfw-muted, $soft);
+	cursor: pointer;
+	transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+}
+
+// Hidden until the row is hovered ( two classes, to outrank admin.css's
+// .acfw-node-remove.is-disabled, which would keep a built-in's Delete showing ).
+.acfw-canvas-tools .acfw-canvas-tool {
+	opacity: 0;
+}
+
+.acfw-canvas-link:hover ~ .acfw-canvas-tools .acfw-canvas-tool,
+.acfw-canvas-link:not(.is-pointer-focus):focus-visible ~ .acfw-canvas-tools .acfw-canvas-tool,
+.acfw-canvas-tools:hover .acfw-canvas-tool,
+.acfw-canvas-tools:focus-within .acfw-canvas-tool,
+.acfw-menu-item.is-selected > .acfw-canvas-tools .acfw-canvas-tool {
+	opacity: 1;
+}
+
+.acfw-canvas-link:hover ~ .acfw-canvas-tools .acfw-canvas-tool.is-disabled,
+.acfw-canvas-tools:hover .acfw-canvas-tool.is-disabled,
+.acfw-canvas-tools:focus-within .acfw-canvas-tool.is-disabled,
+.acfw-menu-item.is-selected > .acfw-canvas-tools .acfw-canvas-tool.is-disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.acfw-canvas.is-dragging .acfw-canvas-tool {
+	opacity: 0 !important;
+}
+
+.acfw-canvas-tool:hover:not(.is-disabled),
+.acfw-canvas-tool:focus-visible {
+	background: rgba(37, 99, 235, 0.1);
+	color: #1d4ed8;
+}
+
+.acfw-canvas-tool.acfw-node-remove:hover:not(.is-disabled) {
+	background: rgba(179, 45, 46, 0.1);
+	color: #b32d2e;
+}
+
+.acfw-canvas-tool:focus-visible {
+	outline: 2px solid $admin-accent;
+	outline-offset: 1px;
+}
+
+.acfw-canvas-tool .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+// ---- Dragging ---------------------------------------------------------------------
+// Where the item will land. It is an li, and the storefront clears every
+// menu li's border and background ( .acfw-menu ul li ), so it needs the weight.
+.acfw-canvas-page .acfw-canvas-menu ul li.acfw-canvas-placeholder {
+	box-sizing: border-box;
+	border: 2px dashed var(--acfw-accent, $admin-accent);
+	border-radius: var(--acfw-radius, 8px);
+	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+	list-style: none;
+}
+
+// While an item is dragged, every group shows the area that drops into it,
+// with room at the bottom to land after its last item. The group it would
+// land in turns to the accent. Dragging a group shows none: groups do not nest.
+.acfw-canvas.is-dragging:not(.is-dragging-group) .acfw-canvas-page .acfw-canvas-menu .acfw-menu-item.acfw-type-group > .acfw-sortable-children {
+	min-height: 36px;
+	padding-bottom: 10px !important;
+	border-radius: var(--acfw-radius, 8px);
+	outline: 1px dashed #b8c4d6;
+	outline-offset: 3px;
+	background: rgba(37, 99, 235, 0.03);
+}
+
+.acfw-canvas.is-dragging:not(.is-dragging-group) .acfw-canvas-page .acfw-canvas-menu .acfw-menu-item.acfw-type-group > .acfw-sortable-children:has(> .acfw-canvas-placeholder) {
+	outline: 2px solid var(--acfw-accent, $admin-accent);
+	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+}
+
+// An empty group already draws a dashed box; the outline would double it.
+.acfw-canvas.is-dragging:not(.is-dragging-group) .acfw-canvas-page .acfw-canvas-menu .acfw-menu-item.acfw-type-group > .acfw-sortable-children.is-empty:not(:has(> .acfw-canvas-placeholder)) {
+	outline: 0;
+}
+
+.acfw-canvas-menu .ui-sortable-helper {
+	border-radius: var(--acfw-radius, 8px);
+	background: var(--acfw-surface, #fff);
+	box-shadow: 0 14px 30px rgba(15, 37, 69, 0.2);
+	cursor: grabbing;
+}
+
+.acfw-canvas.is-dragging .acfw-canvas-link {
+	cursor: grabbing;
+}
+
+// The dragged row travels without its buttons.
+.acfw-canvas-menu .ui-sortable-helper .acfw-canvas-tools {
+	visibility: hidden;
+}
+
+// An empty group says where its items go.
+.acfw-canvas-page .acfw-canvas-menu .acfw-sortable-children.is-empty {
+	min-height: 36px;
+	margin-top: 6px !important;
+	border: 1px dashed var(--acfw-border, #cbd5e1);
+	border-radius: var(--acfw-radius, 8px);
+	justify-content: center;
+}
+
+.acfw-canvas-menu .acfw-sortable-children.is-empty::after {
+	content: attr(data-empty);
+	padding: 0 12px;
+	color: var(--acfw-muted, #8a97ab);
+	font-size: 12px;
+	text-align: center;
+}
+
+.acfw-canvas-menu .acfw-sortable-children.is-empty:has(.acfw-canvas-placeholder)::after {
+	display: none;
+}
+
+// ---- "+ Add to menu" --------------------------------------------------------------
+.acfw-canvas-page .acfw-canvas-add-end {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	box-sizing: border-box;
+	width: 100%;
+	margin-top: 12px;
+	padding: 9px 12px;
+	border: 1px dashed #c6d0de;
+	border-radius: var(--acfw-radius, 8px);
+	background: transparent;
+	color: var(--acfw-muted, $soft);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.acfw-canvas-page .acfw-canvas-add-end:hover,
+.acfw-canvas-page .acfw-canvas-add-end:focus-visible,
+.acfw-canvas-page .acfw-canvas-add-end.is-open {
+	border-color: $admin-accent;
+	background: rgba(37, 99, 235, 0.06);
+	color: #1d4ed8;
+}
+
+.acfw-canvas-page .acfw-canvas-add-end:focus-visible {
+	outline: 2px solid $admin-accent;
+	outline-offset: 2px;
+}
+
+.acfw-canvas-add-end .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.acfw-canvas-page .acfw-list-empty {
+	margin: 8px 0 0;
+	color: $soft;
+	font-size: 13px;
+}
+
+// ---- The "+" dialog: in the middle of the window, over a dimmed page ---------------
+.acfw-add-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100050;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba(15, 37, 69, 0.42);
+	animation: acfw-add-fade 0.15s ease-out;
+}
+
+.acfw-add-overlay[hidden] {
+	display: none;
+}
+
+.acfw-add-pop {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 420px;
+	max-height: calc(100vh - 40px);
+	padding: 20px 22px 18px;
+	overflow-y: auto;
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 24px 60px rgba(15, 37, 69, 0.28), 0 2px 8px rgba(15, 37, 69, 0.1);
+	animation: acfw-add-rise 0.18s ease-out;
+}
+
+@keyframes acfw-add-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes acfw-add-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px) scale(0.98);
+	}
+}
+
+// The page behind stays put while the dialog is open.
+body.acfw-dialog-open {
+	overflow: hidden;
+}
+
+.acfw-add-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.acfw-add-title {
+	margin: 0 0 2px;
+	color: $ink;
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.acfw-add-close {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	margin: -4px -6px 0 0;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: $soft;
+	cursor: pointer;
+}
+
+.acfw-add-close:hover,
+.acfw-add-close:focus-visible {
+	background: #eef2f8;
+	color: $ink;
+}
+
+.acfw-add-close:focus-visible {
+	outline: 2px solid $admin-accent;
+	outline-offset: 1px;
+}
+
+.acfw-add-where {
+	margin: 0 0 12px;
+	color: $soft;
+	font-size: 12.5px;
+}
+
+.acfw-add-hint {
+	min-height: 2.8em;
+	margin: 8px 0 10px;
+	color: $soft;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.acfw-add-label-field {
+	display: grid;
+	gap: 5px;
+	color: $ink;
+	font-size: 12.5px;
+	font-weight: 600;
+}
+
+.acfw-add-label-field input[type="text"] {
+	width: 100%;
+	min-height: 36px;
+	border: 1px solid #d5ddea;
+	border-radius: 8px;
+}
+
+.acfw-add-label-field input[type="text"]:focus {
+	border-color: $admin-accent;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.acfw-add-label-field input[aria-invalid="true"] {
+	border-color: #b32d2e;
+}
+
+.acfw-add-error {
+	margin: 6px 0 0;
+	color: #b32d2e;
+	font-size: 12px;
+}
+
+.acfw-add-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 14px;
+}
+
+.acfw-add-note {
+	margin: 8px 0 0;
+	color: #8a97ab;
+	font-size: 11.5px;
+	text-align: right;
+}
+
+// ---- Inspector ------------------------------------------------------------------------
+.acfw-inspector-switch {
+	margin-right: 6px;
+}
+
+.acfw-inspector-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.acfw-inspector-meta:not(:has(> :not([hidden]))) {
+	display: none;
+}
+
+.acfw-inspector-url {
+	max-width: 100%;
+	padding: 3px 8px;
+	overflow: hidden;
+	border-radius: 6px;
+	background: #f2f6fd;
+	color: #334155;
+	font-size: 12px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.acfw-inspector-off {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: #fef3c7;
+	color: #92400e;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.acfw-inspector-off .dashicons {
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+}
+
+.acfw-inspector-meta [hidden] {
+	display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.acfw-canvas-tools,
+	.acfw-canvas-page .acfw-canvas-add-end {
+		transition: none;
+	}
+
+	.acfw-add-overlay,
+	.acfw-add-pop {
+		animation: none;
+	}
+}

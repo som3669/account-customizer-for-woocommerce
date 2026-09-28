@@ -207,6 +207,55 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		}
 
 		/**
+		 * An info icon after a control's label, with a tooltip on hover ( and while
+		 * the control has keyboard focus ). The tooltip is also the control's
+		 * description: point its aria-describedby at "{$id}-tip".
+		 *
+		 * @param string $text Tooltip text.
+		 * @param string $id   The control's id.
+		 * @return string Markup, or '' when there is no text.
+		 */
+		protected function help( $text, $id ) {
+			if ( '' === (string) $text ) {
+				return '';
+			}
+			// Hidden from assistive tech here ( it would join the label ); it is read as the description instead.
+			return sprintf(
+				'<span class="acfw-help" aria-hidden="true"><span class="dashicons dashicons-info-outline"></span><span class="acfw-help-tip" role="tooltip" id="%1$s">%2$s</span></span>',
+				esc_attr( $id . '-tip' ),
+				esc_html( $text )
+			);
+		}
+
+		/**
+		 * The tab strip over a settings pane ( General / Content / … ): a WAI-ARIA
+		 * tablist drawn as one segmented track. The first tab starts open;
+		 * admin.js switches them. Menu items and banners share it.
+		 *
+		 * @param string $uid      Unique prefix for the tab and panel ids.
+		 * @param array  $sections Section key => array( label, dashicon name ).
+		 * @param string $label    Accessible name of the tab list.
+		 * @param array  $counts   Section key => a number shown in a pill ( hidden at 0 ).
+		 */
+		protected function section_tabs( $uid, $sections, $label, $counts = array() ) {
+			$first = (string) key( $sections );
+			?>
+			<div class="acfw-section-tabs" role="tablist" aria-label="<?php echo esc_attr( $label ); ?>">
+				<?php foreach ( $sections as $section => $meta ) : ?>
+					<?php $is_first = $first === (string) $section; ?>
+					<button type="button" class="acfw-section-tab<?php echo $is_first ? ' is-active' : ''; ?>" role="tab" id="<?php echo esc_attr( $uid . '-tab-' . $section ); ?>" aria-controls="<?php echo esc_attr( $uid . '-' . $section ); ?>" aria-selected="<?php echo $is_first ? 'true' : 'false'; ?>" tabindex="<?php echo $is_first ? '0' : '-1'; ?>" data-section="<?php echo esc_attr( $section ); ?>">
+						<span class="acfw-section-tab-icon dashicons dashicons-<?php echo esc_attr( $meta[1] ); ?>" aria-hidden="true"></span>
+						<span class="acfw-section-tab-label"><?php echo esc_html( $meta[0] ); ?></span>
+						<?php if ( array_key_exists( $section, $counts ) ) : ?>
+							<span class="acfw-section-count"<?php echo $counts[ $section ] ? '' : ' hidden'; ?>><?php echo esc_html( $counts[ $section ] ); ?></span>
+						<?php endif; ?>
+					</button>
+				<?php endforeach; ?>
+			</div>
+			<?php
+		}
+
+		/**
 		 * Build the icon markup for an item (uploaded image or dashicon).
 		 *
 		 * @param array  $item          Item options.

@@ -182,7 +182,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				ACFW_VERSION,
 				true
 			);
-			$deps = array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker', 'editor', 'acfw-select2' );
+			$deps = array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker', 'editor', 'wp-a11y', 'acfw-select2' );
 
 			list( $admin_js_url, $admin_js_ver ) = acfw_asset_src( 'js/admin.js' );
 			wp_enqueue_script(
@@ -206,6 +206,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					'searching'      => __( 'Searching…', 'my-account-dashboard-builder' ),
 					'noResults'      => __( 'No products found.', 'my-account-dashboard-builder' ),
 					'everyone'       => __( 'Everyone', 'my-account-dashboard-builder' ),
+					'canvas'         => $this->canvas_strings(),
 				)
 			);
 
@@ -218,6 +219,16 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				);
 			}
 			wp_add_inline_script( 'acfw-admin', 'window.acfwIconChoices = ' . wp_json_encode( $icons ) . ';', 'before' );
+
+			// Menu Items: the canvas draws the menu with the storefront's own
+			// stylesheet ( compiled scoped to .acfw-canvas-page ) and the design
+			// saved in the Studio, so it looks the way customers will see it.
+			if ( 'items' === $this->current_tab() ) {
+				require_once ACFW_DIR . 'includes/frontend/class-acfw-frontend.php';
+				list( $canvas_url, $canvas_ver ) = acfw_asset_src( 'css/canvas.css' );
+				wp_enqueue_style( 'acfw-canvas', $canvas_url, array( 'acfw-admin', 'acfw-fontawesome', 'dashicons' ), $canvas_ver );
+				wp_add_inline_style( 'acfw-canvas', ACFW_Frontend::design_css() );
+			}
 
 			// Design Studio: its own script, the media library and the CSS editor.
 			if ( 'design' === $this->current_tab() ) {
@@ -343,6 +354,52 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		}
 
 		/**
+		 * Words the Menu Items canvas builds on the fly: the rule chips, where "+"
+		 * adds an item, and what a keyboard move did.
+		 *
+		 * @return array
+		 */
+		protected function canvas_strings() {
+			$format = function_exists( 'get_woocommerce_price_format' ) ? get_woocommerce_price_format() : '%1$s%2$s';
+			$symbol = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '$';
+
+			return array(
+				// The chip's singular and plural, from the entry the server's chip uses.
+				/* translators: %d: minimum number of orders. */
+				'order'       => _n( '%d+ order', '%d+ orders', 1, 'my-account-dashboard-builder' ),
+				/* translators: %d: minimum number of orders. */
+				'orders'      => _n( '%d+ order', '%d+ orders', 2, 'my-account-dashboard-builder' ),
+				/* translators: %s: minimum amount spent, with its currency. */
+				'spent'       => __( '%s+ spent', 'my-account-dashboard-builder' ),
+				'product'     => __( 'Bought 1 product', 'my-account-dashboard-builder' ),
+				/* translators: %d: number of products. */
+				'products'    => __( 'Bought one of %d products', 'my-account-dashboard-builder' ),
+				/* translators: 1: first day, 2: last day. */
+				'range'       => __( '%1$s – %2$s', 'my-account-dashboard-builder' ),
+				/* translators: %s: first day. */
+				'from'        => __( 'From %s', 'my-account-dashboard-builder' ),
+				/* translators: %s: last day. */
+				'until'       => __( 'Until %s', 'my-account-dashboard-builder' ),
+				// Dates read "j M", as date_i18n() prints them on the server.
+				'months'      => array_values( $GLOBALS['wp_locale']->month_abbrev ),
+				'price'       => html_entity_decode( $format, ENT_QUOTES, 'UTF-8' ),
+				'decimals'    => function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2,
+				'decimalSep'  => function_exists( 'wc_get_price_decimal_separator' ) ? wc_get_price_decimal_separator() : '.',
+				'thousandSep' => function_exists( 'wc_get_price_thousand_separator' ) ? wc_get_price_thousand_separator() : ',',
+				'currency'    => html_entity_decode( $symbol, ENT_QUOTES, 'UTF-8' ),
+				/* translators: %s: menu item label. */
+				'movedUp'     => __( '%s moved up.', 'my-account-dashboard-builder' ),
+				/* translators: %s: menu item label. */
+				'movedDown'   => __( '%s moved down.', 'my-account-dashboard-builder' ),
+				/* translators: 1: menu item label, 2: group label. */
+				'movedIn'     => __( '%1$s moved into %2$s.', 'my-account-dashboard-builder' ),
+				/* translators: %s: menu item label. */
+				'movedOut'    => __( '%s moved out of its group.', 'my-account-dashboard-builder' ),
+				'cantMove'    => __( 'It cannot move that way.', 'my-account-dashboard-builder' ),
+			);
+		}
+
+		/**
 		 * Get the active tab.
 		 *
 		 * @return string
@@ -461,20 +518,6 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						</nav>
 					</div>
 					<div class="acfw-header-actions">
-						<?php if ( 'items' === $tab ) : ?>
-							<button type="button" class="button button-primary acfw-header-btn acfw-header-btn-primary acfw-add-btn" data-type="endpoint">
-								<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add endpoint', 'my-account-dashboard-builder' ); ?>
-							</button>
-							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="group">
-								<span class="dashicons dashicons-portfolio"></span> <?php esc_html_e( 'Add group', 'my-account-dashboard-builder' ); ?>
-							</button>
-							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="link">
-								<span class="dashicons dashicons-admin-links"></span> <?php esc_html_e( 'Add link', 'my-account-dashboard-builder' ); ?>
-							</button>
-							<button type="button" class="button acfw-header-btn acfw-add-btn" data-type="page">
-								<span class="dashicons dashicons-media-document"></span> <?php esc_html_e( 'Add page', 'my-account-dashboard-builder' ); ?>
-							</button>
-						<?php endif; ?>
 						<?php if ( 'banners' === $tab ) : ?>
 							<button type="button" class="button acfw-header-btn acfw-add-banner-btn">
 								<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add banner', 'my-account-dashboard-builder' ); ?>
@@ -503,7 +546,9 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 				<?php
 				$acfw_toasts = array();
-				if ( isset( $_GET['updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				// Our own saves land with ?updated=1; the Settings form goes through
+				// options.php, which comes back with ?settings-updated=true.
+				if ( isset( $_GET['updated'] ) || isset( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					$acfw_toasts[] = array(
 						'type' => 'success',
 						'msg'  => __( 'Changes saved.', 'my-account-dashboard-builder' ),

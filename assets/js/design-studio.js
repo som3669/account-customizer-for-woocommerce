@@ -138,6 +138,10 @@
 			}
 			writeControl( 'acfw_item_padding', d.padding );
 			writeControl( 'acfw_menu_gap', d.gap );
+			// Both values first: set() re-checks the density, and between the two
+			// calls it saw a "custom" mix and opened Fine-tune.
+			draft.acfw_item_padding = d.padding;
+			draft.acfw_menu_gap     = d.gap;
 			set( 'acfw_item_padding', d.padding );
 			set( 'acfw_menu_gap', d.gap );
 		} );
@@ -282,6 +286,52 @@
 			var $sf = $( this ).closest( '.acfw-sf' );
 			$sf.find( '.acfw-sf-hex' ).val( this.value );
 			set( $sf.data( 'key' ), this.value.toLowerCase() );
+		} );
+
+		// The info icon explains a control; clicking it must not press the
+		// switch whose label it sits in.
+		$studio.on( 'click', '.acfw-help', function ( e ) {
+			e.preventDefault();
+		} );
+
+		// Centre a tooltip on its icon where there is room, keep it inside the
+		// control's width, and point its arrow at the icon.
+		function placeTip( help ) {
+			var tip   = help.querySelector( '.acfw-help-tip' );
+			var glyph = help.querySelector( '.dashicons' );
+			var field = help.closest( '.acfw-sf' );
+			if ( ! tip || ! glyph || ! field ) {
+				return;
+			}
+			// Measured from the field's padding box, the tip's containing block
+			// ( indented controls have a left border ).
+			var origin = field.getBoundingClientRect().left + field.clientLeft;
+			var icon   = glyph.getBoundingClientRect();
+			var width  = tip.offsetWidth;
+			var mid    = icon.left + ( icon.width / 2 ) - origin;
+			var left   = Math.max( 0, Math.min( mid - ( width / 2 ), field.clientWidth - width ) );
+			tip.style.left = left + 'px';
+			tip.style.setProperty( '--acfw-tip-arrow', ( mid - left ) + 'px' );
+		}
+
+		$studio.on( 'mouseenter', '.acfw-help', function () {
+			placeTip( this );
+		} );
+		$studio.on( 'focusin', '.acfw-sf', function () {
+			var help = this.querySelector( '.acfw-help' );
+			if ( help ) {
+				placeTip( help );
+			}
+		} );
+
+		// Escape hides an open tooltip until the pointer or the focus moves on.
+		$( document ).on( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key ) {
+				$studio.addClass( 'is-quiet-tips' );
+			}
+		} );
+		$studio.on( 'mousemove focusin', function () {
+			$studio.removeClass( 'is-quiet-tips' );
 		} );
 
 		$studio.on( 'click', '.acfw-sf-reset', function () {
