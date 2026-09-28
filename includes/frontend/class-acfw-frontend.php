@@ -246,10 +246,12 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				ACFW_VERSION
 			);
 			list( $fe_css_url, $fe_css_ver ) = acfw_asset_src( 'css/frontend.css' );
+			// Dashicons draw the drawer toggle, pin star, stat icons and avatar camera.
+			// WordPress only loads them with the admin bar, which customers do not get.
 			wp_enqueue_style(
 				'acfw-frontend',
 				$fe_css_url,
-				array( 'acfw-fontawesome' ),
+				array( 'acfw-fontawesome', 'dashicons' ),
 				$fe_css_ver
 			);
 			wp_add_inline_style( 'acfw-frontend', $this->dynamic_css() );
@@ -325,22 +327,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$active   = sanitize_hex_color( get_option( 'acfw_active_color', '' ) );
 			$active   = $active ? $active : $accent;
 
-			$scope = implode(
-				',',
-				array(
-					'.acfw-menu',
-					'.acfw-avatar-block',
-					'.acfw-buyagain',
-					'.acfw-recent',
-					'.acfw-dashboard-title',
-					'.acfw-dashboard-notice',
-					'.acfw-dashboard-stats',
-					'.acfw-tiles',
-					'.acfw-profile-meter',
-					'.acfw-commerce-widget',
-					'.acfw-banner',
-				)
-			);
+			$scope = self::token_scope();
 
 			$vars = sprintf(
 				'%11$s{--acfw-accent:%1$s;--acfw-text:%2$s;--acfw-accent-tint:%3$s;--acfw-radius:%4$dpx;--acfw-gap:%5$dpx;--acfw-item-padding:%6$dpx;--acfw-avatar-size:%7$dpx;--acfw-font-size:%8$dpx;--acfw-font-weight:%9$s;--acfw-active:%10$s;',
@@ -363,11 +350,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$vars .= '--acfw-hover-bg:' . $hover_bg . ';';
 			}
 
-			$fonts = array(
-				'system' => '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
-				'serif'  => 'Georgia,"Times New Roman",serif',
-				'mono'   => 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace',
-			);
+			$fonts = self::font_stacks();
 			$ff    = get_option( 'acfw_font_family', 'inherit' );
 			if ( isset( $fonts[ $ff ] ) ) {
 				$vars .= '--acfw-font-family:' . $fonts[ $ff ] . ';';
@@ -387,6 +370,45 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			}
 
 			return $vars;
+		}
+
+		/**
+		 * Every block the design tokens are declared on ( a CSS selector list ).
+		 *
+		 * The Studio preview builds the same rule on the fly, so both read it here.
+		 *
+		 * @return string
+		 */
+		public static function token_scope() {
+			return implode(
+				',',
+				array(
+					'.acfw-menu',
+					'.acfw-avatar-block',
+					'.acfw-buyagain',
+					'.acfw-recent',
+					'.acfw-dashboard-title',
+					'.acfw-dashboard-notice',
+					'.acfw-dashboard-stats',
+					'.acfw-tiles',
+					'.acfw-profile-meter',
+					'.acfw-commerce-widget',
+					'.acfw-banner',
+				)
+			);
+		}
+
+		/**
+		 * Font stacks behind the "Typeface" choices ( "inherit" keeps the theme's ).
+		 *
+		 * @return array
+		 */
+		public static function font_stacks() {
+			return array(
+				'system' => '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
+				'serif'  => 'Georgia,"Times New Roman",serif',
+				'mono'   => 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace',
+			);
 		}
 
 		/**

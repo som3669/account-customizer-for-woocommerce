@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 require_once __DIR__ . '/class-acfw-admin-tab.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-items.php';
-require_once __DIR__ . '/tabs/class-acfw-tab-templates.php';
+require_once __DIR__ . '/tabs/class-acfw-tab-design.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-settings.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-banners.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-tools.php';
@@ -36,11 +36,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 */
 		public function __construct() {
 			$this->tabs = array(
-				'items'     => new ACFW_Tab_Items(),
-				'templates' => new ACFW_Tab_Templates(),
-				'general'   => new ACFW_Tab_Settings(),
-				'banners'   => new ACFW_Tab_Banners(),
-				'tools'     => new ACFW_Tab_Tools(),
+				'items'   => new ACFW_Tab_Items(),
+				'design'  => new ACFW_Tab_Design(),
+				'general' => new ACFW_Tab_Settings(),
+				'banners' => new ACFW_Tab_Banners(),
+				'tools'   => new ACFW_Tab_Tools(),
 			);
 			add_action( 'admin_menu', array( $this, 'register_menu' ) );
 			add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -75,11 +75,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$base = 'admin.php?page=' . self::PAGE;
 			$subs = array(
-				self::PAGE               => __( 'Menu Items', 'my-account-dashboard-builder' ),
-				$base . '&tab=templates' => __( 'Templates', 'my-account-dashboard-builder' ),
-				$base . '&tab=general'   => __( 'Settings', 'my-account-dashboard-builder' ),
-				ACFW_Customizer::url()   => __( 'Customizer', 'my-account-dashboard-builder' ),
-				$base . '&tab=banners'   => __( 'Banners', 'my-account-dashboard-builder' ),
+				self::PAGE             => __( 'Menu Items', 'my-account-dashboard-builder' ),
+				$base . '&tab=design'  => __( 'Design', 'my-account-dashboard-builder' ),
+				$base . '&tab=general' => __( 'Settings', 'my-account-dashboard-builder' ),
+				$base . '&tab=banners' => __( 'Banners', 'my-account-dashboard-builder' ),
 			);
 			foreach ( $subs as $slug => $title ) {
 				add_submenu_page(
@@ -220,6 +219,15 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			}
 			wp_add_inline_script( 'acfw-admin', 'window.acfwIconChoices = ' . wp_json_encode( $icons ) . ';', 'before' );
 
+			// Design Studio: its own script, the media library and the CSS editor.
+			if ( 'design' === $this->current_tab() ) {
+				list( $studio_url, $studio_ver ) = acfw_asset_src( 'js/design-studio.js' );
+				wp_enqueue_script( 'acfw-design-studio', $studio_url, array( 'jquery' ), $studio_ver, true );
+				$css_editor = wp_enqueue_code_editor( array( 'type' => 'text/css' ) );
+				wp_add_inline_script( 'acfw-design-studio', 'window.acfwStudioCodeEditor = ' . wp_json_encode( $css_editor ) . ';', 'before' );
+				return;
+			}
+
 			// Standalone Block Editor for endpoint custom content ( optional ).
 			$this->enqueue_block_editor();
 		}
@@ -341,7 +349,11 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 */
 		protected function current_tab() {
 			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'items'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return in_array( $tab, array( 'general', 'items', 'banners', 'tools', 'templates' ), true ) ? $tab : 'items';
+			// Templates and the Customizer panel became the Design Studio; old links land there.
+			if ( in_array( $tab, array( 'templates', 'customizer' ), true ) ) {
+				$tab = 'design';
+			}
+			return in_array( $tab, array( 'general', 'items', 'design', 'banners', 'tools' ), true ) ? $tab : 'items';
 		}
 
 		/**
@@ -421,11 +433,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$tab  = $this->current_tab();
 			$tabs = array(
-				'items'      => array( __( 'Menu Items', 'my-account-dashboard-builder' ), 'menu-alt' ),
-				'templates'  => array( __( 'Templates', 'my-account-dashboard-builder' ), 'layout' ),
-				'general'    => array( __( 'Settings', 'my-account-dashboard-builder' ), 'admin-generic' ),
-				'customizer' => array( __( 'Customizer', 'my-account-dashboard-builder' ), 'art' ),
-				'banners'    => array( __( 'Banners', 'my-account-dashboard-builder' ), 'megaphone' ),
+				'items'   => array( __( 'Menu Items', 'my-account-dashboard-builder' ), 'menu-alt' ),
+				'design'  => array( __( 'Design', 'my-account-dashboard-builder' ), 'art' ),
+				'general' => array( __( 'Settings', 'my-account-dashboard-builder' ), 'admin-generic' ),
+				'banners' => array( __( 'Banners', 'my-account-dashboard-builder' ), 'megaphone' ),
 			);
 			?>
 			<div class="wrap acfw-wrap">
@@ -438,9 +449,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 							<?php
 							foreach ( $tabs as $slug => $tab_def ) :
 								list( $label, $icon ) = $tab_def;
-								$tab_url              = 'customizer' === $slug
-									? ACFW_Customizer::url()
-									: admin_url( 'admin.php?page=' . self::PAGE . '&tab=' . $slug );
+								$tab_url              = admin_url( 'admin.php?page=' . self::PAGE . '&tab=' . $slug );
 								?>
 								<a href="<?php echo esc_url( $tab_url ); ?>"
 									class="acfw-tab <?php echo $tab === $slug ? 'is-active' : ''; ?>"

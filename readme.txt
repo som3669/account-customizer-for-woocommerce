@@ -35,8 +35,9 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 
 = Design it visually =
 
-* **Templates tab** — apply a complete, ready-made design in one click.
-* **Customizer panel** with live preview, split into Avatar, Navigation, and Layout & Colors.
+* **Design Studio** — the real My Account page beside the controls, at desktop, tablet and phone widths. Colours, sizes and menu styles change the preview as you pick them, and nothing goes live until you save.
+* **Ready-made looks** to start from, and your own saved looks alongside them.
+* A contrast check on the accent colour, and one **Density** choice (compact, comfortable, roomy) instead of three spacing sliders.
 * Menu position (left, right or top), menu style, hover animation, active indicator, sticky menu, collapsible groups, menu search.
 * Colours (accent, text, menu background, hover, active), typography (family, size, weight), radius, item padding, gap, colour scheme, and a Custom CSS field.
 * Save your own settings as a **preset** and reapply it later.
@@ -66,9 +67,9 @@ Render the customised menu outside the account page with the `[acfw_account_menu
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install the zip via **Plugins → Add New → Upload Plugin**.
 2. Activate through the **Plugins** screen. WooCommerce must be active.
-3. A top-level **My Account** menu appears in wp-admin, with tabs for Menu Items, Templates, Settings, Customizer and Banners.
+3. A top-level **My Account** menu appears in wp-admin, with tabs for Menu Items, Design, Settings and Banners.
 4. Default WooCommerce endpoints are pre-loaded, so the page keeps working before you change anything.
-5. Optional: enable Buy Again, Recently viewed and Order tracking in **My Account → Settings → General**, and avatar uploads in **Customizer → My Account → Avatar**.
+5. Optional: enable Buy Again, Recently viewed and Order tracking in **My Account → Settings → General**, and avatar uploads in **My Account → Design → Profile card**.
 
 == Frequently Asked Questions ==
 
@@ -82,11 +83,11 @@ No. Your custom endpoints stop resolving and the page falls back to the standard
 
 = Where do the design options live? =
 
-In the WordPress Customizer, under the **My Account** panel, so you edit them against a live preview. Content and menu structure live in the wp-admin **My Account** screen.
+In **My Account → Design**, the Design Studio, where you edit them beside a live preview of the account page. Content and menu structure live under **Menu Items**. The WordPress Customizer keeps a **My Account** section that links to the Studio.
 
 = Can customers upload their own profile picture? =
 
-Yes, once you enable it in Customizer → My Account → Avatar. Uploads are restricted to JPG, PNG, GIF and WebP, checked against a size limit you set, and verified to be real images before being stored. The uploaded picture then replaces the Gravatar everywhere on the site.
+Yes, once you enable it in My Account → Design → Profile card. Uploads are restricted to JPG, PNG, GIF and WebP, checked against a size limit you set, and verified to be real images before being stored. The uploaded picture then replaces the Gravatar everywhere on the site.
 
 = Does the Buy again tab let customers reorder anything? =
 
@@ -108,8 +109,8 @@ Options prefixed `acfw_`, plus three user meta keys (`acfw_avatar_id`, `acfw_las
 
 1. The Menu Items builder — drag to reorder, toggle items, edit any one in the right-hand pane.
 2. Editing an item: label, icon, visibility rules by role, date and purchased product, and the content editor.
-3. The Templates tab — starter designs applied in one click.
-4. Live design editing in the Customizer, with the account page previewed beside the controls.
+3. Ready-made looks at the top of the Design Studio.
+4. The Design Studio: controls grouped by what customers see, beside a live preview of the account page.
 5. The customised My Account page: avatar block, icon menu with counts, dashboard stats and profile meter.
 6. The Buy again tab — one-click reorder of previously purchased products.
 7. Settings — commerce features, redirects and navigation behaviour.
@@ -120,7 +121,9 @@ Options prefixed `acfw_`, plus three user meta keys (`acfw_avatar_id`, `acfw_las
 = Unreleased =
 * New: endpoint URLs, item badges, product / order-count / spend visibility rules, per-group "start expanded", banner schedules, badge sources and link text, clickable dashboard stats, an actionable profile meter and nine new smart tags.
 * New: the Menu Items screen is organised in tabs with a live customer preview, list markers and an unsaved-changes save bar.
-* Fix: custom endpoints no longer show the dashboard underneath; banner position saves; non-Latin labels no longer vanish; items and banners can no longer overwrite each other; nested endpoints resolve; Customizer colours and radius reach the menu; rgba banner colours, the Reward points stat, the landing endpoint and one-step logout work.
+* New: the Design Studio replaces the Customizer panel and the Templates tab: looks, grouped controls, a live preview at three widths, and save / discard.
+* Fix: Dashicons now load for customers, so the mobile menu button, pin stars and stat icons show.
+* Fix: custom endpoints no longer show the dashboard underneath; banner position saves; non-Latin labels no longer vanish; items and banners can no longer overwrite each other; nested endpoints resolve; the chosen colours and radius reach the menu; rgba banner colours, the Reward points stat, the landing endpoint and one-step logout work.
 * Accessibility: visible keyboard focus, keyboard-operable groups, tab-pattern settings, readable muted text and warnings that stay until closed.
 * Full list in changelog.txt.
 

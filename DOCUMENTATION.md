@@ -2,11 +2,11 @@
 
 **My Account Dashboard Builder** lets you completely rebuild the WooCommerce
 **My Account** page — reorder and add menu items, create custom endpoints, links,
-pages and groups, style everything live in the Customizer, apply one‑click starter
-templates, add banners, and enrich the dashboard.
+pages and groups, design the page in the Design Studio beside a live preview, start
+from ready‑made looks, add banners, and enrich the dashboard.
 
 This guide walks through installation, the admin interface, endpoint setup, the
-style Customizer, settings, and third‑party compatibility.
+Design Studio, settings, and third‑party compatibility.
 
 ---
 
@@ -30,7 +30,7 @@ working area. It has four regions.
 
 The header bar contains:
 
-- **Tab navigation** — *Menu Items, Templates, Settings, Customizer, Banners, Import / Export*.
+- **Tab navigation** — *Menu Items, Design, Settings, Banners* (Import / Export sits under Settings).
 - **Action buttons** (top‑right), which change per tab:
   - *Menu Items:* **Add endpoint**, **Add group**, **Add link**, **Add page**.
   - *Banners:* **Add banner**.
@@ -143,7 +143,7 @@ shop managers always see every item so they can preview it.
 1. Click **Add group**, enter a name, and **Create**.
 2. Drag other items onto the group to nest them.
 3. Groups expand/collapse on the front end (default folder icon) and can be opened from the keyboard.
-   Use **Start expanded** on a group, or **Expand groups by default** in the Customizer, to keep them open.
+   Use **Start expanded** on a group, or **Open every group** in the Design Studio (Menu), to keep them open.
 
 ### Add Link
 
@@ -157,88 +157,76 @@ shop managers always see every item so they can preview it.
 
 ---
 
-## Starter Templates
+## Design Studio
 
-Ready‑made designs applied in one click, on the **Templates** tab.
+Everything about how the account area looks is set on **My Account → Design**:
+the controls on the left, the real My Account page on the right. The page shows your
+own account, so it has real data. Nothing changes on your site until you click
+**Save design**.
 
-1. Open **My Account → Templates**.
-2. Each card shows a live mini‑preview of the real menu plus a short description.
-3. Click **Apply template**. The applied card shows an **Applied** badge and a disabled button.
+### Start from a look
 
-Applying a template **resets the design options it controls to defaults first**, then
-applies the template’s values, so the result exactly matches the preview. Your Custom
-CSS, avatar settings and the item-count setting are left as they are. You can fine‑tune
-anything afterwards in the Customizer; your tweaks persist until you apply another template.
+A row of ready‑made looks sits at the top: **Classic Sidebar, Modern Cards, Rounded
+Pills, Tabbed Top, Minimal, Theme Native**, followed by any looks you saved. Each card is
+a miniature of the menu it gives. Click one to try it in the preview; the controls
+below follow. A look sets the menu's style and colours but leaves your Custom CSS,
+profile card settings and the item‑count setting alone.
 
-**Included templates:** Classic Sidebar · Modern Cards · Rounded Pills · Tabbed Top · Minimal · Theme Native.
+**Save current as a look** stores the design you have now, under a name, as one more
+card (the same looks appear under *Settings → Presets & Reset*).
 
----
+### The controls
 
-## My Account Page Style Customizer
+Controls are grouped by what the customer sees.
 
-All visual styling is done live in the WordPress Customizer. Open **My Account →
-Customizer** (or *Appearance → Customize → My Account* panel). Changes preview
-instantly. The panel has three sections: **Avatar**, **Navigation**, **Layout & Colors**.
+- **Look** — **Accent** (with a live check of whether current‑page text on its tint meets
+  the WCAG AA contrast minimum), **Text**, **Colour scheme** (Light, Dark, Follow device),
+  **Typeface**, **Weight**, **Text size**, **Roundness**, and **Density**: *Compact*,
+  *Comfortable* or *Roomy*, with **Fine‑tune spacing** for item height and the space
+  between items.
+- **Menu** — **Style**, picked from miniature menus (Theme style, Simple, Classic,
+  Modern cards, Minimal, Pills, Tabs); **Placement** (left of, right of or above the
+  content); **Current page marker** (bar, underline, dot or colour only); **On hover**
+  (tint only, nudge, lift); the current‑page, item and hover colours; and switches for
+  icons, order and download counts, a search box, pinning favourites, collapsing to an
+  icon rail, staying in view on scroll, opening every group and asking before log out.
+- **Profile card** — show the card above the menu, a default picture, its shape,
+  alignment and size, the name and role, and whether customers may upload their own
+  picture (and how large).
+- **Dashboard** — a heading (smart tags work, e.g. `Welcome back, {first_name}!`), its
+  alignment, **Account numbers** (Total orders, Orders in progress, Total spent,
+  Downloads, Refunds, Reward points, Latest order, Orders by status chart — each card
+  links to the page it sums up), **Shortcut tiles** and **Profile completeness** (which
+  lists what is missing, with a link to each form).
+- **Custom CSS** — your own rules, loaded on account pages after the plugin's styles,
+  with syntax highlighting when it is on in your WordPress profile.
 
-### Layout & Design
+Switches that other controls depend on reveal them only when they are on (the stat
+cards under Account numbers, the picture options under the profile card).
 
-- **Menu style** — the single control for the overall look: **Theme style, Simple, Classic, Modern cards, Minimal, Pills, Tabs**.
-- **Menu position** — **Left**, **Right**, or **Top (horizontal)**.
-- **Accent color**, **Text color**, **Active color**, **Menu item background**, **Hover background**.
-- **Color scheme** — **Light** (default), **Dark**, or **Auto** (follows the visitor’s OS). Dark is opt‑in so it never clashes with a light theme.
+### The preview
 
-### Customizing Navigation Menu
+- **Desktop / Tablet / Phone** set the preview's width; the phone width shows the
+  menu's mobile drawer.
+- Colours, sizes, the style, placement and markers change the preview as you pick them.
+  Switches that add or remove parts of the page (a search box, the profile card, stat
+  cards, Custom CSS) reload the preview a moment later.
+- Links inside My Account keep working in the preview; links elsewhere and Log out
+  are switched off, so previewing never signs you out.
+- The preview is only shown to you: it reads your unsaved design, and customers keep
+  seeing the saved one.
 
-- **Show menu icons** / **Show item counts** (order/download count badges).
-- **Active indicator** — **Bar**, **Underline**, **Dot**, or **None** (how the current item is marked).
-- **Hover animation** — **None**, **Slide**, or **Grow**.
-- **Menu search box** — a live filter above the menu.
-- **Collapsible icon rail** — collapse the menu to icons only.
-- **Let customers pin favorites** — a star to pin items to the top.
-- **Sticky menu** — keeps the menu in view on scroll.
-- **Confirm before logout** — confirm dialog on Log out.
-- **Expand groups by default**.
-- **AJAX navigation** — load endpoints without a full page reload.
+### Saving
 
-### Customizing Profile Settings
+The bar at the bottom says whether there are **Unsaved changes**; it floats in view
+while there are. **Save design** publishes them, **Discard changes** goes back to the
+saved design, and leaving the page with unsaved changes asks first.
 
-The **Avatar** section adds a customer card above the menu.
-
-- **Show avatar** — enable the block. Its sub‑options appear when enabled:
-  - **Custom avatar image** (overrides the gravatar), **Shape** (circle/square), **Alignment**, **Size**, **Show display name**, **Show user role**.
-
-### Spacing
-
-Fine‑tune metrics under **Layout & Colors**:
-
-- **Corner radius** — item rounding.
-- **Item spacing** — gap between items.
-- **Item padding** — inner padding.
-- **Font size**, **Font weight**, **Font family**.
-
-### Customizing Additional CSS
-
-- **Custom CSS** — a code field in **Layout & Colors** for your own rules, injected on the account page.
-
-### Dashboard Widgets
-
-On the Dashboard endpoint you can add (from the Navigation section):
-
-- **Dashboard title** — a custom heading (supports smart tags, e.g. `Welcome, {first_name}!`).
-- **Dashboard content position** — Left / Middle / Right.
-- **Dashboard stat widgets** — a master toggle plus individual cards: **Total orders, Pending orders, Total spent, Downloads, Refunds, Reward points, Latest order,** and an **Orders pie chart** (SVG donut). Each card links to the page it sums up, when that page is in the menu. Counts are cached per customer and refreshed whenever one of their orders changes.
-- **Quick‑link tiles** — a grid of shortcuts to your endpoints, including those inside groups.
-- **Profile completeness meter** — a progress bar, plus the fields still missing, each linking to the form where the customer fills it in.
-
-### Preview Controls
-
-- **Preview** (floating button) — an in‑page overlay of the live page.
-- **View My Account** (floating button) — opens the live page in a new tab.
-- The Customizer itself previews all design changes live before you publish.
+*Appearance → Customize* keeps a **My Account** section that links here.
 
 ### Restoring the Settings and Customization
 
-- **Design presets** (Settings tab) — save the current design as a named preset and re‑apply it anytime.
+- **Design presets** (Settings tab) — the looks you saved; apply or delete them there too.
 - **Reset all settings** (Settings tab) — restore endpoints, design and banners to defaults. *This cannot be undone.*
 
 ---
@@ -296,7 +284,7 @@ pnpm zip              # build + package the distributable ZIP
 - Edit `assets/scss/*.scss` and `assets/js/*.js` sources — not the compiled `assets/css/*.css`.
 - Assets enqueue minified with a filemtime cache‑buster; define `SCRIPT_DEBUG` for unminified.
 - **Template overrides:** copy files from `templates/` into `yourtheme/my-account-dashboard-builder/`.
-- **Filters:** `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_template_preserved_keys`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_smart_tag_values`, `acfw_item_is_visible`, `acfw_banner_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`, `acfw_default_endpoint`, `acfw_reserved_item_keys`, `acfw_profile_meter_fields`.
+- **Filters:** `acfw_design_fields` (the Design Studio's controls), `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_template_preserved_keys`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_smart_tag_values`, `acfw_item_is_visible`, `acfw_banner_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`, `acfw_default_endpoint`, `acfw_reserved_item_keys`, `acfw_profile_meter_fields`.
 - **Events:** after an AJAX page change the front end triggers `acfw:navigated` on `document.body`, with the new URL.
 
 **Embedding the menu elsewhere:**

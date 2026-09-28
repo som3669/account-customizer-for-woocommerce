@@ -3555,3 +3555,832 @@ img.acfw-preview-glyph {
 		flex-basis: 380px;
 	}
 }
+
+/* =========================================================================
+   Design Studio ( My Account → Design )
+   Looks along the top; controls on the left, grouped by what the customer
+   sees; the real account page on the right; one save bar.
+   ========================================================================= */
+
+.acfw-studio {
+	--acfw-studio-accent: #2563eb;
+	margin-top: 16px;
+}
+
+// ---- Looks ------------------------------------------------------------------
+.acfw-studio-looks {
+	padding: 18px 20px 20px;
+}
+
+.acfw-studio-looks-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 12px 20px;
+	margin-bottom: 14px;
+}
+
+.acfw-studio-looks-head h2 {
+	margin: 0 0 4px;
+	color: $acfw-ink;
+	font-size: 16px;
+	font-weight: 700;
+}
+
+.acfw-studio-looks-head p {
+	margin: 0;
+	color: #5a6b85;
+	font-size: 13px;
+}
+
+.acfw-save-look {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.acfw-save-look .button {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+	border-radius: 9px !important;
+}
+
+.acfw-save-look-form {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.acfw-save-look-form[hidden] {
+	display: none;
+}
+
+.acfw-save-look-name {
+	width: 200px;
+	min-height: 32px;
+	border-radius: 8px !important;
+}
+
+.acfw-looks {
+	display: flex;
+	gap: 12px;
+	padding: 2px 2px 6px;
+	overflow-x: auto;
+	scroll-snap-type: x proximity;
+}
+
+.acfw-look {
+	--acfw-tpl-accent: var(--acfw-look-accent, #2563eb);
+	position: relative;
+	display: flex;
+	flex: 0 0 188px;
+	flex-direction: column;
+	gap: 10px;
+	padding: 10px;
+	border: 1px solid $acfw-line;
+	border-radius: 12px;
+	background: #fff;
+	color: $acfw-ink;
+	text-align: left;
+	cursor: pointer;
+	scroll-snap-align: start;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.acfw-look .acfw-mock {
+	height: 92px;
+	background: #f7f9fc;
+	box-shadow: inset 0 0 0 1px $acfw-line;
+}
+
+.acfw-look:hover {
+	border-color: var(--acfw-tpl-accent);
+	box-shadow: 0 6px 16px rgba(15, 37, 69, 0.08);
+	transform: translateY(-1px);
+}
+
+.acfw-look.is-picked {
+	border-color: var(--acfw-tpl-accent);
+	box-shadow: 0 0 0 2px var(--acfw-tpl-accent);
+}
+
+.acfw-look:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.acfw-look-body {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding: 0 2px;
+}
+
+.acfw-look-name {
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.acfw-look-desc {
+	color: #5a6b85;
+	font-size: 12px;
+	line-height: 1.35;
+}
+
+.acfw-look-tag {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--acfw-tpl-accent);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+// A look saved in this visit, before the page reloads to draw its miniature.
+.acfw-look-swatch {
+	height: 92px;
+	border-radius: 6px;
+	background: linear-gradient(135deg, var(--acfw-tpl-accent), #fff 140%);
+}
+
+// Mocks in the Studio have no text: labels and content lines are bars.
+.acfw-studio .acfw-mock-label {
+	display: block;
+	flex: 1 1 auto;
+	height: 4px;
+	max-width: 60%;
+	border-radius: 2px;
+	background: currentColor;
+	opacity: 0.55;
+}
+
+.acfw-studio .acfw-mock-line {
+	display: block;
+}
+
+.acfw-studio .acfw-mock.pos-top .acfw-mock-label {
+	width: 14px;
+}
+
+// ---- Body: rail + stage ----------------------------------------------------------
+.acfw-studio-body {
+	display: grid;
+	grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+	margin-top: 20px;
+}
+
+.acfw-studio-rail {
+	padding: 6px;
+}
+
+.acfw-studio-group {
+	border-bottom: 1px solid $acfw-line;
+}
+
+.acfw-studio-group:last-child {
+	border-bottom: 0;
+}
+
+.acfw-studio-group > summary {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 14px;
+	border-radius: 9px;
+	color: $acfw-ink;
+	font-size: 14px;
+	font-weight: 700;
+	list-style: none;
+	cursor: pointer;
+}
+
+.acfw-studio-group > summary::-webkit-details-marker {
+	display: none;
+}
+
+.acfw-studio-group > summary::after {
+	content: "";
+	width: 7px;
+	height: 7px;
+	margin: -3px 4px 0 auto;
+	border-right: 2px solid #8a97ab;
+	border-bottom: 2px solid #8a97ab;
+	transform: rotate(45deg);
+	transition: transform 0.15s ease;
+}
+
+.acfw-studio-group[open] > summary::after {
+	margin-top: 3px;
+	transform: rotate(-135deg);
+}
+
+.acfw-studio-group > summary .dashicons {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	background: rgba(37, 99, 235, 0.1);
+	color: #1d4ed8;
+	font-size: 16px;
+}
+
+.acfw-studio-group > summary:hover {
+	background: $acfw-tint;
+}
+
+.acfw-studio-group > summary:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: -2px;
+}
+
+.acfw-studio-fields {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 4px 14px 20px;
+}
+
+// ---- A Studio control ---------------------------------------------------------------
+.acfw-sf {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+
+.acfw-sf[hidden] {
+	display: none;
+}
+
+// Controls that depend on a switch sit indented under it.
+.acfw-sf[data-parent] {
+	margin-top: -6px;
+	padding-left: 12px;
+	border-left: 2px solid $acfw-line;
+}
+
+.acfw-sf-label {
+	color: $acfw-ink;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.acfw-sf-hint {
+	margin: 0;
+	color: #5a6b85;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.acfw-sf-toggle-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	cursor: pointer;
+}
+
+.acfw-sf-toggle-row .acfw-sf-label {
+	font-weight: 500;
+}
+
+.acfw-sf-color-row,
+.acfw-sf-range-row,
+.acfw-sf-image-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.acfw-sf-swatch {
+	flex: 0 0 36px;
+	width: 36px;
+	height: 36px;
+	padding: 2px;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	background: #fff;
+	cursor: pointer;
+}
+
+.acfw-sf-swatch::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+
+.acfw-sf-swatch::-webkit-color-swatch {
+	border: 0;
+	border-radius: 6px;
+}
+
+.acfw-studio .acfw-sf-hex {
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 36px;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 13px;
+	text-transform: lowercase;
+}
+
+.acfw-sf-reset {
+	display: inline-flex;
+	flex: 0 0 32px;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: #8a97ab;
+	cursor: pointer;
+}
+
+.acfw-sf-reset:hover {
+	background: $acfw-tint;
+	color: #1d4ed8;
+}
+
+.acfw-sf-reset .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.acfw-sf-contrast {
+	margin: 0;
+	padding: 7px 10px;
+	border-radius: 8px;
+	background: #ecf8f1;
+	color: #1a6b41;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.acfw-sf-contrast.is-low {
+	background: #fdf1dd;
+	color: #8a5a00;
+}
+
+.acfw-sf-range-row input[type="range"] {
+	flex: 1 1 auto;
+	accent-color: #2563eb;
+}
+
+.acfw-sf-output {
+	flex: 0 0 auto;
+	min-width: 52px;
+	padding: 3px 8px;
+	border-radius: 7px;
+	background: #f1f4f9;
+	color: $acfw-ink;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+}
+
+.acfw-studio .acfw-sf-text input,
+.acfw-studio .acfw-sf-image input[type="url"] {
+	width: 100%;
+	min-height: 36px;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+}
+
+.acfw-sf-thumb {
+	flex: 0 0 36px;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.acfw-sf-thumb[hidden] {
+	display: none;
+}
+
+.acfw-studio .acfw-sf-css textarea {
+	width: 100%;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 12px;
+}
+
+.acfw-sf-css .CodeMirror {
+	height: 240px;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+}
+
+// Segmented choice ( typeface, weight, density … ).
+.acfw-segments {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px;
+	padding: 3px;
+	border: 1px solid $acfw-line;
+	border-radius: 10px;
+	background: #eef2f8;
+}
+
+.acfw-segment {
+	display: flex;
+	flex: 1 1 0;
+	min-width: max-content;
+	cursor: pointer;
+}
+
+.acfw-segment input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.acfw-segment span {
+	flex: 1 1 auto;
+	padding: 7px 10px;
+	border-radius: 8px;
+	color: #5a6b85;
+	font-size: 12px;
+	font-weight: 600;
+	text-align: center;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.acfw-segment:hover span {
+	color: $acfw-ink;
+}
+
+.acfw-segment input:checked + span {
+	background: #fff;
+	box-shadow: 0 1px 3px rgba(15, 37, 69, 0.12);
+	color: #1d4ed8;
+}
+
+.acfw-segment input:focus-visible + span {
+	outline: 2px solid #2563eb;
+	outline-offset: 1px;
+}
+
+// Visual choices ( style, placement, marker ): picture tiles.
+.acfw-tiles-pick {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+	gap: 8px;
+}
+
+.acfw-tile-pick {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 6px;
+	border: 1px solid $acfw-line;
+	border-radius: 10px;
+	background: #fff;
+	cursor: pointer;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.acfw-tile-pick input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.acfw-tile-pick:hover {
+	border-color: #b9c6dc;
+}
+
+.acfw-tile-pick:has(input:checked) {
+	border-color: var(--acfw-studio-accent);
+	box-shadow: 0 0 0 1px var(--acfw-studio-accent);
+}
+
+.acfw-tile-pick:has(input:focus-visible) {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.acfw-choice-text {
+	color: $acfw-ink;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.25;
+	text-align: center;
+}
+
+.acfw-pick-menu-style .acfw-mock {
+	--acfw-tpl-accent: var(--acfw-studio-accent);
+	height: 58px;
+	padding: 5px;
+	background: #f7f9fc;
+	box-shadow: none;
+}
+
+// Placement diagram: the menu ( i ) beside or above the content ( b ).
+.acfw-place {
+	display: flex;
+	gap: 4px;
+	height: 44px;
+	padding: 5px;
+	border-radius: 6px;
+	background: #f7f9fc;
+}
+
+.acfw-place i {
+	flex: 0 0 30%;
+	border-radius: 3px;
+	background: var(--acfw-studio-accent);
+	opacity: 0.85;
+}
+
+.acfw-place b {
+	flex: 1 1 auto;
+	border-radius: 3px;
+	background: #dfe5ee;
+}
+
+.acfw-place-vertical-right {
+	flex-direction: row-reverse;
+}
+
+.acfw-place-horizontal {
+	flex-direction: column;
+}
+
+.acfw-place-horizontal i {
+	flex: 0 0 9px;
+}
+
+// Current-page marker glyphs, drawn on one tinted row.
+.acfw-marker {
+	position: relative;
+	display: block;
+	height: 26px;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--acfw-studio-accent) 11%, #fff);
+}
+
+.acfw-marker i {
+	position: absolute;
+	background: var(--acfw-studio-accent);
+}
+
+.acfw-marker-bar i {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 3px;
+	border-radius: 3px 0 0 3px;
+}
+
+.acfw-marker-underline i {
+	right: 18%;
+	bottom: 3px;
+	left: 18%;
+	height: 2px;
+	border-radius: 2px;
+}
+
+.acfw-marker-dot i {
+	top: 50%;
+	left: 8px;
+	width: 6px;
+	height: 6px;
+	margin-top: -3px;
+	border-radius: 50%;
+}
+
+.acfw-marker-none i {
+	display: none;
+}
+
+// Density's "Fine-tune" disclosure.
+.acfw-finetune > summary {
+	color: #1d4ed8;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.acfw-finetune-body {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	margin-top: 12px;
+	padding-left: 12px;
+	border-left: 2px solid $acfw-line;
+}
+
+// ---- Stage: the live account page -------------------------------------------------------
+.acfw-studio-stage {
+	position: sticky;
+	top: 46px;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	padding: 0;
+}
+
+.acfw-studio-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	border-bottom: 1px solid $acfw-line;
+}
+
+.acfw-devices {
+	display: inline-flex;
+	gap: 2px;
+	padding: 3px;
+	border: 1px solid $acfw-line;
+	border-radius: 10px;
+	background: #eef2f8;
+}
+
+.acfw-device {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 10px;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: #5a6b85;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.acfw-device .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.acfw-device.is-active {
+	background: #fff;
+	box-shadow: 0 1px 3px rgba(15, 37, 69, 0.12);
+	color: #1d4ed8;
+}
+
+.acfw-device:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 1px;
+}
+
+.acfw-studio-where {
+	padding: 4px 9px;
+	border: 1px solid $acfw-line;
+	border-radius: 7px;
+	background: #f7f9fc;
+	color: #3c4b63;
+	font-size: 12px;
+}
+
+.acfw-studio-toolbar-spacer {
+	flex: 1 1 auto;
+}
+
+.acfw-studio-reload {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	padding: 0 !important;
+	border-radius: 9px !important;
+}
+
+.acfw-studio-canvas {
+	display: flex;
+	justify-content: center;
+	overflow-x: auto;
+	padding: 16px;
+	background: #e9edf3;
+	background-image: radial-gradient(rgba(15, 37, 69, 0.07) 1px, transparent 1px);
+	background-size: 14px 14px;
+}
+
+.acfw-studio-frame {
+	width: 100%;
+	transition: width 0.25s ease;
+}
+
+.acfw-studio-frame[data-device="tablet"] {
+	width: 834px;
+	max-width: 100%;
+}
+
+.acfw-studio-frame[data-device="phone"] {
+	width: 390px;
+	max-width: 100%;
+}
+
+.acfw-studio-frame iframe {
+	display: block;
+	width: 100%;
+	height: calc(100vh - 290px);
+	min-height: 560px;
+	border: 0;
+	border-radius: 10px;
+	background: #fff;
+	box-shadow: 0 12px 32px rgba(15, 37, 69, 0.16);
+}
+
+.acfw-studio-note {
+	margin: 0;
+	padding: 10px 14px;
+	border-top: 1px solid $acfw-line;
+	color: #5a6b85;
+	font-size: 12px;
+}
+
+// ---- Save bar -----------------------------------------------------------------------------
+.acfw-studio-bar {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 20px;
+	padding: 12px 16px;
+	border: 1px solid $acfw-line;
+	border-radius: 12px;
+	background: #fff;
+}
+
+// With something to save, the bar floats at the bottom of the window.
+.acfw-studio.is-dirty .acfw-studio-bar {
+	position: sticky;
+	bottom: 12px;
+	z-index: 30;
+	border-color: #f3d19c;
+	background: rgba(255, 255, 255, 0.96);
+	box-shadow: 0 10px 30px rgba(15, 37, 69, 0.16);
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+}
+
+.acfw-studio-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-right: auto;
+	color: #5a6b85;
+	font-size: 13px;
+}
+
+.acfw-studio.is-dirty .acfw-studio-status {
+	color: #8a5a00;
+	font-weight: 600;
+}
+
+.acfw-studio.is-dirty .acfw-studio-status::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #d97706;
+}
+
+.acfw-studio-bar .button {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+	height: 38px;
+	border-radius: 9px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.acfw-look,
+	.acfw-studio-frame,
+	.acfw-segment span {
+		transition: none;
+	}
+}
+
+@media (max-width: 1100px) {
+	.acfw-studio-body {
+		grid-template-columns: 1fr;
+	}
+
+	.acfw-studio-stage {
+		position: static;
+	}
+}

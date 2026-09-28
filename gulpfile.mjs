@@ -27,7 +27,8 @@ const SLUG = 'my-account-dashboard-builder';
 const OWN_JS = [
 	'assets/js/admin.js',
 	'assets/js/frontend.js',
-	'assets/js/customize-controls.js',
+	'assets/js/design-studio.js',
+	'assets/js/design-preview.js',
 ];
 
 /* Files that ship in the plugin zip. */

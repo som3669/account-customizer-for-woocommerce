@@ -1,6 +1,10 @@
 *** My Account Dashboard Builder Changelog ***
 
 Unreleased
+* New - Design Studio ( My Account → Design ): ready-made looks and your saved looks, controls grouped by what customers see, and the real account page beside them at desktop, tablet and phone widths. Live values change the preview as you pick them; the rest reload it from your unsaved draft, which only you see. Save or discard in one bar.
+* New - Accent contrast check against WCAG AA, and one Density choice with a fine-tune option.
+* Tweak - The Customizer panel and the Templates tab make way for the Studio; Appearance → Customize keeps a link to it.
+* Fix - Dashicons load for customers, who get no admin bar: the mobile menu button, pin stars, stat icons and avatar camera were blank.
 * New - Menu items: an editable endpoint URL for custom endpoints, checked against WooCommerce's endpoints, WordPress query vars and the rest of the menu.
 * New - Menu items: a badge ( e.g. "New", or "{points_balance} pts" ) shown in place of the item count.
 * New - Visibility rules: "bought any of" with a product search, a minimum number of orders and a minimum total spent. Dates now follow the site timezone.

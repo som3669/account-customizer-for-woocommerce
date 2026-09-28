@@ -166,34 +166,6 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		}
 
 		/**
-		 * Render a visual image-radio control ( thumbnail option picker ).
-		 *
-		 * @param string $name    Option / field name.
-		 * @param string $current Current value.
-		 * @param array  $choices  value => array( 'label' => .., 'img' => file ).
-		 * @param string $fallback Value used when nothing is stored.
-		 */
-		protected function image_radio( $name, $current, $choices, $fallback = '' ) {
-			$current = ( '' === $current || null === $current ) ? $fallback : $current;
-			echo '<div class="acfw-radio-group acfw-image-radio" role="radiogroup">';
-			foreach ( $choices as $value => $choice ) {
-				$id     = sanitize_html_class( $name . '-' . $value );
-				$active = (string) $current === (string) $value;
-				printf(
-					'<label class="acfw-image-card%1$s" for="%2$s"><input type="radio" id="%2$s" name="%3$s" value="%4$s" %5$s /><img src="%6$s" alt="" /><span class="acfw-image-label">%7$s</span></label>',
-					$active ? ' is-active' : '',
-					esc_attr( $id ),
-					esc_attr( $name ),
-					esc_attr( $value ),
-					checked( $current, $value, false ),
-					esc_url( ACFW_ASSETS_URL . '/images/controls/' . $choice['img'] ),
-					esc_html( $choice['label'] )
-				);
-			}
-			echo '</div>';
-		}
-
-		/**
 		 * Render a segmented buttonset control (styled radio group).
 		 *
 		 * @param string $name    Option / field name.

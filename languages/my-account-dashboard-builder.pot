@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-28T05:18:04+00:00\n"
+"POT-Creation-Date: 2026-09-28T05:37:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: my-account-dashboard-builder\n"
@@ -17,7 +17,7 @@ msgstr ""
 #. Plugin Name of the plugin
 #: my-account-dashboard-builder.php
 #: includes/admin/class-acfw-admin.php:67
-#: includes/admin/class-acfw-admin.php:435
+#: includes/admin/class-acfw-admin.php:446
 msgid "My Account Dashboard Builder"
 msgstr ""
 
@@ -65,123 +65,118 @@ msgstr ""
 msgid "Select colour"
 msgstr ""
 
-#: includes/admin/class-acfw-admin-tab.php:278
+#: includes/admin/class-acfw-admin-tab.php:250
 msgid "Search the icon library…"
 msgstr ""
 
-#: includes/admin/class-acfw-admin-tab.php:279
+#: includes/admin/class-acfw-admin-tab.php:251
 msgid "— Select an icon —"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:68
-#: includes/customize/class-acfw-customizer.php:88
+#: includes/customize/class-acfw-customizer.php:53
 msgid "My Account"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:78
-#: includes/admin/class-acfw-admin.php:424
+#: includes/admin/class-acfw-admin.php:436
 #: includes/admin/tabs/class-acfw-tab-items.php:302
 msgid "Menu Items"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:79
-#: includes/admin/class-acfw-admin.php:425
-msgid "Templates"
+#: includes/admin/class-acfw-admin.php:437
+msgid "Design"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:80
-#: includes/admin/class-acfw-admin.php:104
-#: includes/admin/class-acfw-admin.php:426
+#: includes/admin/class-acfw-admin.php:103
+#: includes/admin/class-acfw-admin.php:438
 msgid "Settings"
 msgstr ""
 
 #: includes/admin/class-acfw-admin.php:81
-#: includes/admin/class-acfw-admin.php:427
-msgid "Customizer"
-msgstr ""
-
-#: includes/admin/class-acfw-admin.php:82
-#: includes/admin/class-acfw-admin.php:428
+#: includes/admin/class-acfw-admin.php:439
 #: includes/admin/tabs/class-acfw-tab-items.php:706
 msgid "Banners"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:200
+#: includes/admin/class-acfw-admin.php:199
 msgid "Delete this item? This cannot be undone."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:201
+#: includes/admin/class-acfw-admin.php:200
 msgid "Reset every menu item, design setting and banner to the defaults? This cannot be undone."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:202
+#: includes/admin/class-acfw-admin.php:201
 msgid "Select an icon image"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:203
+#: includes/admin/class-acfw-admin.php:202
 msgid "Use this image"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:206
+#: includes/admin/class-acfw-admin.php:205
 msgid "Type at least 3 characters to search."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:207
+#: includes/admin/class-acfw-admin.php:206
 msgid "Searching…"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:208
+#: includes/admin/class-acfw-admin.php:207
 msgid "No products found."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:209
+#: includes/admin/class-acfw-admin.php:208
 #: includes/admin/tabs/class-acfw-tab-items.php:748
 msgid "Everyone"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:457
+#: includes/admin/class-acfw-admin.php:466
 msgid "Add endpoint"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:460
+#: includes/admin/class-acfw-admin.php:469
 msgid "Add group"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:463
+#: includes/admin/class-acfw-admin.php:472
 msgid "Add link"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:466
+#: includes/admin/class-acfw-admin.php:475
 msgid "Add page"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:471
+#: includes/admin/class-acfw-admin.php:480
 #: includes/admin/tabs/class-acfw-tab-banners.php:90
 #: includes/admin/tabs/class-acfw-tab-banners.php:107
 msgid "Add banner"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:476
+#: includes/admin/class-acfw-admin.php:485
 msgid "More actions"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:482
+#: includes/admin/class-acfw-admin.php:491
 msgid "Preview"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:486
+#: includes/admin/class-acfw-admin.php:495
 msgid "View My Account"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:500
+#: includes/admin/class-acfw-admin.php:509
 msgid "Changes saved."
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:522
+#: includes/admin/class-acfw-admin.php:531
 msgid "Dismiss"
 msgstr ""
 
-#: includes/admin/class-acfw-admin.php:549
+#: includes/admin/class-acfw-admin.php:558
 msgid "Add smart tags"
 msgstr ""
 
@@ -223,6 +218,7 @@ msgid "Close"
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-banners.php:153
+#: includes/class-acfw-design.php:292
 msgid "Name"
 msgstr ""
 
@@ -231,6 +227,7 @@ msgid "Give the banner a name first."
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-banners.php:158
+#: includes/admin/tabs/class-acfw-tab-design.php:169
 #: includes/admin/tabs/class-acfw-tab-items.php:286
 msgid "Cancel"
 msgstr ""
@@ -326,8 +323,6 @@ msgid "Banner link"
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-banners.php:308
-#: includes/customize/class-acfw-customizer.php:173
-#: includes/customize/class-acfw-customizer.php:182
 msgid "None"
 msgstr ""
 
@@ -386,6 +381,137 @@ msgstr ""
 msgid "Save banner"
 msgstr ""
 
+#: includes/admin/tabs/class-acfw-tab-design.php:26
+msgid "Compact"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:31
+msgid "Comfortable"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:36
+msgid "Roomy"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:94
+msgid "Saved by you"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:139
+#: includes/admin/tabs/class-acfw-tab-design.php:242
+msgid "All changes saved"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:140
+#: includes/admin/tabs/class-acfw-tab-items.php:353
+msgid "Unsaved changes"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:141
+msgid "Saving…"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:142
+msgid "That did not save. Check your connection and try again."
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:143
+msgid "Custom"
+msgstr ""
+
+#. translators: %s: contrast ratio, e.g. 4.8:1.
+#: includes/admin/tabs/class-acfw-tab-design.php:145
+msgid "Current page text contrast %s, readable (WCAG AA)."
+msgstr ""
+
+#. translators: %s: contrast ratio, e.g. 2.9:1.
+#: includes/admin/tabs/class-acfw-tab-design.php:147
+msgid "Current page text contrast %s, below the 4.5:1 WCAG AA minimum. Try a darker accent."
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:148
+#: includes/admin/tabs/class-acfw-tab-design.php:167
+msgid "Name this look"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:158
+msgid "Start from a look"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:159
+msgid "Pick one to try it in the preview. Your site only changes when you save."
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:164
+msgid "Save current as a look"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:168
+msgid "Save look"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:211
+msgid "Preview width"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:214
+msgid "Desktop"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:215
+msgid "Tablet"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:216
+msgid "Phone"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:228
+msgid "Reload the preview"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:234
+msgid "Preview of the My Account page"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:237
+msgid "The preview is your own account, so pages you open here show your orders. Links outside My Account and Log out are switched off."
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:243
+msgid "Discard changes"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:246
+msgid "Save design"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:271
+msgid "In use"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:328
+msgid "Density"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:339
+msgid "Fine-tune spacing"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:384
+#: includes/admin/tabs/class-acfw-tab-settings.php:201
+msgid "Default"
+msgstr ""
+
+#. translators: %s: control label.
+#: includes/admin/tabs/class-acfw-tab-design.php:385
+msgid "Reset %s"
+msgstr ""
+
+#: includes/admin/tabs/class-acfw-tab-design.php:441
+msgid "Choose"
+msgstr ""
+
 #. translators: 1: requested URL slug, 2: menu item label, 3: the slug it keeps.
 #: includes/admin/tabs/class-acfw-tab-items.php:234
 msgid "The URL \"%1$s\" is already used, so \"%2$s\" keeps \"%3$s\"."
@@ -425,10 +551,6 @@ msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-items.php:336
 msgid "Select a menu item on the left to edit its options."
-msgstr ""
-
-#: includes/admin/tabs/class-acfw-tab-items.php:353
-msgid "Unsaved changes"
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-items.php:355
@@ -603,6 +725,7 @@ msgid "Shortcodes and smart tags work here, e.g. Hello {first_name}."
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-items.php:694
+#: includes/class-acfw-design.php:183
 msgid "Placement"
 msgstr ""
 
@@ -647,7 +770,6 @@ msgid "Banner position"
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-items.php:732
-#: includes/customize/class-acfw-customizer.php:128
 msgid "Top"
 msgstr ""
 
@@ -750,7 +872,6 @@ msgid "Move your configuration between sites"
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-settings.php:142
-#: includes/customize/class-acfw-customizer.php:188
 msgid "AJAX navigation"
 msgstr ""
 
@@ -776,10 +897,6 @@ msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-settings.php:197
 msgid "After-logout redirect"
-msgstr ""
-
-#: includes/admin/tabs/class-acfw-tab-settings.php:201
-msgid "Default"
 msgstr ""
 
 #: includes/admin/tabs/class-acfw-tab-settings.php:202
@@ -896,23 +1013,6 @@ msgstr ""
 msgid "Restore endpoints, design and banners to defaults. Cannot be undone."
 msgstr ""
 
-#: includes/admin/tabs/class-acfw-tab-templates.php:66
-msgid "Starter templates"
-msgstr ""
-
-#: includes/admin/tabs/class-acfw-tab-templates.php:67
-msgid "One-click ready-made designs. Applying a template overwrites the related design settings."
-msgstr ""
-
-#: includes/admin/tabs/class-acfw-tab-templates.php:75
-#: includes/admin/tabs/class-acfw-tab-templates.php:89
-msgid "Applied"
-msgstr ""
-
-#: includes/admin/tabs/class-acfw-tab-templates.php:91
-msgid "Apply template"
-msgstr ""
-
 #: includes/admin/tabs/class-acfw-tab-tools.php:54
 msgid "Configuration imported."
 msgstr ""
@@ -995,6 +1095,7 @@ msgid "Uploaded profile picture"
 msgstr ""
 
 #: includes/class-acfw-banners.php:66
+#: includes/class-acfw-design.php:88
 msgid "Text"
 msgstr ""
 
@@ -1024,8 +1125,9 @@ msgid "Orders"
 msgstr ""
 
 #: includes/class-acfw-banners.php:83
+#: includes/class-acfw-design.php:332
 #: includes/class-acfw-items.php:145
-#: includes/frontend/class-acfw-frontend.php:565
+#: includes/frontend/class-acfw-frontend.php:587
 msgid "Downloads"
 msgstr ""
 
@@ -1035,7 +1137,8 @@ msgid "Items in cart"
 msgstr ""
 
 #: includes/class-acfw-banners.php:85
-#: includes/frontend/class-acfw-frontend.php:568
+#: includes/class-acfw-design.php:334
+#: includes/frontend/class-acfw-frontend.php:590
 msgid "Reward points"
 msgstr ""
 
@@ -1097,8 +1200,353 @@ msgstr ""
 msgid "Completed"
 msgstr ""
 
+#: includes/class-acfw-design.php:80
+msgid "Accent"
+msgstr ""
+
+#: includes/class-acfw-design.php:83
+msgid "Icons, the current page, badges and links."
+msgstr ""
+
+#: includes/class-acfw-design.php:91
+msgid "Left at the default, the menu keeps your theme’s text colour."
+msgstr ""
+
+#: includes/class-acfw-design.php:96
+msgid "Colour scheme"
+msgstr ""
+
+#: includes/class-acfw-design.php:100
+msgid "Light"
+msgstr ""
+
+#: includes/class-acfw-design.php:101
+msgid "Dark"
+msgstr ""
+
+#: includes/class-acfw-design.php:102
+msgid "Follow device"
+msgstr ""
+
+#: includes/class-acfw-design.php:108
+msgid "Typeface"
+msgstr ""
+
+#: includes/class-acfw-design.php:112
+msgid "Theme"
+msgstr ""
+
+#: includes/class-acfw-design.php:113
+msgid "System"
+msgstr ""
+
+#: includes/class-acfw-design.php:114
+msgid "Serif"
+msgstr ""
+
+#: includes/class-acfw-design.php:115
+msgid "Mono"
+msgstr ""
+
+#: includes/class-acfw-design.php:121
+msgid "Text size"
+msgstr ""
+
+#: includes/class-acfw-design.php:131
+msgid "Weight"
+msgstr ""
+
+#: includes/class-acfw-design.php:135
+msgid "Regular"
+msgstr ""
+
+#: includes/class-acfw-design.php:136
+msgid "Medium"
+msgstr ""
+
+#: includes/class-acfw-design.php:137
+msgid "Bold"
+msgstr ""
+
+#: includes/class-acfw-design.php:143
+msgid "Roundness"
+msgstr ""
+
+#: includes/class-acfw-design.php:153
+msgid "Item height"
+msgstr ""
+
+#: includes/class-acfw-design.php:163
+msgid "Space between items"
+msgstr ""
+
+#: includes/class-acfw-design.php:175
+msgid "Style"
+msgstr ""
+
+#: includes/class-acfw-design.php:187
+msgid "Left of the content"
+msgstr ""
+
+#: includes/class-acfw-design.php:188
+msgid "Right of the content"
+msgstr ""
+
+#: includes/class-acfw-design.php:189
+msgid "Above the content"
+msgstr ""
+
+#: includes/class-acfw-design.php:195
+msgid "Current page marker"
+msgstr ""
+
+#: includes/class-acfw-design.php:199
+msgid "Bar"
+msgstr ""
+
+#: includes/class-acfw-design.php:200
+msgid "Underline"
+msgstr ""
+
+#: includes/class-acfw-design.php:201
+msgid "Dot"
+msgstr ""
+
+#: includes/class-acfw-design.php:202
+msgid "Colour only"
+msgstr ""
+
+#: includes/class-acfw-design.php:208
+msgid "On hover"
+msgstr ""
+
+#: includes/class-acfw-design.php:212
+msgid "Tint only"
+msgstr ""
+
+#: includes/class-acfw-design.php:213
+msgid "Nudge"
+msgstr ""
+
+#: includes/class-acfw-design.php:214
+msgid "Lift"
+msgstr ""
+
+#: includes/class-acfw-design.php:220
+msgid "Current page colour"
+msgstr ""
+
+#: includes/class-acfw-design.php:223
+msgid "Empty uses the accent."
+msgstr ""
+
+#: includes/class-acfw-design.php:228
+msgid "Item background"
+msgstr ""
+
+#: includes/class-acfw-design.php:235
+msgid "Hover background"
+msgstr ""
+
+#: includes/class-acfw-design.php:238
+msgid "Empty uses a tint of the accent."
+msgstr ""
+
+#: includes/class-acfw-design.php:240
+msgid "Icons"
+msgstr ""
+
+#: includes/class-acfw-design.php:241
+msgid "Order and download counts"
+msgstr ""
+
+#: includes/class-acfw-design.php:242
+msgid "Search box"
+msgstr ""
+
+#: includes/class-acfw-design.php:243
+msgid "Let customers pin favourites"
+msgstr ""
+
+#: includes/class-acfw-design.php:244
+msgid "Collapse to icons"
+msgstr ""
+
+#: includes/class-acfw-design.php:244
+msgid "A button that shrinks the menu to an icon rail."
+msgstr ""
+
+#: includes/class-acfw-design.php:245
+msgid "Stay in view on scroll"
+msgstr ""
+
+#: includes/class-acfw-design.php:246
+msgid "Open every group"
+msgstr ""
+
+#: includes/class-acfw-design.php:247
+msgid "Ask before logging out"
+msgstr ""
+
+#: includes/class-acfw-design.php:250
+msgid "Show the profile card"
+msgstr ""
+
+#: includes/class-acfw-design.php:254
+msgid "Default picture"
+msgstr ""
+
+#: includes/class-acfw-design.php:257
+msgid "Shown until a customer uploads their own. Empty uses Gravatar."
+msgstr ""
+
+#: includes/class-acfw-design.php:262
+msgid "Picture shape"
+msgstr ""
+
+#: includes/class-acfw-design.php:266
+msgid "Round"
+msgstr ""
+
+#: includes/class-acfw-design.php:267
+msgid "Square"
+msgstr ""
+
+#: includes/class-acfw-design.php:273
+#: includes/class-acfw-design.php:319
+msgid "Alignment"
+msgstr ""
+
+#: includes/class-acfw-design.php:277
+#: includes/class-acfw-design.php:323
+msgid "Start"
+msgstr ""
+
+#: includes/class-acfw-design.php:278
+#: includes/class-acfw-design.php:324
+msgid "Centre"
+msgstr ""
+
+#: includes/class-acfw-design.php:279
+#: includes/class-acfw-design.php:325
+msgid "End"
+msgstr ""
+
+#: includes/class-acfw-design.php:285
+msgid "Picture size"
+msgstr ""
+
+#: includes/class-acfw-design.php:293
+msgid "Role"
+msgstr ""
+
+#: includes/class-acfw-design.php:294
+msgid "Customers can upload a picture"
+msgstr ""
+
+#: includes/class-acfw-design.php:298
+msgid "Largest upload"
+msgstr ""
+
+#: includes/class-acfw-design.php:311
+msgid "Heading"
+msgstr ""
+
+#: includes/class-acfw-design.php:314
+msgid "Smart tags work, e.g. Welcome back, {first_name}!"
+msgstr ""
+
+#: includes/class-acfw-design.php:328
+msgid "Account numbers"
+msgstr ""
+
+#: includes/class-acfw-design.php:328
+msgid "Cards with the customer’s orders, spend and downloads."
+msgstr ""
+
+#: includes/class-acfw-design.php:329
+#: includes/frontend/class-acfw-frontend.php:574
+msgid "Total orders"
+msgstr ""
+
+#: includes/class-acfw-design.php:330
+msgid "Orders in progress"
+msgstr ""
+
+#: includes/class-acfw-design.php:331
+#: includes/frontend/class-acfw-frontend.php:581
+#: includes/helper/functions-acfw.php:1019
+msgid "Total spent"
+msgstr ""
+
+#: includes/class-acfw-design.php:333
+#: includes/frontend/class-acfw-frontend.php:584
+msgid "Refunds"
+msgstr ""
+
+#: includes/class-acfw-design.php:335
+#: includes/frontend/class-acfw-frontend.php:603
+msgid "Latest order"
+msgstr ""
+
+#: includes/class-acfw-design.php:336
+msgid "Orders by status chart"
+msgstr ""
+
+#: includes/class-acfw-design.php:337
+msgid "Shortcut tiles"
+msgstr ""
+
+#: includes/class-acfw-design.php:337
+msgid "A tile for every page in the menu."
+msgstr ""
+
+#: includes/class-acfw-design.php:338
+#: includes/frontend/class-acfw-frontend.php:948
+msgid "Profile completeness"
+msgstr ""
+
+#: includes/class-acfw-design.php:344
+#: includes/class-acfw-design.php:392
+msgid "Custom CSS"
+msgstr ""
+
+#: includes/class-acfw-design.php:347
+msgid "Loaded on account pages after the plugin’s own styles."
+msgstr ""
+
+#: includes/class-acfw-design.php:376
+msgid "Look"
+msgstr ""
+
+#: includes/class-acfw-design.php:380
+msgid "Menu"
+msgstr ""
+
+#: includes/class-acfw-design.php:384
+msgid "Profile card"
+msgstr ""
+
+#: includes/class-acfw-design.php:388
 #: includes/class-acfw-items.php:143
 msgid "Dashboard"
+msgstr ""
+
+#: includes/class-acfw-design.php:555
+msgid "You are not allowed to change the design."
+msgstr ""
+
+#: includes/class-acfw-design.php:601
+msgid "Design saved."
+msgstr ""
+
+#: includes/class-acfw-design.php:624
+msgid "Give the look a name."
+msgstr ""
+
+#. translators: %s: look name.
+#: includes/class-acfw-design.php:652
+msgid "Saved \"%s\" to your looks."
 msgstr ""
 
 #: includes/class-acfw-items.php:146
@@ -1117,387 +1565,82 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: includes/customize/class-acfw-customizer.php:94
-msgid "Avatar"
+#: includes/customize/class-acfw-customizer.php:58
+msgid "The My Account page is designed in the Design Studio, with a live preview of the page, desktop, tablet and phone widths, and ready-made looks."
 msgstr ""
 
-#: includes/customize/class-acfw-customizer.php:95
-msgid "Navigation"
+#: includes/customize/class-acfw-customizer.php:60
+msgid "Open the Design Studio"
 msgstr ""
 
-#: includes/customize/class-acfw-customizer.php:96
-msgid "Layout & Colors"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:117
-msgid "Menu position"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:120
-#: includes/customize/class-acfw-customizer.php:144
-#: includes/customize/class-acfw-customizer.php:264
-msgid "Left"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:124
-#: includes/customize/class-acfw-customizer.php:146
-#: includes/customize/class-acfw-customizer.php:272
-msgid "Right"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:133
-msgid "Menu style"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:134
-msgid "Show menu icons"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:135
-msgid "Show item counts"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:136
-msgid "Dashboard quick-link tiles"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:137
-msgid "Dashboard title"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:142
-msgid "Dashboard content position"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:145
-msgid "Middle"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:149
-msgid "Dashboard stat widgets"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:150
-msgid "• Total orders"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:151
-msgid "• Pending orders"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:152
-msgid "• Total spent"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:153
-msgid "• Downloads"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:154
-msgid "• Refunds"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:155
-msgid "• Reward points"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:156
-msgid "• Latest order"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:157
-msgid "• Orders pie chart"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:158
-msgid "Menu search box"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:159
-msgid "Collapsible icon rail"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:160
-msgid "Let customers pin favorites"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:161
-msgid "Profile completeness meter"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:162
-msgid "Sticky menu"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:163
-msgid "Confirm before logout"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:168
-msgid "Active indicator"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:170
-msgid "Bar"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:171
-msgid "Underline"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:172
-msgid "Dot"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:180
-msgid "Hover animation"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:183
-msgid "Slide"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:184
-msgid "Grow"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:187
-msgid "Expand groups by default"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:192
-msgid "Accent color"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:193
-msgid "Text color"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:194
-msgid "Active color"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:195
-msgid "Menu item background"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:196
-msgid "Hover background"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:197
-msgid "Corner radius"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:198
-msgid "Item spacing"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:199
-msgid "Item padding"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:200
-msgid "Font size"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:205
-msgid "Font weight"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:207
-msgid "Normal"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:208
-msgid "Medium"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:209
-msgid "Bold"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:216
-msgid "Font family"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:218
-msgid "Theme"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:219
-msgid "System"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:220
-msgid "Serif"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:221
-msgid "Mono"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:228
-msgid "Color scheme"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:230
-msgid "Auto ( follow visitor OS )"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:231
-msgid "Light"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:232
-msgid "Dark"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:235
-msgid "Custom CSS"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:239
-msgid "Show avatar"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:240
-msgid "Custom avatar image"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:240
-msgid "Overrides the gravatar. Leave empty to use the customer avatar."
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:245
-msgid "Avatar shape"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:248
-msgid "Circle"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:252
-msgid "Square"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:261
-msgid "Avatar alignment"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:268
-msgid "Center"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:277
-msgid "Avatar size"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:278
-msgid "Show display name"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:279
-msgid "Show user role"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:280
-msgid "Let customers upload their own picture"
-msgstr ""
-
-#: includes/customize/class-acfw-customizer.php:281
-msgid "Maximum upload size (KB)"
-msgstr ""
-
-#: includes/frontend/class-acfw-frontend.php:283
+#: includes/frontend/class-acfw-frontend.php:285
 msgid "Are you sure you want to log out?"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:284
+#: includes/frontend/class-acfw-frontend.php:286
 #: templates/myaccount-menu.php:70
 msgid "Search…"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:285
+#: includes/frontend/class-acfw-frontend.php:287
 msgid "No matching menu items."
 msgstr ""
 
 #. translators: %s: menu item label.
-#: includes/frontend/class-acfw-frontend.php:287
+#: includes/frontend/class-acfw-frontend.php:289
 #: templates/myaccount-menu-item.php:39
 msgid "Pin %s to the top"
 msgstr ""
 
 #. translators: %s: menu item label.
-#: includes/frontend/class-acfw-frontend.php:289
+#: includes/frontend/class-acfw-frontend.php:291
 msgid "Unpin %s"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:293
+#: includes/frontend/class-acfw-frontend.php:295
 msgid "Remove your profile picture?"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:294
+#: includes/frontend/class-acfw-frontend.php:296
 msgid "Upload failed. Please try again."
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:508
+#: includes/frontend/class-acfw-frontend.php:530
 msgid "Dismiss this notice"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:552
-msgid "Total orders"
-msgstr ""
-
-#: includes/frontend/class-acfw-frontend.php:556
+#: includes/frontend/class-acfw-frontend.php:578
 msgid "Pending orders"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:559
-#: includes/helper/functions-acfw.php:1019
-msgid "Total spent"
-msgstr ""
-
-#: includes/frontend/class-acfw-frontend.php:562
-msgid "Refunds"
-msgstr ""
-
-#: includes/frontend/class-acfw-frontend.php:581
-msgid "Latest order"
-msgstr ""
-
-#: includes/frontend/class-acfw-frontend.php:677
+#: includes/frontend/class-acfw-frontend.php:699
 msgid "Orders by status"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:862
+#: includes/frontend/class-acfw-frontend.php:884
 #: includes/helper/functions-acfw.php:1010
 msgid "First name"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:867
+#: includes/frontend/class-acfw-frontend.php:889
 #: includes/helper/functions-acfw.php:1011
 msgid "Last name"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:872
+#: includes/frontend/class-acfw-frontend.php:894
 #: includes/helper/functions-acfw.php:1013
 msgid "Email address"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:877
+#: includes/frontend/class-acfw-frontend.php:899
 msgid "Phone number"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:882
+#: includes/frontend/class-acfw-frontend.php:904
 msgid "Billing address"
 msgstr ""
 
-#: includes/frontend/class-acfw-frontend.php:926
-msgid "Profile completeness"
-msgstr ""
-
-#: includes/frontend/class-acfw-frontend.php:932
+#: includes/frontend/class-acfw-frontend.php:954
 msgid "Still missing:"
 msgstr ""
 
