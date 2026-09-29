@@ -582,7 +582,9 @@
 			n += ( $pane.find( 'input[name$="[vis_from]"]' ).val() || $pane.find( 'input[name$="[vis_to]"]' ).val() ) ? 1 : 0;
 			n += ( $pane.find( '.acfw-product-select' ).val() || [] ).length ? 1 : 0;
 			n += parseInt( $pane.find( 'input[name$="[vis_min_orders]"]' ).val(), 10 ) > 0 ? 1 : 0;
+			n += '' !== $.trim( $pane.find( 'input[name$="[vis_max_orders]"]' ).val() || '' ) ? 1 : 0;
 			n += parseFloat( $pane.find( 'input[name$="[vis_min_spent]"]' ).val() ) > 0 ? 1 : 0;
+			n += parseInt( $pane.find( 'input[name$="[vis_inactive_days]"]' ).val(), 10 ) > 0 ? 1 : 0;
 			return n;
 		}
 
@@ -605,6 +607,8 @@
 				return $.trim( $( this ).text() );
 			} ).get();
 			var orders   = parseInt( $pane.find( 'input[name$="[vis_min_orders]"]' ).val(), 10 ) || 0;
+			var maxRaw   = $.trim( $pane.find( 'input[name$="[vis_max_orders]"]' ).val() || '' );
+			var idle     = parseInt( $pane.find( 'input[name$="[vis_inactive_days]"]' ).val(), 10 ) || 0;
 			var spent    = $.trim( $pane.find( 'input[name$="[vis_min_spent]"]' ).val() || '' );
 			var products = ( $pane.find( '.acfw-product-select' ).val() || [] ).length;
 			var from     = $pane.find( 'input[name$="[vis_from]"]' ).val();
@@ -615,6 +619,13 @@
 			}
 			if ( orders > 0 ) {
 				parts.push( fmt( 1 === orders ? c.order : c.orders, orders ) );
+			}
+			if ( '' !== maxRaw ) {
+				var max = Math.max( 0, parseInt( maxRaw, 10 ) || 0 );
+				parts.push( 0 === max ? c.noOrders : fmt( 1 === max ? c.maxOrder : c.maxOrders, max ) );
+			}
+			if ( idle > 0 ) {
+				parts.push( fmt( 1 === idle ? c.idleDay : c.idleDays, idle ) );
 			}
 			if ( parseFloat( spent ) > 0 ) {
 				parts.push( fmt( c.spent, money( spent ) ) );
@@ -829,11 +840,12 @@
 			$form.find( '.acfw-blink-text' ).attr( 'hidden', widget && 'none' !== link ? null : 'hidden' );
 			$form.find( '.acfw-bcount' ).attr( 'hidden', widget && $form.find( '.acfw-banner-count-toggle' ).is( ':checked' ) ? null : 'hidden' );
 
-			// Everything under Style is for widget banners.
-			var $style = $form.find( '.acfw-section-tab[data-section="style"]' ).prop( 'hidden', ! widget );
-			if ( ! widget && $style.hasClass( 'is-active' ) ) {
+			// Style and Offer are for widget banners.
+			var $widgetTabs = $form.find( '.acfw-section-tab[data-section="style"], .acfw-section-tab[data-section="offer"]' ).prop( 'hidden', ! widget );
+			if ( ! widget && $widgetTabs.filter( '.is-active' ).length ) {
 				lastSection = showSection( $form, 'general', false );
 			}
+			$form.find( '.acfw-offer-field' ).attr( 'hidden', $form.find( '.acfw-offer-toggle' ).is( ':checked' ) ? null : 'hidden' );
 
 			$form.find( '.acfw-detail-head .acfw-node-badge' )
 				.attr( 'class', 'acfw-node-badge acfw-badge-' + type )
@@ -845,10 +857,15 @@
 			var $form = $( this ).closest( '.acfw-banner-form' );
 			var n     = ( $form.find( '.acfw-roles-select' ).val() || [] ).length ? 1 : 0;
 			n += ( $form.find( 'input[name="banner_vis_from"]' ).val() || $form.find( 'input[name="banner_vis_to"]' ).val() ) ? 1 : 0;
+			n += ( $form.find( '.acfw-product-select' ).val() || [] ).length ? 1 : 0;
+			n += parseInt( $form.find( 'input[name="banner_vis_min_orders"]' ).val(), 10 ) > 0 ? 1 : 0;
+			n += '' !== $.trim( $form.find( 'input[name="banner_vis_max_orders"]' ).val() || '' ) ? 1 : 0;
+			n += parseFloat( $form.find( 'input[name="banner_vis_min_spent"]' ).val() ) > 0 ? 1 : 0;
+			n += parseInt( $form.find( 'input[name="banner_vis_inactive_days"]' ).val(), 10 ) > 0 ? 1 : 0;
 			$form.find( '.acfw-section-count' ).text( n ).prop( 'hidden', ! n );
 		} );
 
-		$( document ).on( 'change', 'input[name="banner_type"], input[name="banner_link_type"], .acfw-banner-count-toggle', function () {
+		$( document ).on( 'change', 'input[name="banner_type"], input[name="banner_link_type"], .acfw-banner-count-toggle, .acfw-offer-toggle', function () {
 			refreshBannerForm( $( this ).closest( '.acfw-detail' ) );
 		} );
 
@@ -946,10 +963,11 @@
 		/* ---- Delete item ---- */
 		$( document ).on( 'click', '.acfw-node-remove', function ( e ) {
 			e.stopPropagation();
-			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {
+			var $form = $( '.acfw-delete-form' );
+			if ( ! window.confirm( $form.data( 'confirm' ) || acfwAdmin.confirmDelete ) ) {
 				return;
 			}
-			$( '.acfw-delete-form' ).find( '.acfw-delete-key' ).val( $( this ).data( 'key' ) ).end().trigger( 'submit' );
+			$form.find( '.acfw-delete-key' ).val( $( this ).data( 'key' ) ).end().trigger( 'submit' );
 		} );
 
 		/* ---- Insert smart tag into the content editor ---- */
@@ -1002,6 +1020,82 @@
 				$( 'body' ).removeClass( 'acfw-preview-open' );
 			}
 		} );
+
+		/* ---- Dialogs opened by a button ( group menus ) ---- */
+		var dialogReturn = null;
+		$( document ).on( 'click', '[data-acfw-open]', function () {
+			dialogReturn = this;
+			var $dialog = $( '#' + $( this ).data( 'acfw-open' ) ).prop( 'hidden', false );
+			$( 'body' ).addClass( 'acfw-dialog-open' );
+			$dialog.find( 'input[type="text"]' ).first().trigger( 'focus' );
+		} );
+		function closeDialogs() {
+			$( '.acfw-dialog' ).prop( 'hidden', true );
+			$( 'body' ).removeClass( 'acfw-dialog-open' );
+			if ( dialogReturn ) {
+				$( dialogReturn ).trigger( 'focus' );
+				dialogReturn = null;
+			}
+		}
+		$( document ).on( 'click', '.acfw-dialog [data-acfw-close]', closeDialogs );
+		$( document ).on( 'click', '.acfw-dialog', function ( e ) {
+			if ( e.target === this ) {
+				closeDialogs();
+			}
+		} );
+		$( document ).on( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key && $( '.acfw-dialog:not([hidden])' ).length ) {
+				closeDialogs();
+			}
+		} );
+
+		// Buttons that ask first ( data-acfw-confirm ).
+		$( document ).on( 'click', '[data-acfw-confirm]', function ( e ) {
+			if ( ! window.confirm( String( $( this ).data( 'acfw-confirm' ) ) ) ) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+			}
+		} );
+
+		/* ---- Fields tab: add, remove, reorder, key from label ---- */
+		var $fieldsList = $( '.acfw-fields-list' );
+		if ( $fieldsList.length ) {
+			var syncFieldsEmpty = function () {
+				$( '.acfw-fields-empty' ).prop( 'hidden', !! $fieldsList.children( '.acfw-field-card' ).length );
+			};
+			$( document ).on( 'click', '.acfw-fields-add', function () {
+				var next = parseInt( $fieldsList.attr( 'data-next' ), 10 ) || 0;
+				var html = document.getElementById( 'acfw-field-template' ).innerHTML.replace( /__i__/g, String( next ) );
+				$fieldsList.attr( 'data-next', next + 1 ).append( html );
+				syncFieldsEmpty();
+				markDirty();
+				$fieldsList.children( '.acfw-field-card' ).last().find( '.acfw-fc-label' ).trigger( 'focus' );
+			} );
+			$( document ).on( 'click', '.acfw-field-remove', function () {
+				$( this ).closest( '.acfw-field-card' ).remove();
+				syncFieldsEmpty();
+				markDirty();
+			} );
+			$( document ).on( 'input', '.acfw-fc-label', function () {
+				var $card = $( this ).closest( '.acfw-field-card' );
+				$card.find( '.acfw-field-card-title' ).text( this.value || '…' );
+				if ( $card.is( '[data-fresh]' ) ) {
+					var key = this.value.toLowerCase().normalize( 'NFD' ).replace( /[\u0300-\u036f]/g, '' ).replace( /[^a-z0-9]+/g, '_' ).replace( /^_+|_+$/g, '' ).slice( 0, 30 );
+					$card.find( '.acfw-fc-key' ).val( key );
+					$card.find( '.acfw-field-card-tag' ).text( key ? '{field_' + key + '}' : '' );
+				}
+			} );
+			$( document ).on( 'input', '.acfw-fc-key', function () {
+				var $card = $( this ).closest( '.acfw-field-card' ).removeAttr( 'data-fresh' );
+				$card.find( '.acfw-field-card-tag' ).text( this.value ? '{field_' + this.value + '}' : '' );
+			} );
+			$( document ).on( 'change', '.acfw-fc-type', function () {
+				$( this ).closest( '.acfw-field-card' ).find( '.acfw-fc-options' ).prop( 'hidden', -1 === [ 'select', 'radio' ].indexOf( this.value ) );
+			} );
+			if ( $.fn.sortable ) {
+				$fieldsList.sortable( { handle: '.acfw-field-drag', items: '> .acfw-field-card', update: markDirty } );
+			}
+		}
 
 		/* ---- Reset all settings confirm ---- */
 		$( document ).on( 'click', '.acfw-reset-btn', function ( e ) {
@@ -1181,7 +1275,7 @@
 
 		/* ---- "Add to menu": an endpoint, group, link or page, at the end ---- */
 		// A dialog in the middle of the window.
-		var $addOverlay = $( '.acfw-add-overlay' );
+		var $addOverlay = $( '.acfw-add-overlay' ).not( '.acfw-dialog' );
 		var $addPop     = $addOverlay.find( '.acfw-add-pop' );
 		var addReturn   = null;
 

@@ -207,6 +207,82 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 		}
 
 		/**
+		 * The "Bought any of" rule: a product search ( select2, WooCommerce's own
+		 * product search ). Shared by menu items and banners.
+		 *
+		 * @param string $name   Field name ( "[]" is added ).
+		 * @param array  $values Saved rules.
+		 * @param string $uid    Unique id prefix.
+		 */
+		protected function product_rule_field( $name, $values, $uid ) {
+			?>
+			<div class="acfw-field">
+				<label for="<?php echo esc_attr( $uid . '-products' ); ?>"><?php esc_html_e( 'Bought any of', 'my-account-dashboard-builder' ); ?></label>
+				<select id="<?php echo esc_attr( $uid . '-products' ); ?>" name="<?php echo esc_attr( $name ); ?>[]" class="acfw-product-select acfw-rule-input" multiple data-placeholder="<?php esc_attr_e( 'Search for a product…', 'my-account-dashboard-builder' ); ?>">
+					<?php foreach ( acfw_rule_product_ids( $values ) as $acfw_product_id ) : ?>
+						<?php $acfw_product = function_exists( 'wc_get_product' ) ? wc_get_product( $acfw_product_id ) : null; ?>
+						<option value="<?php echo esc_attr( $acfw_product_id ); ?>" selected><?php echo esc_html( $acfw_product ? wp_strip_all_tags( $acfw_product->get_formatted_name() ) : '#' . $acfw_product_id ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+			<?php
+		}
+
+		/**
+		 * The order-based rules: at least / at most N orders, a minimum spent,
+		 * and "last order more than N days ago". Shared by menu items and banners.
+		 *
+		 * @param string $pattern sprintf pattern for a field name, e.g. "items[orders][%s]".
+		 * @param array  $values  Saved rules.
+		 * @param string $uid     Unique id prefix.
+		 */
+		protected function order_rule_fields( $pattern, $values, $uid ) {
+			$field  = function ( $key ) use ( $pattern ) {
+				return sprintf( $pattern, $key );
+			};
+			$max    = acfw_rule_max_orders( $values );
+			$symbol = function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '';
+			?>
+			<div class="acfw-field">
+				<span class="acfw-field-label"><?php esc_html_e( 'Order history', 'my-account-dashboard-builder' ); ?></span>
+				<span class="acfw-inline-fields">
+					<label class="acfw-inline-field">
+						<span><?php esc_html_e( 'At least', 'my-account-dashboard-builder' ); ?></span>
+						<input type="number" class="acfw-rule-input acfw-input-short" name="<?php echo esc_attr( $field( 'vis_min_orders' ) ); ?>" min="0" step="1" value="<?php echo esc_attr( ! empty( $values['vis_min_orders'] ) ? absint( $values['vis_min_orders'] ) : '' ); ?>" placeholder="0" />
+						<span><?php esc_html_e( 'orders', 'my-account-dashboard-builder' ); ?></span>
+					</label>
+					<label class="acfw-inline-field">
+						<span><?php esc_html_e( 'at most', 'my-account-dashboard-builder' ); ?></span>
+						<input type="number" class="acfw-rule-input acfw-input-short" name="<?php echo esc_attr( $field( 'vis_max_orders' ) ); ?>" min="0" step="1" value="<?php echo esc_attr( null === $max ? '' : $max ); ?>" placeholder="–" />
+						<span><?php esc_html_e( 'orders', 'my-account-dashboard-builder' ); ?></span>
+					</label>
+					<label class="acfw-inline-field">
+						<span><?php esc_html_e( 'and', 'my-account-dashboard-builder' ); ?></span>
+						<span class="acfw-money-row">
+							<span class="acfw-money-symbol"><?php echo esc_html( $symbol ); ?></span>
+							<input type="number" class="acfw-rule-input acfw-input-short" name="<?php echo esc_attr( $field( 'vis_min_spent' ) ); ?>" min="0" step="0.01" value="<?php echo esc_attr( ! empty( $values['vis_min_spent'] ) ? (float) $values['vis_min_spent'] : '' ); ?>" placeholder="0" />
+						</span>
+						<span><?php esc_html_e( 'spent', 'my-account-dashboard-builder' ); ?></span>
+					</label>
+				</span>
+				<p class="acfw-hint"><?php esc_html_e( 'Leave a box empty to skip that rule. “At most 0” means customers who have not ordered yet.', 'my-account-dashboard-builder' ); ?></p>
+			</div>
+
+			<div class="acfw-field">
+				<label for="<?php echo esc_attr( $uid . '-idle' ); ?>"><?php esc_html_e( 'Last order', 'my-account-dashboard-builder' ); ?></label>
+				<span class="acfw-inline-fields">
+					<span class="acfw-inline-field">
+						<span><?php esc_html_e( 'More than', 'my-account-dashboard-builder' ); ?></span>
+						<input type="number" id="<?php echo esc_attr( $uid . '-idle' ); ?>" class="acfw-rule-input acfw-input-short" name="<?php echo esc_attr( $field( 'vis_inactive_days' ) ); ?>" min="1" step="1" value="<?php echo esc_attr( ! empty( $values['vis_inactive_days'] ) ? absint( $values['vis_inactive_days'] ) : '' ); ?>" placeholder="–" />
+						<span><?php esc_html_e( 'days ago', 'my-account-dashboard-builder' ); ?></span>
+					</span>
+				</span>
+				<p class="acfw-hint"><?php esc_html_e( 'Reach customers who have not ordered for a while, e.g. with a “We miss you” offer. Customers with no orders are left out.', 'my-account-dashboard-builder' ); ?></p>
+			</div>
+			<?php
+		}
+
+		/**
 		 * An info icon after a control's label, with a tooltip on hover ( and while
 		 * the control has keyboard focus ). The tooltip is also the control's
 		 * description: point its aria-describedby at "{$id}-tip".

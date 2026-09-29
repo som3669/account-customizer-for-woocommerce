@@ -65,6 +65,15 @@ if ( ! class_exists( 'ACFW' ) ) {
 			require_once ACFW_DIR . 'includes/class-acfw-commerce.php';
 			require_once ACFW_DIR . 'includes/class-acfw-order-stats.php';
 			require_once ACFW_DIR . 'includes/class-acfw-design.php';
+			require_once ACFW_DIR . 'includes/class-acfw-stats.php';
+			require_once ACFW_DIR . 'includes/class-acfw-offers.php';
+			require_once ACFW_DIR . 'includes/class-acfw-nav-menu.php';
+			require_once ACFW_DIR . 'includes/class-acfw-privacy.php';
+			require_once ACFW_DIR . 'includes/class-acfw-fields.php';
+			require_once ACFW_DIR . 'includes/class-acfw-returns.php';
+			require_once ACFW_DIR . 'includes/class-acfw-addresses.php';
+			require_once ACFW_DIR . 'includes/class-acfw-profiles.php';
+			require_once ACFW_DIR . 'includes/class-acfw-compat.php';
 			require_once ACFW_DIR . 'includes/customize/class-acfw-customizer.php';
 
 			$this->items = new ACFW_Items();
@@ -74,6 +83,15 @@ if ( ! class_exists( 'ACFW' ) ) {
 			new ACFW_Commerce();
 			new ACFW_Order_Stats();
 			new ACFW_Design();
+			new ACFW_Stats();
+			new ACFW_Offers();
+			new ACFW_Nav_Menu();
+			new ACFW_Privacy();
+			new ACFW_Fields();
+			new ACFW_Returns();
+			new ACFW_Addresses();
+			new ACFW_Profiles();
+			new ACFW_Compat();
 
 			if ( is_admin() ) {
 				require_once ACFW_DIR . 'includes/admin/class-acfw-import-export.php';

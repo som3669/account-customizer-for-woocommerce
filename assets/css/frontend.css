@@ -979,6 +979,86 @@
   text-decoration: underline;
 }
 
+/* ---- Personal offer: the customer's own code ---- */
+.acfw-offer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.acfw-offer-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.acfw-offer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.acfw-offer-code {
+  padding: 6px 12px;
+  border: 1.5px dashed currentColor;
+  border-radius: var(--acfw-radius, 4px);
+  background: transparent;
+  color: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  -webkit-user-select: all;
+     -moz-user-select: all;
+          user-select: all;
+}
+
+.acfw-offer-copy,
+.acfw-offer-apply {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: var(--acfw-radius, 4px);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.acfw-offer-copy {
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+
+.acfw-offer-apply,
+.acfw-offer-apply:hover,
+.acfw-offer-apply:focus {
+  border: 1px solid var(--acfw-accent, #2563eb);
+  background: var(--acfw-accent, #2563eb);
+  color: #fff;
+  text-decoration: none;
+}
+
+.acfw-offer-copy:focus-visible,
+.acfw-offer-apply:focus-visible {
+  outline: 2px solid var(--acfw-accent, #2563eb);
+  outline-offset: 2px;
+}
+
+.acfw-offer-expiry,
+.acfw-offer-note {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
 /* =========================================================================
    Avatar block
    ========================================================================= */
@@ -1912,4 +1992,210 @@ a.acfw-stat:hover {
 .acfw-pm-missing a {
   color: var(--acfw-accent, #2563eb);
   font-weight: 600;
+}
+
+.acfw-order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 1.5em;
+}
+
+.acfw-order-actions p {
+  margin: 0;
+}
+
+.acfw-order-actions-note {
+  color: var(--acfw-muted, #646970);
+  font-size: 0.875em;
+}
+
+.acfw-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--acfw-accent, #2563eb);
+  font: inherit;
+  font-size: 0.9em;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.acfw-link-button:hover,
+.acfw-link-button:focus {
+  background: none;
+  color: var(--acfw-accent, #2563eb);
+  text-decoration-thickness: 2px;
+}
+
+.acfw-return-form {
+  margin: 0 0 2em;
+}
+
+.acfw-return-form .acfw-return-items select {
+  min-width: 72px;
+}
+
+.acfw-return-form textarea {
+  width: 100%;
+}
+
+.acfw-returns-empty {
+  color: var(--acfw-muted, #646970);
+}
+
+.acfw-return-status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eef2f8;
+  color: #334155;
+  font-size: 0.8125em;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.acfw-return-requested {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.acfw-return-approved,
+.acfw-return-received {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.acfw-return-refunded {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.acfw-return-rejected {
+  background: #fdecec;
+  color: #991b1b;
+}
+
+.acfw-return-reply {
+  display: block;
+  margin-top: 4px;
+  color: var(--acfw-muted, #646970);
+  font-size: 0.875em;
+  white-space: pre-line;
+}
+
+.acfw-privacy {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.acfw-privacy-card {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px;
+  border: 1px solid var(--acfw-border, #e2e4e7);
+  border-radius: var(--acfw-radius, 4px);
+  background: var(--acfw-surface, #fff);
+}
+
+.acfw-privacy-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.1em;
+}
+
+.acfw-privacy-card p {
+  margin: 0 0 12px;
+}
+
+.acfw-privacy-card form {
+  margin-top: auto;
+}
+
+.acfw-privacy-status {
+  padding: 8px 12px;
+  border-radius: var(--acfw-radius, 4px);
+  background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+  font-size: 0.9em;
+}
+
+.acfw-privacy-card .button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.acfw-addressbook {
+  margin-top: 2em;
+}
+
+.acfw-addressbook-intro {
+  color: var(--acfw-muted, #646970);
+}
+
+.acfw-addressbook-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 0 0 1.5em;
+}
+
+.acfw-address-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  border: 1px solid var(--acfw-border, #e2e4e7);
+  border-radius: var(--acfw-radius, 4px);
+  background: var(--acfw-surface, #fff);
+}
+
+.acfw-address-card h4 {
+  margin: 0 0 6px;
+  font-size: 1em;
+}
+
+.acfw-address-card address {
+  margin: 0 0 12px;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.acfw-address-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: auto;
+  font-size: 0.9em;
+}
+
+.acfw-address-actions form {
+  display: inline;
+  margin: 0;
+}
+
+.acfw-address-actions a,
+.acfw-address-actions .acfw-link-button {
+  color: var(--acfw-accent, #2563eb);
+  font-size: 1em;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.acfw-address-actions .acfw-link-button[value=delete] {
+  color: #b32d2e;
+}
+
+.acfw-address-form {
+  margin-top: 1em;
+}
+
+.acfw-address-picker select {
+  width: 100%;
+}
+
+.acfw-order-fields {
+  margin: 0 0 1.5em;
 }

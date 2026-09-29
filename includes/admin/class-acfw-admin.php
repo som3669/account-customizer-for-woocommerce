@@ -13,6 +13,9 @@ require_once __DIR__ . '/tabs/class-acfw-tab-design.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-settings.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-banners.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-tools.php';
+require_once __DIR__ . '/tabs/class-acfw-tab-insights.php';
+require_once __DIR__ . '/tabs/class-acfw-tab-fields.php';
+require_once __DIR__ . '/tabs/class-acfw-tab-returns.php';
 
 if ( ! class_exists( 'ACFW_Admin' ) ) {
 
@@ -36,11 +39,14 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 */
 		public function __construct() {
 			$this->tabs = array(
-				'items'   => new ACFW_Tab_Items(),
-				'design'  => new ACFW_Tab_Design(),
-				'general' => new ACFW_Tab_Settings(),
-				'banners' => new ACFW_Tab_Banners(),
-				'tools'   => new ACFW_Tab_Tools(),
+				'items'    => new ACFW_Tab_Items(),
+				'design'   => new ACFW_Tab_Design(),
+				'general'  => new ACFW_Tab_Settings(),
+				'banners'  => new ACFW_Tab_Banners(),
+				'tools'    => new ACFW_Tab_Tools(),
+				'insights' => new ACFW_Tab_Insights(),
+				'fields'   => new ACFW_Tab_Fields(),
+				'returns'  => new ACFW_Tab_Returns(),
 			);
 			add_action( 'admin_menu', array( $this, 'register_menu' ) );
 			add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -75,10 +81,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$base = 'admin.php?page=' . self::PAGE;
 			$subs = array(
-				self::PAGE             => __( 'Menu Items', 'my-account-dashboard-builder' ),
-				$base . '&tab=design'  => __( 'Design', 'my-account-dashboard-builder' ),
-				$base . '&tab=general' => __( 'Settings', 'my-account-dashboard-builder' ),
-				$base . '&tab=banners' => __( 'Banners', 'my-account-dashboard-builder' ),
+				self::PAGE              => __( 'Menu Items', 'my-account-dashboard-builder' ),
+				$base . '&tab=design'   => __( 'Design', 'my-account-dashboard-builder' ),
+				$base . '&tab=general'  => __( 'Settings', 'my-account-dashboard-builder' ),
+				$base . '&tab=banners'  => __( 'Banners', 'my-account-dashboard-builder' ),
+				$base . '&tab=fields'   => __( 'Fields', 'my-account-dashboard-builder' ),
+				$base . '&tab=returns'  => __( 'Returns', 'my-account-dashboard-builder' ),
+				$base . '&tab=insights' => __( 'Insights', 'my-account-dashboard-builder' ),
 			);
 			foreach ( $subs as $slug => $title ) {
 				add_submenu_page(
@@ -131,6 +140,22 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			foreach ( $settings as $option => $sanitize ) {
 				register_setting( 'acfw_settings', $option, array( 'sanitize_callback' => $sanitize ) );
+			}
+
+			// Settings → Orders & privacy. A group of its own: options.php resets
+			// every option of the group that a form leaves out, so sharing one
+			// group would have each form wipe the other's.
+			$orders = array(
+				'acfw_cancel_enable'      => 'sanitize_text_field',
+				'acfw_cancel_hours'       => 'absint',
+				'acfw_returns_enable'     => 'sanitize_text_field',
+				'acfw_returns_days'       => 'absint',
+				'acfw_returns_reasons'    => 'sanitize_textarea_field',
+				'acfw_addressbook_enable' => 'sanitize_text_field',
+				'acfw_privacy_enable'     => 'sanitize_text_field',
+			);
+			foreach ( $orders as $option => $sanitize ) {
+				register_setting( 'acfw_settings_orders', $option, array( 'sanitize_callback' => $sanitize ) );
 			}
 		}
 
@@ -371,6 +396,15 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'orders'      => _n( '%d+ order', '%d+ orders', 2, 'my-account-dashboard-builder' ),
 				/* translators: %s: minimum amount spent, with its currency. */
 				'spent'       => __( '%s+ spent', 'my-account-dashboard-builder' ),
+				'noOrders'    => __( 'No orders yet', 'my-account-dashboard-builder' ),
+				/* translators: %d: maximum number of orders. */
+				'maxOrder'    => _n( 'At most %d order', 'At most %d orders', 1, 'my-account-dashboard-builder' ),
+				/* translators: %d: maximum number of orders. */
+				'maxOrders'   => _n( 'At most %d order', 'At most %d orders', 2, 'my-account-dashboard-builder' ),
+				/* translators: %d: number of days. */
+				'idleDay'     => _n( 'No order in %d day', 'No order in %d days', 1, 'my-account-dashboard-builder' ),
+				/* translators: %d: number of days. */
+				'idleDays'    => _n( 'No order in %d day', 'No order in %d days', 2, 'my-account-dashboard-builder' ),
 				'product'     => __( 'Bought 1 product', 'my-account-dashboard-builder' ),
 				/* translators: %d: number of products. */
 				'products'    => __( 'Bought one of %d products', 'my-account-dashboard-builder' ),
@@ -410,7 +444,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			if ( in_array( $tab, array( 'templates', 'customizer' ), true ) ) {
 				$tab = 'design';
 			}
-			return in_array( $tab, array( 'general', 'items', 'design', 'banners', 'tools' ), true ) ? $tab : 'items';
+			return in_array( $tab, array( 'general', 'items', 'design', 'banners', 'tools', 'insights', 'fields', 'returns' ), true ) ? $tab : 'items';
 		}
 
 		/**
@@ -490,10 +524,13 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			$tab  = $this->current_tab();
 			$tabs = array(
-				'items'   => array( __( 'Menu Items', 'my-account-dashboard-builder' ), 'menu-alt' ),
-				'design'  => array( __( 'Design', 'my-account-dashboard-builder' ), 'art' ),
-				'general' => array( __( 'Settings', 'my-account-dashboard-builder' ), 'admin-generic' ),
-				'banners' => array( __( 'Banners', 'my-account-dashboard-builder' ), 'megaphone' ),
+				'items'    => array( __( 'Menu Items', 'my-account-dashboard-builder' ), 'menu-alt' ),
+				'design'   => array( __( 'Design', 'my-account-dashboard-builder' ), 'art' ),
+				'banners'  => array( __( 'Banners', 'my-account-dashboard-builder' ), 'megaphone' ),
+				'fields'   => array( __( 'Fields', 'my-account-dashboard-builder' ), 'forms' ),
+				'returns'  => array( __( 'Returns', 'my-account-dashboard-builder' ), 'undo' ),
+				'insights' => array( __( 'Insights', 'my-account-dashboard-builder' ), 'chart-bar' ),
+				'general'  => array( __( 'Settings', 'my-account-dashboard-builder' ), 'admin-generic' ),
 			);
 			?>
 			<div class="wrap acfw-wrap">
@@ -559,6 +596,17 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					delete_transient( $this->notices_key() );
 					foreach ( (array) $acfw_queued as $acfw_notice ) {
 						if ( ! empty( $acfw_notice['msg'] ) ) {
+							if ( 'error' === ( $acfw_notice['type'] ?? '' ) ) {
+								// A save that failed must not also say "Changes saved."
+								$acfw_toasts = array_values(
+									array_filter(
+										$acfw_toasts,
+										function ( $t ) {
+											return 'success' !== $t['type'];
+										}
+									)
+								);
+							}
 							$acfw_toasts[] = array(
 								'type' => in_array( $acfw_notice['type'] ?? '', array( 'success', 'warning', 'error' ), true ) ? $acfw_notice['type'] : 'warning',
 								'msg'  => (string) $acfw_notice['msg'],

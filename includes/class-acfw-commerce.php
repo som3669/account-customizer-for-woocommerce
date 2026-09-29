@@ -113,7 +113,12 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			if ( ! self::enabled( 'recent' ) ) {
 				$keys[] = self::RECENT;
 			}
-			return $keys;
+			/**
+			 * Built-in menu keys whose feature is switched off ( privacy, returns … ).
+			 *
+			 * @param string[] $keys Menu keys.
+			 */
+			return (array) apply_filters( 'acfw_disabled_keys', $keys );
 		}
 
 		/**

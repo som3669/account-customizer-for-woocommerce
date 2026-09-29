@@ -103,13 +103,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			$this->menu_items = $this->filter_visible( ACFW()->items->get_items() );
 
-			// Track endpoint views.
-			if ( is_user_logged_in() && 'yes' === get_option( 'acfw_track_views', 'no' ) ) {
-				$ep           = acfw_get_current_endpoint();
-				$views        = get_option( 'acfw_endpoint_views', array() );
-				$views        = is_array( $views ) ? $views : array();
-				$views[ $ep ] = ( isset( $views[ $ep ] ) ? (int) $views[ $ep ] : 0 ) + 1;
-				update_option( 'acfw_endpoint_views', $views, false );
+			// Count the page view ( customers only; see Insights ).
+			if ( class_exists( 'ACFW_Stats' ) && ACFW_Stats::counts_visitor() ) {
+				ACFW_Stats::bump( 'view', acfw_get_current_endpoint() );
 			}
 
 			$this->register_endpoint_titles();
@@ -207,6 +203,16 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		}
 
 		/**
+		 * The menu the current visitor gets, rules applied ( for menus outside
+		 * the account page, e.g. a header dropdown ).
+		 *
+		 * @return array
+		 */
+		public function visible_items() {
+			return $this->filter_visible( ACFW()->items->get_items() );
+		}
+
+		/**
 		 * Is a single item visible to the current user?
 		 *
 		 * @param array $item Item options.
@@ -292,6 +298,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'userId'            => get_current_user_id(),
 					'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 					'avatarNonce'       => wp_create_nonce( ACFW_Avatar::NONCE ),
+					'track'             => class_exists( 'ACFW_Stats' ) && ACFW_Stats::counts_visitor(),
+					'trackNonce'        => wp_create_nonce( 'acfw_track' ),
+					'cancelAsk'         => class_exists( 'ACFW_Returns' ) && ACFW_Returns::cancel_enabled() ? __( 'Cancel this order?', 'my-account-dashboard-builder' ) : '',
 					'avatarRemoveMsg'   => __( 'Remove your profile picture?', 'my-account-dashboard-builder' ),
 					'avatarErrorMsg'    => __( 'Upload failed. Please try again.', 'my-account-dashboard-builder' ),
 				)
@@ -1135,7 +1144,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			if ( empty( $item['badge'] ) ) {
 				return '';
 			}
-			return trim( wp_strip_all_tags( acfw_apply_smart_tags( (string) $item['badge'], null, false ) ) );
+			return acfw_badge_text( (string) $item['badge'] );
 		}
 
 		/**

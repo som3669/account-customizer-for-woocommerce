@@ -95,14 +95,16 @@ if ( ! class_exists( 'ACFW_Order_Stats' ) ) {
 		 *     @type int   $total     Orders across every status except drafts.
 		 *     @type array $by_status status ( no wc- prefix ) => count, zero counts left out.
 		 *     @type int   $latest    ID of the most recent order, 0 when none.
+		 *     @type int   $latest_time When it was placed ( Unix time ), 0 when none.
 		 * }
 		 */
 		public static function get( $user_id ) {
 			$user_id = absint( $user_id );
 			$empty   = array(
-				'total'     => 0,
-				'by_status' => array(),
-				'latest'    => 0,
+				'total'       => 0,
+				'by_status'   => array(),
+				'latest'      => 0,
+				'latest_time' => 0,
 			);
 
 			if ( ! $user_id || ! function_exists( 'wc_get_orders' ) || ! function_exists( 'wc_get_order_statuses' ) ) {
@@ -110,7 +112,8 @@ if ( ! class_exists( 'ACFW_Order_Stats' ) ) {
 			}
 
 			$cached = get_user_meta( $user_id, self::META, true );
-			if ( is_array( $cached ) && isset( $cached['time'], $cached['by_status'] ) && ( time() - (int) $cached['time'] ) < self::TTL ) {
+			// Entries cached before latest_time existed are rebuilt.
+			if ( is_array( $cached ) && isset( $cached['time'], $cached['by_status'] ) && array_key_exists( 'latest_time', $cached ) && ( time() - (int) $cached['time'] ) < self::TTL ) {
 				return array_merge( $empty, $cached );
 			}
 
@@ -150,11 +153,20 @@ if ( ! class_exists( 'ACFW_Order_Stats' ) ) {
 				);
 			}
 
+			$latest_id   = $latest ? (int) reset( $latest ) : 0;
+			$latest_time = 0;
+			if ( $latest_id ) {
+				$latest_order = wc_get_order( $latest_id );
+				$created      = $latest_order ? $latest_order->get_date_created() : null;
+				$latest_time  = $created ? $created->getTimestamp() : 0;
+			}
+
 			$stats = array(
-				'time'      => time(),
-				'total'     => (int) array_sum( $by_status ),
-				'by_status' => $by_status,
-				'latest'    => $latest ? (int) reset( $latest ) : 0,
+				'time'        => time(),
+				'total'       => (int) array_sum( $by_status ),
+				'by_status'   => $by_status,
+				'latest'      => $latest_id,
+				'latest_time' => $latest_time,
 			);
 
 			update_user_meta( $user_id, self::META, $stats );

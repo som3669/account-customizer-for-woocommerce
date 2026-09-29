@@ -1,6 +1,19 @@
 *** My Account Dashboard Builder Changelog ***
 
 Unreleased
+* New - Personal offers: a banner can give each customer who sees it a coupon of their own ( percent or amount off, for their email and one use, ending after N days, with an optional minimum spend and free shipping ). The banner shows the code with Copy and "Use it now", and {offer_code}, {offer_amount} and {offer_expiry} work in its text.
+* New - Visibility rules for items and banners: "at most N orders" ( 0 = no orders yet ) and "last order more than N days ago". Banners get the product and order rules menu items have.
+* New - Customer fields ( My Account → Fields ): text, long text, email, phone, number, date, dropdown, choices or tick box, on the registration form, the account details form and the admin order screen. Answers show on the user's profile, work as {field_key} smart tags and are part of personal data exports and erasure.
+* New - Cancel orders: customers can cancel an order that has not shipped, within a set number of hours. A paid order gets a note to refund it.
+* New - Returns: a Returns page and "Return items" on completed orders, within a set number of days. Customers choose items, a reason and can add a photo; the store is emailed. Answer each request on the Returns tab ( or the order screen's Returns box ) and the customer is emailed its status and your message.
+* New - Address book: customers keep more addresses on the Addresses page, make one their shipping or billing address in a click, and pick one at the classic checkout.
+* New - Privacy page: customers ask for a copy of their data or for it to be erased, through WordPress's own confirmed requests.
+* New - Menus for customer groups: a menu of its own for customers with chosen roles, managed from a "Menu for" switcher on the Menu Items screen. Item settings are shared with the main menu.
+* New - Insights ( My Account → Insights ): account page views per day and per page, banner views, clicks and click rate, and codes given, used and sales from each personal offer, over 7, 30 or 90 days. "Track endpoint views" became "Record usage".
+* New - Appearance → Menus: a My Account box with a Log in / My account link and a My account link with the customer's account pages below it.
+* New - Account pages from other plugins ( Subscriptions, Memberships, Bookings, points, wallets, tickets, affiliates ) get fitting icons, a Wishlist page is added for YITH and TI WooCommerce Wishlist, and {points_balance} reads YITH Points and Rewards and myCred.
+* Tweak - A badge made only of smart tags that come back empty is hidden instead of showing a stray word ( "{points_balance} pts" without a points plugin ).
+* Fix - An admin save that failed also said "Changes saved."
 * New - Design Studio ( My Account → Design ): ready-made looks and your saved looks, controls grouped by what customers see, and the real account page beside them at desktop, tablet and phone widths. Live values change the preview as you pick them; the rest reload it from your unsaved draft, which only you see. Save or discard in one bar.
 * New - Accent contrast check against WCAG AA, and one Density choice with a fine-tune option.
 * Tweak - The Customizer panel and the Templates tab make way for the Studio; Appearance → Customize keeps a link to it.

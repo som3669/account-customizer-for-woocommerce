@@ -138,7 +138,9 @@ them the item is hidden for everyone.
 - **Dates** — *From … until …*, whole days in the site timezone. Either end can stay open.
 - **Bought any of** — search the catalogue; customers who bought at least one of the
   products see the item.
-- **Order history** — *At least N orders* and / or *at least X spent*.
+- **Order history** — *At least N orders*, *at most N orders* (0 = customers with no
+  orders yet; visitors who are not logged in pass), *at least X spent*, and *last order
+  more than N days ago* (customers who have not ordered for a while).
 
 **Advanced**
 
@@ -173,6 +175,44 @@ them the item is hidden for everyone.
 
 1. Click **Add to menu**, pick **Page**, enter a label and click **Add item**.
 2. Choose an existing WordPress **Page** from the dropdown (links to that page’s permalink). Optionally **Open in new tab**.
+
+### Menus for Customer Groups
+
+Give a group of customers, such as wholesale buyers or members, a menu of its own.
+
+1. On **Menu Items**, click **Menu for a customer group** in the bar above the menu.
+2. Name the menu and tick the roles it is for, then click **Create menu**. It starts as a
+   copy of the main menu.
+3. The **Menu for** list switches between the main menu (*Everyone*) and each group menu.
+   In a group menu:
+   - drag items to reorder it, and **Save menu**;
+   - the row's **Take out of this menu** button removes an item from this menu only. It
+     stays in the main menu and moves to the **Not in this menu** list under the menu,
+     where **Add to this menu** puts it back;
+   - **Add to menu** and **Duplicate** add the new item to this menu *and* to the main
+     menu, limited there to this group's roles (a notice says so; change it under the
+     item's **Visibility**).
+4. **Name and roles** renames the menu or changes its roles; **Delete this menu** gives its
+   customers the main menu again.
+
+A customer gets the first group menu one of their roles matches, and the main menu
+otherwise. Item settings (label, icon, content, rules) are shared: set an item up once
+and it looks the same in every menu it is in. New pages that other plugins add to My
+Account show in every menu until you take them out.
+
+### Add the Account Menu to a Site Menu
+
+On classic themes, **Appearance → Menus** has a **My Account** box with two links that
+change with the visitor:
+
+- **Log in / My account** — *Log in* for visitors, *My account* for customers.
+- **My account, with its pages** — the account link with every page of the customer's
+  account menu below it, as a dropdown (what they see follows the menu's rules and
+  group menus).
+
+WooCommerce's own **WooCommerce endpoints** box lists your custom endpoints too. Block
+themes build site menus with the Navigation block; use WooCommerce's **Customer account**
+block there.
 
 ---
 
@@ -254,8 +294,8 @@ saved design, and leaving the page with unsaved changes asks first.
 
 Reusable promotional blocks attached to endpoints, on the **Banners** tab. A banner's
 settings are split into tabs like a menu item's: **General** (name, type, icon, text or
-image), **Style** (width, colours, count badge; widget banners only), **Link** and
-**Visibility**.
+image), **Style** (width, colours, count badge; widget banners only), **Link**, **Offer**
+(widget banners only) and **Visibility**.
 
 1. Click **Add banner** (header, or below the list).
 2. Choose a **Banner type** — the form shows only the relevant fields:
@@ -264,9 +304,91 @@ image), **Style** (width, colours, count badge; widget banners only), **Link** a
    - **Image** — an uploaded image with an optional link.
 3. **Banner link** — **None**, **Endpoint** (choose one), or **External URL**, with your own
    **Link text** (default *Learn more*).
-4. **Show banner to** — restrict by role, and **Show from / Show until** to schedule it.
+4. **Visibility** — the same rules as menu items: roles, **Show from / Show until**,
+   products bought, and order history (at least / at most N orders, amount spent, last
+   order more than N days ago).
 5. Click **Create / Save banner**. A new banner never replaces an existing one with the same name.
 6. Attach it to an endpoint via the endpoint’s **Banner** + **Banner position** options.
+
+### Personal Offers
+
+Switch on **Personal coupon** on a banner's **Offer** tab and each customer who sees the
+banner gets a coupon code of their own:
+
+- **Discount** — *Percent off* or *Amount off*, and how much.
+- **Valid for** — days from when the customer first sees it (0 = no end). The code works
+  until the end of the last day, in the site's timezone.
+- **Minimum spend**, **Free shipping too** (needs a free shipping method that accepts a
+  coupon) and **Code starts with** (e.g. `THANKS` gives `THANKS-7KQ2MX`).
+
+Each code is for one use, by that customer's email address only. The banner shows it with
+**Copy** and **Use it now** (which applies it to the cart), and goes away once the code is
+used or has run out. Put `{offer_code}`, `{offer_amount}` or `{offer_expiry}` in the
+banner's title or text to mention them. Aim offers with **Visibility**: *at most 1 order*
+for a second-order offer, or *last order more than 90 days ago* to win customers back.
+
+Coupons must be switched on in *WooCommerce → Settings → General*. Shop managers see a
+`PREFIX-PREVIEW` code instead of collecting coupons. The coupons are ordinary WooCommerce
+coupons, listed under *Marketing → Coupons*.
+
+---
+
+## Customer Fields
+
+The **Fields** tab adds your own questions to the customer's account: a VAT number, a
+company, a birthday, "How did you hear about us?".
+
+- **Add a field**, give it a **Label** (the **Key** follows it until you change the key),
+  and pick a **Type**: text, long text, email, phone, number, date, dropdown, choices
+  (radio) or tick box. Dropdowns and choices take **Options, one per line**.
+- **Required**, **Placeholder** and **Help text** work as on WooCommerce's own fields.
+- **Show it on** — the **Registration form**, **Account details**, and **The customer's
+  orders (admin)**, where the answers show under the billing address on the order screen.
+- Drag cards to reorder them; **Save fields**.
+
+Answers are kept on the customer. They show and can be edited on the user's profile in
+*Users*, are included when the customer asks for a copy of their data (and removed when
+they ask for it to be erased), and work as smart tags: `{field_vat}` for the key `vat`.
+
+---
+
+## Returns and Cancelling Orders
+
+Both are switched on under *Settings → Orders & privacy*.
+
+**Cancel orders** — customers can cancel an order that has not shipped yet (pending, on
+hold or processing) for a number of hours after ordering (0 = until it ships). An order
+counts as shipped once it is completed or has tracking from WooCommerce Shipment
+Tracking. Cancelling asks first and puts the stock back; a paid order gets a note that it
+still needs refunding from its screen.
+
+**Returns** — a **Returns** page in My Account, and **Return items** on completed orders
+for a number of days after completion. The customer picks the items and quantities, a
+reason from your list, and can add a comment and a photo (JPG, PNG or WebP up to 5 MB).
+You are emailed, and the order gets a note.
+
+On the **Returns** tab, each request shows the order, customer, items, reason, comment
+and photo. Set its status (*Requested*, *Approved*, *Not accepted*, *Received*,
+*Refunded*), optionally with a message, and **Update and email the customer**. Requests
+also show in a **Returns** box on the order screen. Items in an open or approved request
+cannot be asked for twice; a request that was not accepted frees them again. Refunds
+themselves are made from the order screen as usual.
+
+---
+
+## Insights
+
+The **Insights** tab shows how customers use their account area over the last 7, 30 or 90
+days:
+
+- **Page views**, **banner clicks**, **offers used** and **sales from offers**;
+- page views per day;
+- each account page's views, with pages nobody opened marked *Not opened*;
+- each banner's views, clicks and click rate;
+- each personal offer's codes given, codes used and the sales they brought.
+
+Switch on **Record usage** under *Settings → General*. Only logged-in customers are
+counted (not shop managers), and only totals per day are kept, nothing personal.
 
 ---
 
@@ -282,7 +404,21 @@ The **Settings** tab holds behaviour options and maintenance tools.
   dashboard moves to its own `/dashboard/` address (still linked from the menu).
 - **After‑login redirect** / **After‑logout redirect**.
 - **Guest message** — shown above the login form for logged‑out visitors.
-- **Track endpoint views** — count how often each endpoint is viewed.
+- **Record usage** — count account page views, banner views and clicks, and personal
+  offers used, for the **Insights** tab.
+
+### Orders & Privacy
+
+What customers can do for themselves:
+
+- **Cancel orders** and **Returns** — see *Returns and Cancelling Orders*. The return
+  reasons customers choose from are edited here, one per line.
+- **Address book** — customers keep more addresses in a **More addresses** section of the
+  Addresses page, and make any of them their shipping or billing address in a click.
+  The classic checkout lists them too (the Checkout block does not).
+- **Privacy page** — a **Privacy** page where customers ask for a copy of their data or for
+  it to be erased. WordPress emails them to confirm; you finish the request under
+  *Tools → Export / Erase Personal Data*.
 
 ### Import / Export
 
@@ -306,7 +442,7 @@ pnpm zip              # build + package the distributable ZIP
 - Edit `assets/scss/*.scss` and `assets/js/*.js` sources — not the compiled `assets/css/*.css`.
 - Assets enqueue minified with a filemtime cache‑buster; define `SCRIPT_DEBUG` for unminified.
 - **Template overrides:** copy files from `templates/` into `yourtheme/my-account-dashboard-builder/`.
-- **Filters:** `acfw_design_fields` (the Design Studio's controls), `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_template_preserved_keys`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_smart_tag_values`, `acfw_item_is_visible`, `acfw_banner_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`, `acfw_default_endpoint`, `acfw_reserved_item_keys`, `acfw_profile_meter_fields`.
+- **Filters:** `acfw_endpoint_items` (endpoints to register), `acfw_disabled_keys` (items hidden because their feature is off), `acfw_default_icons` (icons for known account pages), `acfw_smart_tag_value` (one smart tag's value), `acfw_design_fields` (the Design Studio's controls), `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_template_preserved_keys`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_smart_tag_values`, `acfw_item_is_visible`, `acfw_banner_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`, `acfw_default_endpoint`, `acfw_reserved_item_keys`, `acfw_profile_meter_fields`.
 - **Events:** after an AJAX page change the front end triggers `acfw:navigated` on `document.body`, with the new URL.
 
 **Embedding the menu elsewhere:**
@@ -318,8 +454,10 @@ pnpm zip              # build + package the distributable ZIP
 ### Save Changes
 
 - **Menu Items** — one **Save menu** button saves every item and the order.
-- **Settings** — **Save changes** stores the general options.
+- **Settings** — **Save changes** stores the options of the section you are on.
 - **Banners** — **Create / Save banner** per banner.
+- **Fields** — **Save fields**.
+- **Returns** — **Update and email the customer** per request.
 - All saves confirm with a toast notification.
 
 ---
@@ -344,10 +482,15 @@ Dynamic placeholders usable in custom content, the dashboard title and banners:
 - `{points_balance}` — Points balance *(WooCommerce Points & Rewards)*
 - `{membership_plan}` — Membership plan *(WooCommerce Memberships)*
 - `{account_url}`, `{shop_url}`, `{site_url}` — Addresses, e.g. for links in content
+- `{field_…}` — A customer field's answer, e.g. `{field_vat}`
+- `{offer_code}`, `{offer_amount}`, `{offer_expiry}` — A banner's personal offer *(in that banner only)*
 
 Only the tags a text uses are looked up, so a costly one (order or download counts)
 costs nothing where it does not appear. Add your own with the `acfw_smart_tag_values`
 filter.
+
+A badge built only on tags that come back empty is hidden rather than showing a stray
+word: `{points_balance} pts` on a store without a points plugin shows no badge.
 
 In the Classic editor, use the **Add smart tags** button beside **Add Media**.
 
@@ -355,7 +498,9 @@ In the Classic editor, use the **Add smart tags** button beside **Add Media**.
 
 ## Compatibility with Third‑Party WooCommerce Plugins
 
-- **WooCommerce Points & Rewards** — the `{points_balance}` smart tag and the **Reward points** dashboard stat read the customer’s balance.
+- **Account pages from other plugins** — pages that WooCommerce Subscriptions, Memberships, Bookings, points, wallet, ticket and affiliate plugins add to My Account appear in the menu on their own, with a fitting icon. Arrange, rename and restrict them like any other item.
+- **Wishlists** — with YITH WooCommerce Wishlist or TI WooCommerce Wishlist active, a **Wishlist** page is added inside My Account.
+- **WooCommerce Points & Rewards**, **YITH Points and Rewards** and **myCred** — the `{points_balance}` smart tag and the **Reward points** dashboard stat read the customer’s balance.
 - **WooCommerce Memberships** — the `{membership_plan}` smart tag shows the active plan.
 - **Themes** — the menu neutralises common theme interference on list rows; the **Theme style** menu style intentionally inherits the active theme’s look. Block content pulls in core block styles so blocks render correctly on the account page.
 - **Block editor** — custom endpoint content can use the standalone Gutenberg editor (core blocks, media, embeds, patterns).

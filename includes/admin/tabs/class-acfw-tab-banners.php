@@ -48,6 +48,13 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						'vis_from'      => isset( $_POST['banner_vis_from'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_vis_from'] ) ) : '',
 						'vis_to'        => isset( $_POST['banner_vis_to'] ) ? sanitize_text_field( wp_unslash( $_POST['banner_vis_to'] ) ) : '',
 					);
+					// Order rules and the offer: sanitized in ACFW_Banners::save().
+					foreach ( array( 'vis_min_orders', 'vis_max_orders', 'vis_min_spent', 'vis_inactive_days', 'offer_type', 'offer_amount', 'offer_days', 'offer_min', 'offer_prefix' ) as $acfw_field ) {
+						$bdata[ $acfw_field ] = isset( $_POST[ 'banner_' . $acfw_field ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'banner_' . $acfw_field ] ) ) : '';
+					}
+					$bdata['vis_products']        = isset( $_POST['banner_vis_products'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['banner_vis_products'] ) ) : array();
+					$bdata['offer']               = ! empty( $_POST['banner_offer'] ) ? 'yes' : 'no';
+					$bdata['offer_free_shipping'] = ! empty( $_POST['banner_offer_free_shipping'] ) ? 'yes' : 'no';
 					foreach ( array_keys( ACFW_Banners::color_fields() ) as $ckey ) {
 						$bdata[ $ckey ] = isset( $_POST[ 'banner_' . $ckey ] ) ? acfw_sanitize_color( sanitize_text_field( wp_unslash( $_POST[ 'banner_' . $ckey ] ) ) ) : '';
 					}
@@ -195,11 +202,14 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 			$sel_roles = (array) ( $banner['roles'] ?? array() );
 			$key       = $is_new ? '__new__' : $slug;
 			$uid       = 'acfw-b' . substr( md5( (string) $key ), 0, 8 );
-			$rules     = ( $sel_roles ? 1 : 0 ) + ( ( ! empty( $banner['vis_from'] ) || ! empty( $banner['vis_to'] ) ) ? 1 : 0 );
+			$rules     = ( $sel_roles ? 1 : 0 ) + ( ( ! empty( $banner['vis_from'] ) || ! empty( $banner['vis_to'] ) ) ? 1 : 0 )
+				+ ( acfw_rule_product_ids( $banner ) ? 1 : 0 ) + ( ! empty( $banner['vis_min_orders'] ) ? 1 : 0 ) + ( null !== acfw_rule_max_orders( $banner ) ? 1 : 0 )
+				+ ( ! empty( $banner['vis_min_spent'] ) ? 1 : 0 ) + ( ! empty( $banner['vis_inactive_days'] ) ? 1 : 0 );
 			$sections  = array(
 				'general'    => array( __( 'General', 'my-account-dashboard-builder' ), 'admin-settings' ),
 				'style'      => array( __( 'Style', 'my-account-dashboard-builder' ), 'art' ),
 				'link'       => array( __( 'Link', 'my-account-dashboard-builder' ), 'admin-links' ),
+				'offer'      => array( __( 'Offer', 'my-account-dashboard-builder' ), 'tickets-alt' ),
 				'visibility' => array( __( 'Visibility', 'my-account-dashboard-builder' ), 'visibility' ),
 			);
 			?>
@@ -346,6 +356,59 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 					</div>
 				</section>
 
+				<?php // ---- Offer ---- ?>
+				<section class="acfw-section" id="<?php echo esc_attr( $uid . '-offer' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-offer' ); ?>" data-section="offer">
+					<?php if ( class_exists( 'ACFW_Offers' ) && ! ACFW_Offers::available() ) : ?>
+						<p class="acfw-section-intro acfw-intro-warning"><?php esc_html_e( 'Coupons are switched off in WooCommerce → Settings → General, so personal offers do not show. Switch coupons on to use them.', 'my-account-dashboard-builder' ); ?></p>
+					<?php else : ?>
+						<p class="acfw-section-intro"><?php esc_html_e( 'Give each customer who sees this banner a coupon of their own, for their email and one use. Aim it with the Visibility rules, e.g. “At most 1 order” for a second-order offer, or “Last order more than 90 days ago” to win customers back.', 'my-account-dashboard-builder' ); ?></p>
+					<?php endif; ?>
+					<div class="acfw-field">
+						<label for="<?php echo esc_attr( $uid . '-offer' ); ?>"><?php esc_html_e( 'Personal coupon', 'my-account-dashboard-builder' ); ?></label>
+						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" id="<?php echo esc_attr( $uid . '-offer' ); ?>" name="banner_offer" class="acfw-offer-toggle" value="yes" <?php checked( 'yes', $banner['offer'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
+						<p class="acfw-hint"><?php esc_html_e( 'The banner goes away once the customer has used the code or it has run out.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+					<div class="acfw-field acfw-offer-field">
+						<span class="acfw-field-label"><?php esc_html_e( 'Discount', 'my-account-dashboard-builder' ); ?></span>
+						<span class="acfw-inline-fields">
+							<?php
+							$this->buttonset(
+								'banner_offer_type',
+								$banner['offer_type'] ?? 'percent',
+								array(
+									'percent'    => __( 'Percent off', 'my-account-dashboard-builder' ),
+									'fixed_cart' => __( 'Amount off', 'my-account-dashboard-builder' ),
+								),
+								'percent'
+							);
+							?>
+							<input type="number" class="acfw-input-short" name="banner_offer_amount" min="0" step="0.01" value="<?php echo esc_attr( (float) ( $banner['offer_amount'] ?? 10 ) ); ?>" aria-label="<?php esc_attr_e( 'Discount amount', 'my-account-dashboard-builder' ); ?>" />
+						</span>
+					</div>
+					<div class="acfw-field acfw-offer-field">
+						<label for="<?php echo esc_attr( $uid . '-offer-days' ); ?>"><?php esc_html_e( 'Valid for', 'my-account-dashboard-builder' ); ?></label>
+						<span class="acfw-inline-fields"><span class="acfw-inline-field"><input type="number" id="<?php echo esc_attr( $uid . '-offer-days' ); ?>" class="acfw-input-short" name="banner_offer_days" min="0" max="365" step="1" value="<?php echo esc_attr( absint( $banner['offer_days'] ?? 14 ) ); ?>" /><span><?php esc_html_e( 'days from when the customer first sees it', 'my-account-dashboard-builder' ); ?></span></span></span>
+						<p class="acfw-hint"><?php esc_html_e( '0 means it does not run out.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+					<div class="acfw-field acfw-offer-field">
+						<label for="<?php echo esc_attr( $uid . '-offer-min' ); ?>"><?php esc_html_e( 'Minimum spend', 'my-account-dashboard-builder' ); ?></label>
+						<span class="acfw-money-row">
+							<span class="acfw-money-symbol"><?php echo esc_html( function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '' ); ?></span>
+							<input type="number" id="<?php echo esc_attr( $uid . '-offer-min' ); ?>" class="acfw-input-short" name="banner_offer_min" min="0" step="0.01" value="<?php echo esc_attr( ! empty( $banner['offer_min'] ) ? (float) $banner['offer_min'] : '' ); ?>" placeholder="0" />
+						</span>
+					</div>
+					<div class="acfw-field acfw-offer-field">
+						<label for="<?php echo esc_attr( $uid . '-offer-ship' ); ?>"><?php esc_html_e( 'Free shipping too', 'my-account-dashboard-builder' ); ?></label>
+						<label class="acfw-switch acfw-switch-lg"><input type="checkbox" id="<?php echo esc_attr( $uid . '-offer-ship' ); ?>" name="banner_offer_free_shipping" value="yes" <?php checked( 'yes', $banner['offer_free_shipping'] ?? 'no' ); ?> /><span class="acfw-switch-slider"></span></label>
+						<p class="acfw-hint"><?php esc_html_e( 'Needs a free shipping method that accepts a coupon.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+					<div class="acfw-field acfw-offer-field">
+						<label for="<?php echo esc_attr( $uid . '-offer-prefix' ); ?>"><?php esc_html_e( 'Code starts with', 'my-account-dashboard-builder' ); ?></label>
+						<input type="text" id="<?php echo esc_attr( $uid . '-offer-prefix' ); ?>" name="banner_offer_prefix" maxlength="12" value="<?php echo esc_attr( $banner['offer_prefix'] ?? 'THANKS' ); ?>" spellcheck="false" autocomplete="off" />
+						<p class="acfw-hint"><?php esc_html_e( 'Letters and digits. Codes look like THANKS-7KQ2PX. In the widget text, {offer_amount}, {offer_code} and {offer_expiry} show the customer’s own values.', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+				</section>
+
 				<?php // ---- Visibility ---- ?>
 				<section class="acfw-section" id="<?php echo esc_attr( $uid . '-visibility' ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $uid . '-tab-visibility' ); ?>" data-section="visibility">
 					<div class="acfw-field">
@@ -366,6 +429,8 @@ if ( ! class_exists( 'ACFW_Tab_Banners' ) ) {
 						<input type="date" class="acfw-rule-input" name="banner_vis_to" value="<?php echo esc_attr( $banner['vis_to'] ?? '' ); ?>" />
 						<p class="acfw-hint"><?php esc_html_e( 'Whole days, in the site timezone. Leave both empty to always show it.', 'my-account-dashboard-builder' ); ?></p>
 					</div>
+					<?php $this->product_rule_field( 'banner_vis_products', $banner, $uid ); ?>
+					<?php $this->order_rule_fields( 'banner_%s', $banner, $uid ); ?>
 				</section>
 
 				<div class="acfw-form-footer">

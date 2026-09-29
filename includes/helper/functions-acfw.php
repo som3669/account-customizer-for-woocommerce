@@ -325,7 +325,16 @@ function acfw_points_balance( $user ) {
 		return '';
 	}
 	if ( function_exists( 'wc_points_rewards_get_users_points' ) ) {
-		return (string) wc_points_rewards_get_users_points( $uid );
+		return (string) wc_points_rewards_get_users_points( $uid ); // WooCommerce Points and Rewards.
+	}
+	if ( function_exists( 'ywpar_get_customer' ) ) {
+		$customer = ywpar_get_customer( $uid ); // YITH Points and Rewards.
+		if ( $customer && is_callable( array( $customer, 'get_total_points' ) ) ) {
+			return (string) $customer->get_total_points();
+		}
+	}
+	if ( function_exists( 'mycred_get_users_balance' ) ) {
+		return (string) mycred_get_users_balance( $uid ); // myCred.
 	}
 	return '';
 }
@@ -634,6 +643,83 @@ function acfw_order_insert( $order, $key, $type, $after = '', $group = '' ) {
 }
 
 /**
+ * Move Log out back to the end of an order tree's top level.
+ *
+ * @param array $tree Order tree.
+ * @return array
+ */
+function acfw_order_logout_last( $tree ) {
+	$tree = (array) $tree;
+	if ( isset( $tree['customer-logout'] ) ) {
+		$logout = $tree['customer-logout'];
+		unset( $tree['customer-logout'] );
+		$tree['customer-logout'] = $logout;
+	}
+	return $tree;
+}
+
+/**
+ * Every key in an order tree, group children included ( key => node ).
+ *
+ * @param array $tree Order tree.
+ * @return array
+ */
+function acfw_flatten_order_tree( $tree ) {
+	$flat = array();
+	foreach ( (array) $tree as $key => $node ) {
+		$flat[ (string) $key ] = $node;
+		if ( ! empty( $node['children'] ) && is_array( $node['children'] ) ) {
+			$flat += acfw_flatten_order_tree( $node['children'] );
+		}
+	}
+	return $flat;
+}
+
+/**
+ * An order tree without one key, wherever it sits.
+ *
+ * @param array  $tree Order tree.
+ * @param string $key  Key to drop.
+ * @return array
+ */
+function acfw_order_without( $tree, $key ) {
+	$out = array();
+	foreach ( (array) $tree as $k => $node ) {
+		if ( (string) $k === (string) $key ) {
+			continue;
+		}
+		if ( ! empty( $node['children'] ) && is_array( $node['children'] ) ) {
+			$node['children'] = acfw_order_without( $node['children'], $key );
+		}
+		$out[ $k ] = $node;
+	}
+	return $out;
+}
+
+/**
+ * A built items tree without some keys ( group children included ).
+ *
+ * @param array    $items Items tree.
+ * @param string[] $keys  Keys to drop.
+ * @return array
+ */
+function acfw_items_without( $items, $keys ) {
+	if ( ! $keys ) {
+		return $items;
+	}
+	foreach ( (array) $items as $key => $item ) {
+		if ( in_array( (string) $key, $keys, true ) ) {
+			unset( $items[ $key ] );
+			continue;
+		}
+		if ( ! empty( $item['children'] ) && is_array( $item['children'] ) ) {
+			$items[ $key ]['children'] = acfw_items_without( $item['children'], $keys );
+		}
+	}
+	return $items;
+}
+
+/**
  * Insert an entry into an associative array right after a given key.
  *
  * @param array  $entries Array.
@@ -754,7 +840,10 @@ function acfw_day_timestamp( $date, $zone, $end_of_day ) {
  *  - vis_from / vis_to: whole-day window in the site's timezone.
  *  - vis_products ( or the older single vis_product ): bought at least one.
  *  - vis_min_orders: at least this many orders.
+ *  - vis_max_orders: at most this many ( '' = no limit, so 0 means "no orders yet" ).
  *  - vis_min_spent: at least this much spent in total.
+ *  - vis_inactive_days: the last order is older than this many days ( a
+ *    customer with no orders does not count as lapsed ).
  *
  * Shop managers pass every rule except the date window, so they can preview
  * the account area as any customer would see it.
@@ -800,6 +889,22 @@ function acfw_visibility_passes( $rules, $user = null ) {
 	$min_orders = absint( $rules['vis_min_orders'] ?? 0 );
 	if ( $min_orders && function_exists( 'wc_get_customer_order_count' ) ) {
 		if ( ! $uid || (int) wc_get_customer_order_count( $uid ) < $min_orders ) {
+			return false;
+		}
+	}
+
+	$max_orders = acfw_rule_max_orders( $rules );
+	if ( null !== $max_orders && function_exists( 'wc_get_customer_order_count' ) ) {
+		if ( $uid && (int) wc_get_customer_order_count( $uid ) > $max_orders ) {
+			return false;
+		}
+	}
+
+	$inactive = absint( $rules['vis_inactive_days'] ?? 0 );
+	if ( $inactive && class_exists( 'ACFW_Order_Stats' ) ) {
+		$stats = $uid ? ACFW_Order_Stats::get( $uid ) : array();
+		$last  = (int) ( $stats['latest_time'] ?? 0 );
+		if ( ! $last || $last > time() - $inactive * DAY_IN_SECONDS ) {
 			return false;
 		}
 	}
@@ -1257,7 +1362,15 @@ function acfw_smart_tag_value( $token, $user ) {
 			$value = home_url( '/' );
 			break;
 		default:
-			$value = null;
+			/**
+			 * Resolve a smart tag the plugin does not know ( custom fields add
+			 * {field_…} this way ). Return null to leave the token in place.
+			 *
+			 * @param string|null $value Value.
+			 * @param string      $token Token, e.g. "{field_company}".
+			 * @param WP_User     $user  User.
+			 */
+			$value = apply_filters( 'acfw_smart_tag_value', null, $token, $user );
 	}
 
 	if ( in_array( $token, $costly, true ) ) {
@@ -1347,17 +1460,268 @@ function acfw_default_endpoint_options( $key = '' ) {
 }
 
 /**
+ * The "at most N orders" rule, or null when it is not set.
+ *
+ * Stored as '' when empty, so 0 ( "no orders yet" ) stays a real limit.
+ *
+ * @param array $rules Rules.
+ * @return int|null
+ */
+function acfw_rule_max_orders( $rules ) {
+	$raw = $rules['vis_max_orders'] ?? '';
+	if ( null === $raw || '' === $raw || ! is_numeric( $raw ) ) {
+		return null;
+	}
+	return max( 0, (int) $raw );
+}
+
+/**
+ * Sanitize a posted "at most N orders" value: '' stays '', anything else a whole number.
+ *
+ * @param mixed $raw Raw value.
+ * @return int|string
+ */
+function acfw_sanitize_max_orders( $raw ) {
+	$raw = is_scalar( $raw ) ? trim( (string) $raw ) : '';
+	return ( '' === $raw || ! is_numeric( $raw ) ) ? '' : max( 0, (int) $raw );
+}
+
+/**
+ * Clean a list of custom field definitions ( the Fields tab ).
+ *
+ * Drops fields without a label, makes keys lowercase ASCII and unique, keeps
+ * options only for dropdowns and choices ( a dropdown with no options becomes
+ * a text field ) and allow-lists the types.
+ *
+ * @param mixed $raw Field list.
+ * @return array
+ */
+function acfw_fields_sanitize_definitions( $raw ) {
+	$types = array( 'text', 'textarea', 'email', 'tel', 'number', 'date', 'select', 'radio', 'checkbox' );
+	$out   = array();
+	$seen  = array();
+	foreach ( (array) $raw as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+		$label = isset( $field['label'] ) ? sanitize_text_field( (string) $field['label'] ) : '';
+		if ( '' === $label ) {
+			continue;
+		}
+		$key  = isset( $field['key'] ) && '' !== (string) $field['key'] ? (string) $field['key'] : $label;
+		$key  = substr( trim( (string) preg_replace( '/[^a-z0-9_]+/', '_', strtolower( remove_accents( $key ) ) ), '_' ), 0, 30 );
+		$key  = '' === $key ? 'field' : $key;
+		$base = $key;
+		$n    = 2;
+		while ( isset( $seen[ $key ] ) ) {
+			$key = substr( $base, 0, 26 ) . '_' . $n;
+			++$n;
+		}
+		$seen[ $key ] = true;
+
+		$type    = isset( $field['type'] ) && in_array( $field['type'], $types, true ) ? $field['type'] : 'text';
+		$options = array();
+		if ( in_array( $type, array( 'select', 'radio' ), true ) ) {
+			$lines = isset( $field['options'] ) && is_array( $field['options'] ) ? $field['options'] : preg_split( '/\r\n|\r|\n/', (string) ( $field['options'] ?? '' ) );
+			foreach ( (array) $lines as $line ) {
+				$line = sanitize_text_field( (string) $line );
+				if ( '' !== $line && ! in_array( $line, $options, true ) ) {
+					$options[] = $line;
+				}
+			}
+			if ( ! $options ) {
+				$type = 'text';
+			}
+		}
+		$places = array();
+		foreach ( array( 'register', 'account', 'order' ) as $place ) {
+			$places[ $place ] = ! empty( $field['places'][ $place ] );
+		}
+		$out[] = array(
+			'key'         => $key,
+			'label'       => $label,
+			'type'        => $type,
+			'required'    => ! empty( $field['required'] ),
+			'placeholder' => isset( $field['placeholder'] ) ? sanitize_text_field( (string) $field['placeholder'] ) : '',
+			'help'        => isset( $field['help'] ) ? sanitize_text_field( (string) $field['help'] ) : '',
+			'options'     => $options,
+			'places'      => $places,
+		);
+	}
+	return $out;
+}
+
+/**
+ * A customer's value for a custom field, cleaned for its type.
+ *
+ * @param array $field Field definition.
+ * @param mixed $raw   Posted value.
+ * @return string '' when the value is not valid for the type.
+ */
+function acfw_field_sanitize_value( $field, $raw ) {
+	$raw = is_scalar( $raw ) ? trim( (string) $raw ) : '';
+	switch ( $field['type'] ?? 'text' ) {
+		case 'textarea':
+			return sanitize_textarea_field( $raw );
+		case 'email':
+			return sanitize_email( $raw );
+		case 'tel':
+			return trim( (string) preg_replace( '/[^0-9+().\-\s]/', '', $raw ) );
+		case 'number':
+			return is_numeric( $raw ) ? $raw : '';
+		case 'date':
+			return acfw_is_date( $raw ) ? $raw : '';
+		case 'select':
+		case 'radio':
+			return in_array( $raw, (array) ( $field['options'] ?? array() ), true ) ? $raw : '';
+		case 'checkbox':
+			return ( '' !== $raw && '0' !== $raw ) ? 'yes' : '';
+		default:
+			return sanitize_text_field( $raw );
+	}
+}
+
+/**
+ * Whether a string is a real calendar day ( Y-m-d ).
+ *
+ * @param string $value Value.
+ * @return bool
+ */
+function acfw_is_date( $value ) {
+	return (bool) ( preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/', (string) $value, $m ) && checkdate( (int) $m[2], (int) $m[3], (int) $m[1] ) );
+}
+
+/**
+ * Check what a customer typed into a custom field.
+ *
+ * @param array $field Field definition.
+ * @param mixed $raw   What was typed.
+ * @return string An error message, or '' when it is fine.
+ */
+function acfw_field_validate( $field, $raw ) {
+	$raw   = is_scalar( $raw ) ? trim( (string) $raw ) : '';
+	$type  = $field['type'] ?? 'text';
+	$label = (string) ( $field['label'] ?? '' );
+	$empty = '' === $raw || ( 'checkbox' === $type && '0' === $raw );
+	if ( $empty ) {
+		/* translators: %s: field label. */
+		return ! empty( $field['required'] ) ? sprintf( __( '%s is a required field.', 'my-account-dashboard-builder' ), $label ) : '';
+	}
+	$ok = true;
+	switch ( $type ) {
+		case 'email':
+			$ok = (bool) is_email( $raw );
+			break;
+		case 'number':
+			$ok = is_numeric( $raw );
+			break;
+		case 'date':
+			$ok = acfw_is_date( $raw );
+			break;
+		case 'tel':
+			$ok = (bool) preg_match( '/^[0-9+().\-\s]{3,}$/', $raw );
+			break;
+		case 'select':
+		case 'radio':
+			$ok = in_array( $raw, (array) ( $field['options'] ?? array() ), true );
+			break;
+	}
+	/* translators: %s: field label. */
+	return $ok ? '' : sprintf( __( '%s: enter a valid value.', 'my-account-dashboard-builder' ), $label );
+}
+
+/**
+ * Where a menu item leads.
+ *
+ * @param string $key  Item key.
+ * @param array  $item Item options.
+ * @return string URL, or '' for a group.
+ */
+function acfw_item_url( $key, $item ) {
+	$type = $item['type'] ?? 'endpoint';
+	if ( 'link' === $type ) {
+		return (string) ( $item['url'] ?? '' );
+	}
+	if ( 'page' === $type ) {
+		return ! empty( $item['page_id'] ) ? (string) get_permalink( (int) $item['page_id'] ) : '';
+	}
+	if ( 'group' === $type || ! function_exists( 'wc_get_account_endpoint_url' ) ) {
+		return '';
+	}
+	// wc_get_account_endpoint_url() adds the logout nonce.
+	return 'dashboard' === $key ? acfw_dashboard_url() : wc_get_account_endpoint_url( $key );
+}
+
+/**
+ * A badge's text with its smart tags filled in.
+ *
+ * A badge built on smart tags that all come back empty is hidden instead of
+ * showing a stray word: "{points_balance} pts" on a store without a points
+ * plugin used to read just "pts".
+ *
+ * @param string       $raw  Badge as typed.
+ * @param WP_User|null $user User ( defaults to the current one ).
+ * @return string Plain text, or '' to hide the badge.
+ */
+function acfw_badge_text( $raw, $user = null ) {
+	$raw  = (string) $raw;
+	$text = trim( wp_strip_all_tags( acfw_apply_smart_tags( $raw, $user, false ) ) );
+	if ( preg_match_all( '/\{[a-z0-9_]+\}/', $raw, $found ) && $found[0] ) {
+		foreach ( array_unique( $found[0] ) as $token ) {
+			$value = acfw_apply_smart_tags( $token, $user, false );
+			if ( $value !== $token && '' !== trim( (string) $value ) ) {
+				return $text;
+			}
+		}
+		return '';
+	}
+	return $text;
+}
+
+/**
+ * Classes for a storefront button: WooCommerce's, plus the theme's own button
+ * class on block themes ( what WooCommerce adds to its account buttons ).
+ *
+ * @param string $extra More classes.
+ * @return string
+ */
+function acfw_button_class( $extra = '' ) {
+	$classes = array( 'button' );
+	if ( function_exists( 'wc_wp_theme_get_element_class_name' ) && wc_wp_theme_get_element_class_name( 'button' ) ) {
+		$classes[] = wc_wp_theme_get_element_class_name( 'button' );
+	}
+	if ( '' !== $extra ) {
+		$classes[] = $extra;
+	}
+	return implode( ' ', $classes );
+}
+
+/**
+ * A personal offer's code prefix: capitals and digits, up to 12, "OFFER" when empty.
+ *
+ * @param mixed $raw Raw prefix.
+ * @return string
+ */
+function acfw_offer_prefix( $raw ) {
+	$prefix = preg_replace( '/[^A-Z0-9]/', '', strtoupper( is_scalar( $raw ) ? (string) $raw : '' ) );
+	$prefix = substr( (string) $prefix, 0, 12 );
+	return '' === $prefix ? 'OFFER' : $prefix;
+}
+
+/**
  * Default visibility rules shared by every item type.
  *
  * @return array
  */
 function acfw_default_rule_options() {
 	return array(
-		'vis_from'       => '',
-		'vis_to'         => '',
-		'vis_products'   => array(),
-		'vis_min_orders' => 0,
-		'vis_min_spent'  => 0,
+		'vis_from'          => '',
+		'vis_to'            => '',
+		'vis_products'      => array(),
+		'vis_min_orders'    => 0,
+		'vis_max_orders'    => '',
+		'vis_min_spent'     => 0,
+		'vis_inactive_days' => 0,
 	);
 }
 

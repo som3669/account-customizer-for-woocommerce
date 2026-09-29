@@ -15,6 +15,172 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 	class ACFW_Tab_Items extends ACFW_Admin_Tab {
 
 		/**
+		 * The group menu being drawn ( '' = the main menu ).
+		 *
+		 * @var string
+		 */
+		protected $profile = '';
+
+		/**
+		 * Limit a new item to a group menu's roles.
+		 *
+		 * @param array  $data    Item settings.
+		 * @param string $profile Group menu.
+		 * @return array
+		 */
+		protected function for_group( $data, $profile ) {
+			$group = ACFW_Profiles::get( $profile );
+			if ( $group && ! empty( $group['roles'] ) ) {
+				$data['usr_roles']  = array_values( (array) $group['roles'] );
+				$data['visibility'] = 'roles';
+			}
+			return $data;
+		}
+
+		/**
+		 * Say where an item added from a group menu went.
+		 *
+		 * @param string $label Item label.
+		 */
+		protected function group_notice( $label ) {
+			$this->add_notice(
+				sprintf(
+					/* translators: %s: menu item label. */
+					__( '"%s" was added to the main menu too, shown only to this group\'s roles. Change that under its Visibility.', 'my-account-dashboard-builder' ),
+					$label
+				),
+				'success'
+			);
+		}
+
+		/**
+		 * "Menu for": the main menu or a group menu, and managing group menus.
+		 *
+		 * @param string $profile Current group menu.
+		 */
+		protected function profile_bar( $profile ) {
+			$profiles = ACFW_Profiles::all();
+			$current  = '' !== $profile ? ACFW_Profiles::get( $profile ) : null;
+			$names    = wp_roles()->get_names();
+			$roles    = array();
+			foreach ( (array) ( $current['roles'] ?? array() ) as $role ) {
+				$roles[] = isset( $names[ $role ] ) ? translate_user_role( $names[ $role ] ) : $role;
+			}
+			?>
+			<div class="acfw-card acfw-profile-bar">
+				<form method="get" class="acfw-profile-switch">
+					<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>" />
+					<input type="hidden" name="tab" value="items" />
+					<label for="acfw-profile-select"><?php esc_html_e( 'Menu for', 'my-account-dashboard-builder' ); ?></label>
+					<select id="acfw-profile-select" name="profile" onchange="this.form.submit()">
+						<option value=""><?php esc_html_e( 'Everyone (main menu)', 'my-account-dashboard-builder' ); ?></option>
+						<?php foreach ( $profiles as $slug => $item ) : ?>
+							<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $profile, $slug ); ?>><?php echo esc_html( $item['label'] ?? $slug ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<noscript><button type="submit" class="button"><?php esc_html_e( 'Show', 'my-account-dashboard-builder' ); ?></button></noscript>
+				</form>
+				<p class="acfw-profile-note">
+					<?php if ( $current ) : ?>
+						<?php /* translators: %s: role names. */ ?>
+						<?php echo esc_html( sprintf( __( 'Customers with the role %s get this menu instead of the main one. Item settings are shared with the main menu.', 'my-account-dashboard-builder' ), implode( ', ', $roles ) ) ); ?>
+					<?php else : ?>
+						<?php esc_html_e( 'Give a customer group, such as wholesale buyers, a menu of its own.', 'my-account-dashboard-builder' ); ?>
+					<?php endif; ?>
+				</p>
+				<span class="acfw-profile-actions">
+					<?php if ( $current ) : ?>
+						<button type="button" class="button" data-acfw-open="acfw-profile-dialog-edit"><?php esc_html_e( 'Name and roles', 'my-account-dashboard-builder' ); ?></button>
+						<form method="post" class="acfw-inline-form">
+							<?php wp_nonce_field( self::NONCE ); ?>
+							<input type="hidden" name="acfw_action" value="profile_delete" />
+							<input type="hidden" name="acfw_profile" value="<?php echo esc_attr( $profile ); ?>" />
+							<button type="submit" class="button-link acfw-danger-link" data-acfw-confirm="<?php esc_attr_e( 'Delete this menu? Its customers get the main menu again.', 'my-account-dashboard-builder' ); ?>"><?php esc_html_e( 'Delete this menu', 'my-account-dashboard-builder' ); ?></button>
+						</form>
+					<?php endif; ?>
+					<button type="button" class="button" data-acfw-open="acfw-profile-dialog-new"><span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span> <?php esc_html_e( 'Menu for a customer group', 'my-account-dashboard-builder' ); ?></button>
+				</span>
+			</div>
+			<?php
+			$this->profile_dialog( 'acfw-profile-dialog-new', '', array() );
+			if ( $current ) {
+				$this->profile_dialog( 'acfw-profile-dialog-edit', $profile, $current );
+			}
+		}
+
+		/**
+		 * The create / edit dialog of a group menu.
+		 *
+		 * @param string $id      Element id.
+		 * @param string $slug    Group menu, '' for a new one.
+		 * @param array  $profile Its settings.
+		 */
+		protected function profile_dialog( $id, $slug, $profile ) {
+			$picked = (array) ( $profile['roles'] ?? array() );
+			?>
+			<div class="acfw-add-overlay acfw-dialog" id="<?php echo esc_attr( $id ); ?>" hidden>
+				<form method="post" class="acfw-add-pop" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $id . '-title' ); ?>">
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="profile_save" />
+					<input type="hidden" name="profile_slug" value="<?php echo esc_attr( $slug ); ?>" />
+					<input type="hidden" name="acfw_profile" value="<?php echo esc_attr( $slug ); ?>" />
+					<div class="acfw-add-head">
+						<h3 class="acfw-add-title" id="<?php echo esc_attr( $id . '-title' ); ?>"><?php echo esc_html( '' === $slug ? __( 'A menu for a customer group', 'my-account-dashboard-builder' ) : __( 'Name and roles', 'my-account-dashboard-builder' ) ); ?></h3>
+						<button type="button" class="acfw-add-close" data-acfw-close aria-label="<?php esc_attr_e( 'Close', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-no-alt" aria-hidden="true"></span></button>
+					</div>
+					<?php if ( '' === $slug ) : ?>
+						<p class="acfw-add-where"><?php esc_html_e( 'It starts as a copy of the main menu. Take items out, add others and reorder it; item settings stay shared.', 'my-account-dashboard-builder' ); ?></p>
+					<?php endif; ?>
+					<label class="acfw-add-label-field">
+						<span><?php esc_html_e( 'Name', 'my-account-dashboard-builder' ); ?></span>
+						<input type="text" name="profile_label" value="<?php echo esc_attr( $profile['label'] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'e.g. Wholesale', 'my-account-dashboard-builder' ); ?>" required />
+					</label>
+					<fieldset class="acfw-profile-roles">
+						<legend><?php esc_html_e( 'Customers with any of these roles', 'my-account-dashboard-builder' ); ?></legend>
+						<?php foreach ( wp_roles()->get_names() as $role => $role_label ) : ?>
+							<label><input type="checkbox" name="profile_roles[]" value="<?php echo esc_attr( $role ); ?>" <?php checked( in_array( $role, $picked, true ) ); ?> /> <?php echo esc_html( translate_user_role( $role_label ) ); ?></label>
+						<?php endforeach; ?>
+					</fieldset>
+					<div class="acfw-add-actions">
+						<button type="button" class="button" data-acfw-close><?php esc_html_e( 'Cancel', 'my-account-dashboard-builder' ); ?></button>
+						<button type="submit" class="button button-primary"><?php echo esc_html( '' === $slug ? __( 'Create menu', 'my-account-dashboard-builder' ) : __( 'Save', 'my-account-dashboard-builder' ) ); ?></button>
+					</div>
+				</form>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Items of the main menu this group menu leaves out, to add back.
+		 *
+		 * @param array $missing Key => item.
+		 */
+		protected function missing_list( $missing ) {
+			$missing = array_filter(
+				$missing,
+				function ( $item ) {
+					return 'group' !== ( $item['type'] ?? '' );
+				}
+			);
+			if ( ! $missing ) {
+				return;
+			}
+			?>
+			<div class="acfw-profile-missing">
+				<h3><?php esc_html_e( 'Not in this menu', 'my-account-dashboard-builder' ); ?></h3>
+				<ul>
+					<?php foreach ( $missing as $key => $item ) : ?>
+						<li>
+							<span><?php echo esc_html( $item['label'] ?? $key ); ?></span>
+							<button type="submit" form="acfw-profile-add-form" class="button-link" name="item_key" value="<?php echo esc_attr( $key ); ?>"><?php esc_html_e( 'Add to this menu', 'my-account-dashboard-builder' ); ?></button>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+			<?php
+		}
+
+		/**
 		 * Handle POST actions for the menu-items builder.
 		 *
 		 * @param string     $action Sanitized action slug.
@@ -23,7 +189,49 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 		public function handle( $action, $items ) {
 			// Nonce is verified in ACFW_Admin::handle_actions() before dispatch.
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
+
+			// A group menu being edited: orders go to it, and saving lands back on it.
+			$profile = isset( $_POST['acfw_profile'] ) ? sanitize_key( wp_unslash( $_POST['acfw_profile'] ) ) : '';
+			$profile = ( '' !== $profile && ACFW_Profiles::get( $profile ) ) ? $profile : '';
+			if ( '' !== $profile ) {
+				$this->redirect_args['profile'] = $profile;
+			}
+			$item_key = isset( $_POST['item_key'] ) ? acfw_sanitize_key( sanitize_title( wp_unslash( $_POST['item_key'] ) ) ) : '';
+
 			switch ( $action ) {
+
+				case 'profile_save':
+					$slug  = isset( $_POST['profile_slug'] ) ? sanitize_key( wp_unslash( $_POST['profile_slug'] ) ) : '';
+					$label = isset( $_POST['profile_label'] ) ? sanitize_text_field( wp_unslash( $_POST['profile_label'] ) ) : '';
+					$roles = isset( $_POST['profile_roles'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['profile_roles'] ) ) : array();
+					if ( '' === $label || ! $roles ) {
+						$this->add_notice( __( 'Give the menu a name and pick at least one role.', 'my-account-dashboard-builder' ), 'error' );
+						break;
+					}
+					// A new menu starts as a copy of the main one.
+					$this->redirect_args['profile'] = ACFW_Profiles::save( $slug, $label, $roles, acfw_order_from_items( $items->get_items() ) );
+					break;
+
+				case 'profile_delete':
+					if ( '' !== $profile ) {
+						ACFW_Profiles::delete( $profile );
+						unset( $this->redirect_args['profile'] );
+					}
+					break;
+
+				case 'profile_remove':
+					if ( '' !== $profile && '' !== $item_key ) {
+						ACFW_Profiles::remove_item( $profile, $item_key );
+					}
+					break;
+
+				case 'profile_add':
+					if ( '' !== $profile && '' !== $item_key ) {
+						$flat = acfw_flatten_items( $items->get_items() );
+						ACFW_Profiles::add_item( $profile, $item_key, $flat[ $item_key ]['type'] ?? 'endpoint' );
+						$this->redirect_args['select'] = $item_key;
+					}
+					break;
 
 				case 'add_item':
 					// The add form of earlier versions ( the canvas posts save_all instead ).
@@ -65,35 +273,37 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 							$key,
 							$type,
 							array(
-								'label'            => isset( $data['label'] ) ? sanitize_text_field( $data['label'] ) : '',
-								'icon_source'      => 'upload' === $icon_source ? 'upload' : 'choose',
-								'icon'             => ( 'upload' !== $icon_source && isset( $data['icon'] ) ) ? acfw_sanitize_icon( $data['icon'] ) : '',
-								'icon_url'         => ( 'upload' === $icon_source && isset( $data['icon_url'] ) ) ? esc_url_raw( $data['icon_url'] ) : '',
-								'class'            => isset( $data['class'] ) ? sanitize_html_class( $data['class'] ) : '',
-								'active'           => ! empty( $data['active'] ),
-								'content'          => $content,
-								'editor_type'      => $editor_type,
-								'content_position' => isset( $data['content_position'] ) ? sanitize_key( $data['content_position'] ) : 'before',
-								'usr_roles'        => $roles,
-								'visibility'       => empty( $roles ) ? 'all' : 'roles',
-								'url'              => isset( $data['url'] ) ? esc_url_raw( $data['url'] ) : '',
-								'page_id'          => isset( $data['page_id'] ) ? absint( $data['page_id'] ) : 0,
-								'target_blank'     => ! empty( $data['target_blank'] ),
-								'open'             => ! empty( $data['open'] ),
-								'banner_slugs'     => isset( $data['banner_slugs'] ) && is_array( $data['banner_slugs'] )
+								'label'             => isset( $data['label'] ) ? sanitize_text_field( $data['label'] ) : '',
+								'icon_source'       => 'upload' === $icon_source ? 'upload' : 'choose',
+								'icon'              => ( 'upload' !== $icon_source && isset( $data['icon'] ) ) ? acfw_sanitize_icon( $data['icon'] ) : '',
+								'icon_url'          => ( 'upload' === $icon_source && isset( $data['icon_url'] ) ) ? esc_url_raw( $data['icon_url'] ) : '',
+								'class'             => isset( $data['class'] ) ? sanitize_html_class( $data['class'] ) : '',
+								'active'            => ! empty( $data['active'] ),
+								'content'           => $content,
+								'editor_type'       => $editor_type,
+								'content_position'  => isset( $data['content_position'] ) ? sanitize_key( $data['content_position'] ) : 'before',
+								'usr_roles'         => $roles,
+								'visibility'        => empty( $roles ) ? 'all' : 'roles',
+								'url'               => isset( $data['url'] ) ? esc_url_raw( $data['url'] ) : '',
+								'page_id'           => isset( $data['page_id'] ) ? absint( $data['page_id'] ) : 0,
+								'target_blank'      => ! empty( $data['target_blank'] ),
+								'open'              => ! empty( $data['open'] ),
+								'banner_slugs'      => isset( $data['banner_slugs'] ) && is_array( $data['banner_slugs'] )
 									? array_values( array_filter( array_map( 'acfw_sanitize_key', $data['banner_slugs'] ) ) )
 									: array(),
-								'banner_slug'      => '',
-								'banner_position'  => ( isset( $data['banner_position'] ) && 'bottom' === $data['banner_position'] ) ? 'bottom' : 'top',
-								'slug'             => $slug,
-								'badge'            => isset( $data['badge'] ) ? $this->clip( sanitize_text_field( $data['badge'] ), 40 ) : '',
-								'vis_from'         => isset( $data['vis_from'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_from'] ) : '',
-								'vis_to'           => isset( $data['vis_to'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_to'] ) : '',
+								'banner_slug'       => '',
+								'banner_position'   => ( isset( $data['banner_position'] ) && 'bottom' === $data['banner_position'] ) ? 'bottom' : 'top',
+								'slug'              => $slug,
+								'badge'             => isset( $data['badge'] ) ? $this->clip( sanitize_text_field( $data['badge'] ), 40 ) : '',
+								'vis_from'          => isset( $data['vis_from'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_from'] ) : '',
+								'vis_to'            => isset( $data['vis_to'] ) ? preg_replace( '/[^0-9-]/', '', $data['vis_to'] ) : '',
 								// The single-product field became a product list; older data is folded in on read.
-								'vis_product'      => 0,
-								'vis_products'     => acfw_parse_id_list( $data['vis_products'] ?? array() ),
-								'vis_min_orders'   => isset( $data['vis_min_orders'] ) ? absint( $data['vis_min_orders'] ) : 0,
-								'vis_min_spent'    => isset( $data['vis_min_spent'] ) ? $this->money( $data['vis_min_spent'] ) : 0,
+								'vis_product'       => 0,
+								'vis_products'      => acfw_parse_id_list( $data['vis_products'] ?? array() ),
+								'vis_min_orders'    => isset( $data['vis_min_orders'] ) ? absint( $data['vis_min_orders'] ) : 0,
+								'vis_max_orders'    => acfw_sanitize_max_orders( $data['vis_max_orders'] ?? '' ),
+								'vis_min_spent'     => isset( $data['vis_min_spent'] ) ? $this->money( $data['vis_min_spent'] ) : 0,
+								'vis_inactive_days' => isset( $data['vis_inactive_days'] ) ? absint( $data['vis_inactive_days'] ) : 0,
 							),
 							false
 						);
@@ -103,7 +313,9 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					// sanitizer on the raw JSON would strip "%xx" octets out of keys.
 					$raw   = isset( $_POST['acfw_order'] ) ? wp_unslash( $_POST['acfw_order'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- decoded, then sanitized by acfw_sanitize_order_tree() in save_order().
 					$order = is_string( $raw ) ? json_decode( $raw, true ) : null;
-					if ( is_array( $order ) && ! empty( $order ) ) {
+					if ( '' !== $profile && is_array( $order ) ) {
+						ACFW_Profiles::save_tree( $profile, $order );
+					} elseif ( is_array( $order ) && ! empty( $order ) ) {
 						$items->save_order( $order );
 					} else {
 						$items->build( true );
@@ -114,7 +326,7 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					// "+" in the canvas posts the whole form, so what was typed elsewhere
 					// is saved first; then the new item goes where "+" was clicked.
 					if ( isset( $_POST['acfw_add_submit'], $_POST['acfw_add'] ) && is_array( $_POST['acfw_add'] ) ) {
-						$added    = $this->add_from_canvas( wp_unslash( $_POST['acfw_add'] ), $items ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- each field sanitized in add_from_canvas().
+						$added    = $this->add_from_canvas( wp_unslash( $_POST['acfw_add'] ), $items, $profile ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- each field sanitized in add_from_canvas().
 						$selected = '' !== $added ? $added : $selected;
 					}
 
@@ -163,6 +375,9 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 							$data['label'] = ( $source['label'] ?? $src ) . ' (copy)';
 							$data['slug']  = $newkey;
 							unset( $data['children'] );
+							if ( '' !== $profile ) {
+								$data = $this->for_group( $data, $profile );
+							}
 							$items->save_item( $newkey, $type, $data, false );
 							$order = json_decode( get_option( 'acfw_items_order', '[]' ), true );
 							$order = is_array( $order ) ? $order : array();
@@ -182,6 +397,11 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 								$new_order[ $newkey ] = array( 'type' => $type );
 							}
 							$items->save_order( $new_order );
+							if ( '' !== $profile ) {
+								// The copy also joins the group menu being edited, below the original.
+								ACFW_Profiles::save_tree( $profile, acfw_order_insert( ACFW_Profiles::tree( $profile ), $newkey, $type, $src ) );
+								$this->group_notice( $data['label'] );
+							}
 							$this->redirect_args['select'] = $newkey;
 						}
 					}
@@ -261,11 +481,12 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 		 * Add the item asked for in the canvas' "+" popover, at the spot it was
 		 * opened from: below an item, at the end of a group, or at the end.
 		 *
-		 * @param array      $add   Popover fields ( type, label, after, parent ), unslashed.
-		 * @param ACFW_Items $items Menu items manager.
+		 * @param array      $add     Popover fields ( type, label, after, parent ), unslashed.
+		 * @param ACFW_Items $items   Menu items manager.
+		 * @param string     $profile Group menu being edited ( '' = the main menu ).
 		 * @return string The new item's key, or '' when there was no label.
 		 */
-		protected function add_from_canvas( $add, $items ) {
+		protected function add_from_canvas( $add, $items, $profile = '' ) {
 			$label = isset( $add['label'] ) ? sanitize_text_field( (string) $add['label'] ) : '';
 			if ( '' === $label ) {
 				return '';
@@ -276,18 +497,24 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 			$parent = isset( $add['parent'] ) ? acfw_sanitize_key( (string) $add['parent'] ) : '';
 
 			// Never reuse a key: "Orders" must not overwrite the Orders endpoint.
-			$key = acfw_unique_item_key( $label, $type, $items->used_names() );
-			$items->save_item(
-				$key,
-				$type,
-				array(
-					'label'  => $label,
-					'slug'   => $key,
-					'active' => true,
-				),
-				false
+			$key  = acfw_unique_item_key( $label, $type, $items->used_names() );
+			$data = array(
+				'label'  => $label,
+				'slug'   => $key,
+				'active' => true,
 			);
-			$items->save_order( acfw_order_insert( acfw_order_from_items( $items->get_items() ), $key, $type, $after, $parent ) );
+			if ( '' === $profile ) {
+				$items->save_item( $key, $type, $data, false );
+				$items->save_order( acfw_order_insert( acfw_order_from_items( $items->get_items() ), $key, $type, $after, $parent ) );
+				return $key;
+			}
+
+			// Every item lives in the main menu; one added from a group menu is
+			// seen there only by that group's roles.
+			$items->save_item( $key, $type, $this->for_group( $data, $profile ), false );
+			$items->save_order( acfw_order_logout_last( acfw_order_insert( acfw_order_from_items( $items->get_items() ), $key, $type, $after, $parent ) ) );
+			ACFW_Profiles::save_tree( $profile, acfw_order_logout_last( acfw_order_insert( ACFW_Profiles::tree( $profile ), $key, $type, $after, $parent ) ) );
+			$this->group_notice( $label );
 
 			return $key;
 		}
@@ -301,6 +528,15 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 		 * arranges here is what customers get.
 		 */
 		public function render() {
+
+			// The group menu being edited ( ?profile= ), drawn in place of the main one.
+			$profile       = isset( $_GET['profile'] ) ? sanitize_key( wp_unslash( $_GET['profile'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- which menu to show.
+			$profile       = ( '' !== $profile && ACFW_Profiles::get( $profile ) ) ? $profile : '';
+			$this->profile = $profile;
+			$main          = acfw_flatten_items( ACFW()->items->get_items() );
+			if ( '' !== $profile ) {
+				ACFW_Profiles::apply( $profile );
+			}
 
 			$items                   = ACFW()->items->get_items();
 			list( $layout, $preset ) = acfw_menu_style_resolve( get_option( 'acfw_menu_style', 'simple' ) );
@@ -329,23 +565,35 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 			?>
 			<div class="acfw-builder acfw-canvas-builder">
 
-				<form method="post" class="acfw-delete-form" style="display:none;">
+				<?php // In a group menu, Delete takes the item out of that menu only. ?>
+				<form method="post" class="acfw-delete-form" style="display:none;"<?php echo '' !== $profile ? ' data-confirm="' . esc_attr__( 'Take this item out of this menu? It stays in the main menu.', 'my-account-dashboard-builder' ) . '"' : ''; ?>>
 					<?php wp_nonce_field( self::NONCE ); ?>
-					<input type="hidden" name="acfw_action" value="remove_item" />
+					<input type="hidden" name="acfw_action" value="<?php echo '' !== $profile ? 'profile_remove' : 'remove_item'; ?>" />
+					<input type="hidden" name="acfw_profile" value="<?php echo esc_attr( $profile ); ?>" />
 					<input type="hidden" name="item_key" class="acfw-delete-key" value="" />
 				</form>
 
 				<form method="post" class="acfw-duplicate-form" style="display:none;">
 					<?php wp_nonce_field( self::NONCE ); ?>
 					<input type="hidden" name="acfw_action" value="duplicate_item" />
+					<input type="hidden" name="acfw_profile" value="<?php echo esc_attr( $profile ); ?>" />
 					<input type="hidden" name="item_key" class="acfw-duplicate-key" value="" />
 				</form>
+
+				<form method="post" id="acfw-profile-add-form" style="display:none;">
+					<?php wp_nonce_field( self::NONCE ); ?>
+					<input type="hidden" name="acfw_action" value="profile_add" />
+					<input type="hidden" name="acfw_profile" value="<?php echo esc_attr( $profile ); ?>" />
+				</form>
+
+				<?php $this->profile_bar( $profile ); ?>
 
 				<form method="post" class="acfw-items-form" novalidate>
 					<?php wp_nonce_field( self::NONCE ); ?>
 					<input type="hidden" name="acfw_action" value="save_all" />
 					<input type="hidden" name="acfw_order" class="acfw-order-input" value="" />
 					<input type="hidden" name="acfw_selected" class="acfw-selected-input" value="" />
+					<input type="hidden" name="acfw_profile" value="<?php echo esc_attr( $profile ); ?>" />
 
 					<div class="acfw-canvas-layout">
 
@@ -385,6 +633,11 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 								</div>
 							</div>
 
+							<?php
+							if ( '' !== $profile ) {
+								$this->missing_list( array_diff_key( $main, acfw_flatten_items( $items ) ) );
+							}
+							?>
 							<p class="acfw-canvas-keys" id="acfw-canvas-keys">
 								<?php
 								printf(
@@ -498,6 +751,20 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 				$parts[] = sprintf( _n( '%d+ order', '%d+ orders', $orders, 'my-account-dashboard-builder' ), $orders );
 			}
 
+			$max = acfw_rule_max_orders( $item );
+			if ( 0 === $max ) {
+				$parts[] = __( 'No orders yet', 'my-account-dashboard-builder' );
+			} elseif ( null !== $max ) {
+				/* translators: %d: maximum number of orders. */
+				$parts[] = sprintf( _n( 'At most %d order', 'At most %d orders', $max, 'my-account-dashboard-builder' ), $max );
+			}
+
+			$idle = absint( $item['vis_inactive_days'] ?? 0 );
+			if ( $idle ) {
+				/* translators: %d: number of days. */
+				$parts[] = sprintf( _n( 'No order in %d day', 'No order in %d days', $idle, 'my-account-dashboard-builder' ), $idle );
+			}
+
 			$spent = (float) ( $item['vis_min_spent'] ?? 0 );
 			if ( $spent > 0 ) {
 				/* translators: %s: minimum amount spent, with its currency. */
@@ -578,7 +845,10 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 				<span class="acfw-canvas-tools">
 					<?php /* translators: %s: menu item label. */ ?>
 					<button type="button" class="acfw-canvas-tool acfw-node-duplicate" data-key="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Duplicate', 'my-account-dashboard-builder' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Duplicate %s', 'my-account-dashboard-builder' ), $label ) ); ?>"><span class="dashicons dashicons-admin-page" aria-hidden="true"></span></button>
-					<?php if ( $is_default ) : ?>
+					<?php if ( '' !== $this->profile ) : ?>
+						<?php /* translators: %s: menu item label. */ ?>
+						<button type="button" class="acfw-canvas-tool acfw-node-remove" data-key="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Take out of this menu', 'my-account-dashboard-builder' ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Take %s out of this menu', 'my-account-dashboard-builder' ), $label ) ); ?>"><span class="dashicons dashicons-remove" aria-hidden="true"></span></button>
+					<?php elseif ( $is_default ) : ?>
 						<button type="button" class="acfw-canvas-tool acfw-node-remove is-disabled" disabled aria-disabled="true" title="<?php esc_attr_e( 'Built-in items can be switched off but not deleted', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Built-in items can be switched off but not deleted', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
 					<?php else : ?>
 						<?php /* translators: %s: menu item label. */ ?>
@@ -617,6 +887,8 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 			$count += ( ! empty( $item['vis_from'] ) || ! empty( $item['vis_to'] ) ) ? 1 : 0;
 			$count += acfw_rule_product_ids( $item ) ? 1 : 0;
 			$count += ! empty( $item['vis_min_orders'] ) ? 1 : 0;
+			$count += null !== acfw_rule_max_orders( $item ) ? 1 : 0;
+			$count += ! empty( $item['vis_inactive_days'] ) ? 1 : 0;
 			$count += ( (float) ( $item['vis_min_spent'] ?? 0 ) > 0 ) ? 1 : 0;
 			return $count;
 		}
@@ -936,35 +1208,9 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 						<p class="acfw-hint"><?php esc_html_e( 'Whole days, in the site timezone. Leave either end open.', 'my-account-dashboard-builder' ); ?></p>
 					</div>
 
-					<div class="acfw-field">
-						<label for="<?php echo esc_attr( $uid . '-products' ); ?>"><?php esc_html_e( 'Bought any of', 'my-account-dashboard-builder' ); ?></label>
-						<select id="<?php echo esc_attr( $uid . '-products' ); ?>" name="<?php echo esc_attr( $name ); ?>[vis_products][]" class="acfw-product-select acfw-rule-input" multiple data-placeholder="<?php esc_attr_e( 'Search for a product…', 'my-account-dashboard-builder' ); ?>">
-							<?php foreach ( acfw_rule_product_ids( $item ) as $acfw_product_id ) : ?>
-								<?php $acfw_product = function_exists( 'wc_get_product' ) ? wc_get_product( $acfw_product_id ) : null; ?>
-								<option value="<?php echo esc_attr( $acfw_product_id ); ?>" selected><?php echo esc_html( $acfw_product ? wp_strip_all_tags( $acfw_product->get_formatted_name() ) : '#' . $acfw_product_id ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</div>
+					<?php $this->product_rule_field( $name . '[vis_products]', $item, $uid ); ?>
 
-					<div class="acfw-field">
-						<span class="acfw-field-label"><?php esc_html_e( 'Order history', 'my-account-dashboard-builder' ); ?></span>
-						<span class="acfw-inline-fields">
-							<label class="acfw-inline-field">
-								<span><?php esc_html_e( 'At least', 'my-account-dashboard-builder' ); ?></span>
-								<input type="number" class="acfw-rule-input acfw-input-short" name="<?php echo esc_attr( $name ); ?>[vis_min_orders]" min="0" step="1" value="<?php echo esc_attr( ! empty( $item['vis_min_orders'] ) ? absint( $item['vis_min_orders'] ) : '' ); ?>" placeholder="0" />
-								<span><?php esc_html_e( 'orders', 'my-account-dashboard-builder' ); ?></span>
-							</label>
-							<label class="acfw-inline-field">
-								<span><?php esc_html_e( 'and', 'my-account-dashboard-builder' ); ?></span>
-								<span class="acfw-money-row">
-									<span class="acfw-money-symbol"><?php echo esc_html( function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '' ); ?></span>
-									<input type="number" class="acfw-rule-input acfw-input-short" name="<?php echo esc_attr( $name ); ?>[vis_min_spent]" min="0" step="0.01" value="<?php echo esc_attr( ! empty( $item['vis_min_spent'] ) ? (float) $item['vis_min_spent'] : '' ); ?>" placeholder="0" />
-								</span>
-								<span><?php esc_html_e( 'spent', 'my-account-dashboard-builder' ); ?></span>
-							</label>
-						</span>
-						<p class="acfw-hint"><?php esc_html_e( 'Leave a box empty to skip that rule.', 'my-account-dashboard-builder' ); ?></p>
-					</div>
+					<?php $this->order_rule_fields( $name . '[%s]', $item, $uid ); ?>
 				</section>
 
 				<?php // ---- Advanced ---- ?>

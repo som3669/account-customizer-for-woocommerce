@@ -404,26 +404,29 @@ $admin-accent: #2563eb;
 	list-style: none;
 }
 
-// While an item is dragged, every group shows the area that drops into it,
-// with room at the bottom to land after its last item. The group it would
-// land in turns to the accent. Dragging a group shows none: groups do not nest.
-.acfw-canvas.is-dragging:not(.is-dragging-group) .acfw-canvas-page .acfw-canvas-menu .acfw-menu-item.acfw-type-group > .acfw-sortable-children {
-	min-height: 36px;
-	padding-bottom: 10px !important;
+// While an item is dragged, every group shows the area that drops into it.
+// The outline is drawn inside the area, with the same padding on every side,
+// so it neither touches the rows above and below nor the items in it. The
+// group it would land in turns to the accent. Dragging a group shows none:
+// groups do not nest.
+$drop: '.acfw-canvas.is-dragging:not(.is-dragging-group) .acfw-canvas-page .acfw-canvas-menu .acfw-menu-item.acfw-type-group > .acfw-sortable-children';
+
+#{$drop} {
+	box-sizing: border-box;
+	min-height: 44px;
+	margin: 6px 0 6px 12px !important;
+	padding: 6px !important;
+	border-color: transparent;
 	border-radius: var(--acfw-radius, 8px);
 	outline: 1px dashed #b8c4d6;
-	outline-offset: 3px;
+	outline-offset: -1px;
 	background: rgba(37, 99, 235, 0.03);
 }
 
-.acfw-canvas.is-dragging:not(.is-dragging-group) .acfw-canvas-page .acfw-canvas-menu .acfw-menu-item.acfw-type-group > .acfw-sortable-children:has(> .acfw-canvas-placeholder) {
+#{$drop}:has(> .acfw-canvas-placeholder) {
 	outline: 2px solid var(--acfw-accent, $admin-accent);
+	outline-offset: -2px;
 	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
-}
-
-// An empty group already draws a dashed box; the outline would double it.
-.acfw-canvas.is-dragging:not(.is-dragging-group) .acfw-canvas-page .acfw-canvas-menu .acfw-menu-item.acfw-type-group > .acfw-sortable-children.is-empty:not(:has(> .acfw-canvas-placeholder)) {
-	outline: 0;
 }
 
 .acfw-canvas-menu .ui-sortable-helper {

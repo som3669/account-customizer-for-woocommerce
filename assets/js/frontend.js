@@ -242,6 +242,65 @@
 			} );
 		}
 
+		/* ---- Banner clicks, for Insights ( a beacon, so the link is not held up ) ---- */
+		$( document ).on( 'click', '.acfw-banner[data-acfw-banner] a', function () {
+			if ( ! settings.track || ! window.navigator.sendBeacon || ! window.FormData ) {
+				return;
+			}
+			var data = new window.FormData();
+			data.append( 'action', 'acfw_track' );
+			data.append( 'nonce', settings.trackNonce );
+			data.append( 'kind', 'banner_click' );
+			data.append( 'ref', $( this ).closest( '.acfw-banner' ).attr( 'data-acfw-banner' ) );
+			window.navigator.sendBeacon( settings.ajaxUrl, data );
+		} );
+
+		/* ---- Links and buttons that ask first ( Cancel order, Delete address ) ---- */
+		$( document ).on( 'click', '[data-acfw-confirm]', function ( e ) {
+			if ( ! window.confirm( String( $( this ).data( 'acfw-confirm' ) ) ) ) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+			}
+		} );
+
+		// WooCommerce's own Cancel buttons ( orders list, order page ) when customers may cancel paid orders.
+		$( document ).on( 'click', '.woocommerce-MyAccount-content a.button.cancel', function ( e ) {
+			if ( settings.cancelAsk && ! window.confirm( settings.cancelAsk ) ) {
+				e.preventDefault();
+			}
+		} );
+
+		/* ---- Personal offers: copy the code ---- */
+		$( document ).on( 'click', '.acfw-offer-copy', function () {
+			var $btn = $( this );
+			var code = String( $btn.data( 'code' ) );
+			var done = function () {
+				var label = $btn.text();
+				$btn.text( $btn.data( 'done' ) );
+				window.setTimeout( function () {
+					$btn.text( label );
+				}, 1800 );
+			};
+			if ( window.navigator.clipboard && window.navigator.clipboard.writeText ) {
+				window.navigator.clipboard.writeText( code ).then( done, function () {
+					selectCode( $btn );
+				} );
+			} else {
+				selectCode( $btn );
+			}
+		} );
+
+		// No clipboard access: select the code so the customer can copy it.
+		function selectCode( $btn ) {
+			var node = $btn.siblings( '.acfw-offer-code' )[ 0 ];
+			if ( node && window.getSelection && document.createRange ) {
+				var range = document.createRange();
+				range.selectNodeContents( node );
+				window.getSelection().removeAllRanges();
+				window.getSelection().addRange( range );
+			}
+		}
+
 		/* ---- Mobile nav drawer ---- */
 		var $nav = $( '.woocommerce-MyAccount-navigation.acfw-menu' );
 		function closeDrawer() {

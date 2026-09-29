@@ -166,6 +166,13 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 				'recently-viewed' => 'fas fa-history',
 			);
 
+			/**
+			 * Default icons of built-in and third-party account pages ( key => icon ).
+			 *
+			 * @param array $icons Icons.
+			 */
+			$icons = (array) apply_filters( 'acfw_default_icons', $icons );
+
 			foreach ( $labels as $key => $label ) {
 				$options          = acfw_default_endpoint_options( $key );
 				$options['label'] = $label;
@@ -290,7 +297,12 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 			$mask = WC()->query->get_endpoints_mask();
 
 			// Endpoints nested in a group need their rewrite rules too.
-			foreach ( acfw_flatten_items( $this->items ) as $key => $item ) {
+			/**
+			 * Items whose endpoints need a URL ( group menus add their own ).
+			 *
+			 * @param array $flat Key => item.
+			 */
+			foreach ( (array) apply_filters( 'acfw_endpoint_items', acfw_flatten_items( $this->items ) ) as $key => $item ) {
 				if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || 'dashboard' === $key ) {
 					continue;
 				}

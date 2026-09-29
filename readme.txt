@@ -22,7 +22,8 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 * Build it on a canvas drawn the way customers see it: drag to reorder or nest, switch any item on or off, duplicate or delete it in place.
 * Rename every item, give a custom endpoint its own URL, and pick an icon from the bundled Font Awesome library, a Dashicon, or upload your own.
 * Add a **badge** to any item: "New", or a live value such as `{points_balance} pts`.
-* Control who sees what: by **user role**, **date range**, **products the customer bought**, **number of orders** or **total spent**.
+* Control who sees what: by **user role**, **date range**, **products the customer bought**, **number of orders** (at least or at most), **total spent**, or **how long since their last order**.
+* **Menus for customer groups** — wholesale buyers, members or any role get a menu of their own, while item settings stay shared.
 * Each item on the canvas says who can see it ( e.g. "Customer · 2+ orders" ).
 * Set the landing endpoint customers open on, plus login and logout redirects.
 
@@ -30,8 +31,9 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 
 * Give each endpoint its own content using either the **Classic editor** or the native **Gutenberg block editor**.
 * Insert content **before**, **after**, or **instead of** the default WooCommerce output.
-* Add promotional **banners** per endpoint — text, image or icon, with role targeting, a schedule, your own link text and a count badge for orders, downloads, cart items or reward points.
-* **Smart tags** personalise any text: `{display_name}`, `{first_name}`, `{last_name}`, `{username}`, `{user_email}`, `{site_title}`, `{order_count}`, `{download_count}`, `{total_spent}`, `{member_since}`, `{cart_count}`, `{billing_phone}`, `{billing_city}`, `{billing_country}`, `{points_balance}`, `{membership_plan}`, `{last_login}`, `{account_url}`, `{shop_url}`, `{site_url}`.
+* Add promotional **banners** per endpoint — text, image or icon, with the same visibility rules as menu items, a schedule, your own link text and a count badge for orders, downloads, cart items or reward points.
+* **Personal offers** — a banner can hand each customer a coupon code of their own (one use, their email only, ending after the days you set), shown with Copy and "Use it now". Aim it at first-time buyers or customers who have not ordered in 90 days.
+* **Smart tags** personalise any text: `{display_name}`, `{first_name}`, `{last_name}`, `{username}`, `{user_email}`, `{site_title}`, `{order_count}`, `{download_count}`, `{total_spent}`, `{member_since}`, `{cart_count}`, `{billing_phone}`, `{billing_city}`, `{billing_country}`, `{points_balance}`, `{membership_plan}`, `{last_login}`, `{account_url}`, `{shop_url}`, `{site_url}`, and `{field_…}` for your own customer fields.
 
 = Design it visually =
 
@@ -51,15 +53,28 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 * **Dashboard stats** — orders, pending, total spent, refunds, downloads, points, latest order, and an orders-by-status chart. Each card links to the page it sums up.
 * **Profile completeness meter** that lists what is missing, with a link to each form, and optional quick-link tiles.
 
+= Let customers help themselves =
+
+* **Cancel orders** that have not shipped yet, within the hours you allow.
+* **Returns** — customers ask to return items from a completed order, with a reason and a photo; you answer from one screen and they are emailed.
+* **Address book** — more saved addresses, made the shipping or billing address in a click, and picked from at the classic checkout.
+* **Privacy page** — customers request a copy of their data or its erasure, through WordPress's own confirmed requests.
+* **Customer fields** — ask for a VAT number, company, birthday or anything else on the registration and account forms; answers show on the order screen and the user's profile.
+
+= See what customers use =
+
+**Insights** shows account page views per day and per page (and which pages nobody opens), banner views and click rates, and how many personal offer codes were used and the sales they brought. Only daily totals are kept; nothing personal, and shop managers are not counted.
+
 = Anywhere on the site =
 
-Render the customised menu outside the account page with the `[acfw_account_menu]` shortcode, the **Account Menu** block, or the classic **Account Menu** widget.
+Render the customised menu outside the account page with the `[acfw_account_menu]` shortcode, the **Account Menu** block, or the classic **Account Menu** widget. On classic themes, **Appearance → Menus** gets a **My Account** box: a link that reads *Log in* for visitors and *My account* for customers, and one that drops down the customer's account pages.
 
 = Built to fit =
 
 * Optional AJAX navigation between endpoints.
 * **Import / Export** the whole configuration as JSON, and a full reset tool.
 * Translation-ready, with string registration for **WPML** and **Polylang**.
+* Account pages from **WooCommerce Subscriptions**, **Memberships**, **Bookings**, points, wallet and ticket plugins show in the menu with fitting icons; **YITH** and **TI WooCommerce Wishlist** get a Wishlist page inside My Account.
 * Declares **HPOS** (custom order tables) and cart/checkout blocks compatibility.
 * No external service calls, no telemetry, no remotely loaded fonts. Font Awesome and Select2 ship locally.
 
@@ -67,9 +82,9 @@ Render the customised menu outside the account page with the `[acfw_account_menu
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install the zip via **Plugins → Add New → Upload Plugin**.
 2. Activate through the **Plugins** screen. WooCommerce must be active.
-3. A top-level **My Account** menu appears in wp-admin, with tabs for Menu Items, Design, Settings and Banners.
+3. A top-level **My Account** menu appears in wp-admin, with tabs for Menu Items, Design, Banners, Fields, Returns, Insights and Settings.
 4. Default WooCommerce endpoints are pre-loaded, so the page keeps working before you change anything.
-5. Optional: enable Buy Again, Recently viewed and Order tracking in **My Account → Settings → General**, and avatar uploads in **My Account → Design → Profile card**.
+5. Optional: enable Buy Again, Recently viewed and Order tracking in **My Account → Settings → General**, order cancelling, returns, the address book and the privacy page in **Settings → Orders & privacy**, and avatar uploads in **My Account → Design → Profile card**.
 
 == Frequently Asked Questions ==
 
@@ -103,7 +118,11 @@ Yes. A `.pot` file ships in `/languages`, and admin-entered strings (item labels
 
 = What data does it store, and what happens on uninstall? =
 
-Options prefixed `acfw_`, plus three user meta keys (`acfw_avatar_id`, `acfw_last_login`, and `acfw_order_stats`, a cache of the dashboard counts). Deleting the plugin from the Plugins screen removes all of it, including uploaded avatar images. Deactivating does not.
+Options prefixed `acfw_`; user meta keys `acfw_avatar_id`, `acfw_last_login`, `acfw_order_stats` (a cache of the dashboard counts), `acfw_addresses` (the address book), `acfw_field_{key}` (customer field answers) and `acfw_offer_{banner}` (the coupon each customer was given); return requests with their photos; and a `{prefix}acfw_stats` table of daily usage totals for Insights. Deleting the plugin from the Plugins screen removes all of it, including uploaded avatar images. The coupons made for personal offers are ordinary WooCommerce coupons that customers may still hold, so they stay. Deactivating removes nothing.
+
+= Are personal offer codes ordinary coupons? =
+
+Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited to one use and to the customer's email address. Coupons must be switched on in WooCommerce → Settings → General.
 
 == Screenshots ==
 
@@ -119,6 +138,9 @@ Options prefixed `acfw_`, plus three user meta keys (`acfw_avatar_id`, `acfw_las
 == Changelog ==
 
 = Unreleased =
+* New: personal offers in banners, customer fields, cancelling orders, returns, an address book, a privacy page, menus for customer groups, Insights, a My Account box in Appearance → Menus, and "at most N orders" / "last order more than N days ago" visibility rules.
+* New: icons for account pages from Subscriptions, Memberships, Bookings and other plugins, a Wishlist page for YITH and TI WooCommerce Wishlist, and points from YITH Points and Rewards and myCred.
+* Tweak: a badge made only of empty smart tags is hidden.
 * New: endpoint URLs, item badges, product / order-count / spend visibility rules, per-group "start expanded", banner schedules, badge sources and link text, clickable dashboard stats, an actionable profile meter and nine new smart tags.
 * New: the Menu Items screen is a canvas of the menu as customers see it: drag ( or Alt + arrow keys ) to reorder and nest, on/off switches, Duplicate and Delete on every item, a line on each item saying who can see it, and the item's settings in tabs beside it with an unsaved-changes save bar.
 * New: the Design Studio replaces the Customizer panel and the Templates tab: looks, grouped controls, a live preview at three widths, and save / discard.

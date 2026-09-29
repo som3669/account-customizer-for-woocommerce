@@ -91,6 +91,10 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					'label' => __( 'General', 'my-account-dashboard-builder' ),
 					'icon'  => 'admin-settings',
 				),
+				'orders'  => array(
+					'label' => __( 'Orders & privacy', 'my-account-dashboard-builder' ),
+					'icon'  => 'cart',
+				),
 				'presets' => array(
 					'label' => __( 'Presets & Reset', 'my-account-dashboard-builder' ),
 					'icon'  => 'art',
@@ -256,26 +260,16 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 						</tr>
 
 						<tr>
-							<th scope="row"><?php esc_html_e( 'Track endpoint views', 'my-account-dashboard-builder' ); ?></th>
+							<th scope="row"><?php esc_html_e( 'Record usage', 'my-account-dashboard-builder' ); ?></th>
 							<td>
 								<div class="acfw-switch-row">
 									<label class="acfw-switch acfw-switch-lg">
 										<input type="checkbox" name="acfw_track_views" value="yes" <?php checked( 'yes', get_option( 'acfw_track_views', 'no' ) ); ?> />
 										<span class="acfw-switch-slider"></span>
 									</label>
-									<span class="acfw-control-hint"><?php esc_html_e( 'Count how often each endpoint is viewed.', 'my-account-dashboard-builder' ); ?></span>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Count account page views, banner views and clicks, and personal offers used, for the Insights tab. Customers only; nothing personal is kept.', 'my-account-dashboard-builder' ); ?></span>
 								</div>
-								<?php
-								$views = get_option( 'acfw_endpoint_views', array() );
-								if ( ! empty( $views ) && is_array( $views ) ) :
-									arsort( $views );
-									?>
-									<ul class="acfw-view-stats">
-										<?php foreach ( $views as $vk => $vc ) : ?>
-											<li><span><?php echo esc_html( $vk ); ?></span> <strong><?php echo esc_html( number_format_i18n( (int) $vc ) ); ?></strong></li>
-										<?php endforeach; ?>
-									</ul>
-								<?php endif; ?>
+								<p class="acfw-hint"><a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE . '&tab=insights' ) ); ?>"><?php esc_html_e( 'See Insights', 'my-account-dashboard-builder' ); ?></a></p>
 							</td>
 						</tr>
 
@@ -325,6 +319,92 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 			</form>
 			</div><!-- .acfw-card -->
 			<?php endif; // General section. ?>
+
+			<?php if ( 'orders' === $section ) : ?>
+			<div class="acfw-card">
+				<div class="acfw-panel-head">
+					<span class="acfw-panel-icon dashicons dashicons-cart" aria-hidden="true"></span>
+					<div class="acfw-panel-heading">
+						<h2><?php esc_html_e( 'Orders & privacy', 'my-account-dashboard-builder' ); ?></h2>
+						<p><?php esc_html_e( 'What customers can do for themselves', 'my-account-dashboard-builder' ); ?></p>
+					</div>
+				</div>
+				<form method="post" action="options.php">
+					<?php settings_fields( 'acfw_settings_orders' ); ?>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Cancel orders', 'my-account-dashboard-builder' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_cancel_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_cancel_enable', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Customers can cancel an order that has not shipped yet (pending, on hold or processing). Stock goes back; a paid order still needs refunding from its screen, and gets a note saying so.', 'my-account-dashboard-builder' ); ?></span>
+								</div>
+								<p class="acfw-inline-fields">
+									<label class="acfw-inline-field">
+										<span><?php esc_html_e( 'For', 'my-account-dashboard-builder' ); ?></span>
+										<input type="number" class="acfw-input-short" name="acfw_cancel_hours" min="0" step="1" value="<?php echo esc_attr( absint( get_option( 'acfw_cancel_hours', 24 ) ) ); ?>" />
+										<span><?php esc_html_e( 'hours after ordering (0 = until it ships)', 'my-account-dashboard-builder' ); ?></span>
+									</label>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Returns', 'my-account-dashboard-builder' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_returns_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_returns_enable', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Adds a Returns page. Customers ask to return items from a completed order, with a reason and a photo; you answer on the Returns tab and they are emailed.', 'my-account-dashboard-builder' ); ?></span>
+								</div>
+								<p class="acfw-inline-fields">
+									<label class="acfw-inline-field">
+										<span><?php esc_html_e( 'Open for', 'my-account-dashboard-builder' ); ?></span>
+										<input type="number" class="acfw-input-short" name="acfw_returns_days" min="1" step="1" value="<?php echo esc_attr( max( 1, absint( get_option( 'acfw_returns_days', 30 ) ) ) ); ?>" />
+										<span><?php esc_html_e( 'days after an order is completed', 'my-account-dashboard-builder' ); ?></span>
+									</label>
+								</p>
+								<p>
+									<label for="acfw-returns-reasons"><?php esc_html_e( 'Reasons customers choose from, one per line', 'my-account-dashboard-builder' ); ?></label><br />
+									<textarea id="acfw-returns-reasons" name="acfw_returns_reasons" rows="5" class="large-text"><?php echo esc_textarea( implode( "\n", ACFW_Returns::reasons() ) ); ?></textarea>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Address book', 'my-account-dashboard-builder' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_addressbook_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_addressbook_enable', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Customers keep more addresses on the Addresses page and make any of them their shipping or billing address. The classic checkout also lists them.', 'my-account-dashboard-builder' ); ?></span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Privacy page', 'my-account-dashboard-builder' ); ?></th>
+							<td>
+								<div class="acfw-switch-row">
+									<label class="acfw-switch acfw-switch-lg">
+										<input type="checkbox" name="acfw_privacy_enable" value="yes" <?php checked( 'yes', get_option( 'acfw_privacy_enable', 'no' ) ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+									<span class="acfw-control-hint"><?php esc_html_e( 'Adds a Privacy page where customers ask for a copy of their data or for it to be erased. WordPress emails them to confirm; you finish the request under Tools → Export / Erase Personal Data.', 'my-account-dashboard-builder' ); ?></span>
+								</div>
+							</td>
+						</tr>
+					</table>
+					<div class="acfw-form-footer">
+						<?php submit_button( __( 'Save changes', 'my-account-dashboard-builder' ), 'primary', 'submit', false ); ?>
+					</div>
+				</form>
+			</div>
+			<?php endif; // Orders section. ?>
 
 			<?php if ( 'presets' === $section ) : ?>
 			<div class="acfw-card">

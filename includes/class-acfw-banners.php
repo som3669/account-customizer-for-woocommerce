@@ -28,31 +28,45 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 		 */
 		public static function defaults() {
 			return array(
-				'type'          => 'widget',
-				'title'         => '',
-				'content'       => '',
-				'image_url'     => '',
-				'icon'          => '',
-				'icon_source'   => 'choose', // choose | upload.
-				'icon_url'      => '',
-				'icon_width'    => 40,
-				'widget_width'  => 250,
-				'text_color'    => '#1d2327',
-				'text_hover'    => '#111827',
-				'bg_color'      => '#f3f6fb',
-				'bg_hover'      => '#e9eefb',
-				'border_color'  => '#e1e5ef',
-				'border_hover'  => '#c7d2fe',
-				'show_count'    => 'no',
-				'count_source'  => 'orders', // orders | downloads | cart | points.
-				'link_type'     => 'none', // none | endpoint | external.
-				'link_endpoint' => '',
-				'link'          => '',
-				'link_text'     => '',
-				'visibility'    => 'all', // all | roles.
-				'roles'         => array(),
-				'vis_from'      => '',
-				'vis_to'        => '',
+				'type'                => 'widget',
+				'title'               => '',
+				'content'             => '',
+				'image_url'           => '',
+				'icon'                => '',
+				'icon_source'         => 'choose', // choose | upload.
+				'icon_url'            => '',
+				'icon_width'          => 40,
+				'widget_width'        => 250,
+				'text_color'          => '#1d2327',
+				'text_hover'          => '#111827',
+				'bg_color'            => '#f3f6fb',
+				'bg_hover'            => '#e9eefb',
+				'border_color'        => '#e1e5ef',
+				'border_hover'        => '#c7d2fe',
+				'show_count'          => 'no',
+				'count_source'        => 'orders', // orders | downloads | cart | points.
+				'link_type'           => 'none', // none | endpoint | external.
+				'link_endpoint'       => '',
+				'link'                => '',
+				'link_text'           => '',
+				'visibility'          => 'all', // all | roles.
+				'roles'               => array(),
+				'vis_from'            => '',
+				'vis_to'              => '',
+				// Order-based rules, shared with menu items.
+				'vis_products'        => array(),
+				'vis_min_orders'      => 0,
+				'vis_max_orders'      => '',
+				'vis_min_spent'       => 0,
+				'vis_inactive_days'   => 0,
+				// Personal offer ( widget banners ): a coupon of their own per customer.
+				'offer'               => 'no',
+				'offer_type'          => 'percent', // percent | fixed_cart.
+				'offer_amount'        => 10,
+				'offer_days'          => 14,       // 0 = no end.
+				'offer_min'           => 0,
+				'offer_free_shipping' => 'no',
+				'offer_prefix'        => 'THANKS',
 			);
 		}
 
@@ -146,31 +160,48 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 			$defaults  = self::defaults();
 
 			$clean = array(
-				'type'          => $type,
-				'title'         => $title,
-				'content'       => isset( $data['content'] ) ? wp_kses_post( $data['content'] ) : '',
-				'image_url'     => isset( $data['image_url'] ) ? esc_url_raw( $data['image_url'] ) : '',
-				'icon'          => isset( $data['icon'] ) ? acfw_sanitize_icon( $data['icon'] ) : '',
-				'icon_source'   => ( isset( $data['icon_source'] ) && 'upload' === $data['icon_source'] ) ? 'upload' : 'choose',
-				'icon_url'      => isset( $data['icon_url'] ) ? esc_url_raw( $data['icon_url'] ) : '',
-				'icon_width'    => isset( $data['icon_width'] ) ? min( 100, absint( $data['icon_width'] ) ) : 40,
-				'widget_width'  => isset( $data['widget_width'] ) ? max( 200, min( 700, absint( $data['widget_width'] ) ) ) : 250,
-				'text_color'    => self::hex( $data, 'text_color', $defaults ),
-				'text_hover'    => self::hex( $data, 'text_hover', $defaults ),
-				'bg_color'      => self::hex( $data, 'bg_color', $defaults ),
-				'bg_hover'      => self::hex( $data, 'bg_hover', $defaults ),
-				'border_color'  => self::hex( $data, 'border_color', $defaults ),
-				'border_hover'  => self::hex( $data, 'border_hover', $defaults ),
-				'show_count'    => ( isset( $data['show_count'] ) && 'yes' === $data['show_count'] ) ? 'yes' : 'no',
-				'count_source'  => ( isset( $data['count_source'] ) && array_key_exists( $data['count_source'], self::count_sources() ) ) ? $data['count_source'] : 'orders',
-				'link_type'     => $link_type,
-				'link_endpoint' => isset( $data['link_endpoint'] ) ? acfw_sanitize_key( $data['link_endpoint'] ) : '',
-				'link'          => isset( $data['link'] ) ? esc_url_raw( $data['link'] ) : '',
-				'link_text'     => isset( $data['link_text'] ) ? sanitize_text_field( $data['link_text'] ) : '',
-				'visibility'    => empty( $roles ) ? 'all' : 'roles',
-				'roles'         => $roles,
-				'vis_from'      => isset( $data['vis_from'] ) ? preg_replace( '/[^0-9-]/', '', (string) $data['vis_from'] ) : '',
-				'vis_to'        => isset( $data['vis_to'] ) ? preg_replace( '/[^0-9-]/', '', (string) $data['vis_to'] ) : '',
+				'type'              => $type,
+				'title'             => $title,
+				'content'           => isset( $data['content'] ) ? wp_kses_post( $data['content'] ) : '',
+				'image_url'         => isset( $data['image_url'] ) ? esc_url_raw( $data['image_url'] ) : '',
+				'icon'              => isset( $data['icon'] ) ? acfw_sanitize_icon( $data['icon'] ) : '',
+				'icon_source'       => ( isset( $data['icon_source'] ) && 'upload' === $data['icon_source'] ) ? 'upload' : 'choose',
+				'icon_url'          => isset( $data['icon_url'] ) ? esc_url_raw( $data['icon_url'] ) : '',
+				'icon_width'        => isset( $data['icon_width'] ) ? min( 100, absint( $data['icon_width'] ) ) : 40,
+				'widget_width'      => isset( $data['widget_width'] ) ? max( 200, min( 700, absint( $data['widget_width'] ) ) ) : 250,
+				'text_color'        => self::hex( $data, 'text_color', $defaults ),
+				'text_hover'        => self::hex( $data, 'text_hover', $defaults ),
+				'bg_color'          => self::hex( $data, 'bg_color', $defaults ),
+				'bg_hover'          => self::hex( $data, 'bg_hover', $defaults ),
+				'border_color'      => self::hex( $data, 'border_color', $defaults ),
+				'border_hover'      => self::hex( $data, 'border_hover', $defaults ),
+				'show_count'        => ( isset( $data['show_count'] ) && 'yes' === $data['show_count'] ) ? 'yes' : 'no',
+				'count_source'      => ( isset( $data['count_source'] ) && array_key_exists( $data['count_source'], self::count_sources() ) ) ? $data['count_source'] : 'orders',
+				'link_type'         => $link_type,
+				'link_endpoint'     => isset( $data['link_endpoint'] ) ? acfw_sanitize_key( $data['link_endpoint'] ) : '',
+				'link'              => isset( $data['link'] ) ? esc_url_raw( $data['link'] ) : '',
+				'link_text'         => isset( $data['link_text'] ) ? sanitize_text_field( $data['link_text'] ) : '',
+				'visibility'        => empty( $roles ) ? 'all' : 'roles',
+				'roles'             => $roles,
+				'vis_from'          => isset( $data['vis_from'] ) ? preg_replace( '/[^0-9-]/', '', (string) $data['vis_from'] ) : '',
+				'vis_to'            => isset( $data['vis_to'] ) ? preg_replace( '/[^0-9-]/', '', (string) $data['vis_to'] ) : '',
+				'vis_products'      => acfw_parse_id_list( $data['vis_products'] ?? array() ),
+				'vis_min_orders'    => absint( $data['vis_min_orders'] ?? 0 ),
+				'vis_max_orders'    => acfw_sanitize_max_orders( $data['vis_max_orders'] ?? '' ),
+				'vis_min_spent'     => self::money( $data['vis_min_spent'] ?? 0 ),
+				'vis_inactive_days' => absint( $data['vis_inactive_days'] ?? 0 ),
+			);
+
+			$offer_type = ( isset( $data['offer_type'] ) && 'fixed_cart' === $data['offer_type'] ) ? 'fixed_cart' : 'percent';
+			$amount     = self::money( $data['offer_amount'] ?? 0 );
+			$clean     += array(
+				'offer'               => ( 'widget' === $type && isset( $data['offer'] ) && 'yes' === $data['offer'] ) ? 'yes' : 'no',
+				'offer_type'          => $offer_type,
+				'offer_amount'        => 'percent' === $offer_type ? min( 100, $amount ) : $amount,
+				'offer_days'          => min( 365, absint( $data['offer_days'] ?? 14 ) ),
+				'offer_min'           => self::money( $data['offer_min'] ?? 0 ),
+				'offer_free_shipping' => ( isset( $data['offer_free_shipping'] ) && 'yes' === $data['offer_free_shipping'] ) ? 'yes' : 'no',
+				'offer_prefix'        => acfw_offer_prefix( $data['offer_prefix'] ?? '' ),
 			);
 
 			$banners          = self::all();
@@ -178,6 +209,18 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 			update_option( self::OPTION, $banners );
 
 			return $slug;
+		}
+
+		/**
+		 * A money amount in the store's decimal format, zero or more.
+		 *
+		 * @param mixed $raw Raw value.
+		 * @return float
+		 */
+		protected static function money( $raw ) {
+			$raw = is_scalar( $raw ) ? (string) $raw : '0';
+			$raw = function_exists( 'wc_format_decimal' ) ? wc_format_decimal( $raw ) : $raw;
+			return max( 0, (float) $raw );
 		}
 
 		/**
@@ -282,16 +325,35 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 				return '';
 			}
 
-			// Role and schedule rules, shared with menu items.
-			$rules   = array(
-				'visibility' => $banner['visibility'],
-				'usr_roles'  => (array) $banner['roles'],
-				'vis_from'   => $banner['vis_from'],
-				'vis_to'     => $banner['vis_to'],
+			// The same rules as menu items: roles, dates, purchases, order history.
+			$rules       = array(
+				'visibility'        => $banner['visibility'],
+				'usr_roles'         => (array) $banner['roles'],
+				'vis_from'          => $banner['vis_from'],
+				'vis_to'            => $banner['vis_to'],
+				'vis_products'      => (array) $banner['vis_products'],
+				'vis_min_orders'    => $banner['vis_min_orders'],
+				'vis_max_orders'    => $banner['vis_max_orders'],
+				'vis_min_spent'     => $banner['vis_min_spent'],
+				'vis_inactive_days' => $banner['vis_inactive_days'],
 			);
-			$visible = ( 'roles' !== $banner['visibility'] || is_user_logged_in() ) && acfw_visibility_passes( $rules );
+			$needs_login = 'roles' === $banner['visibility'] || acfw_rule_product_ids( $rules ) || $banner['vis_min_orders'] || null !== acfw_rule_max_orders( $rules ) || $banner['vis_min_spent'] || $banner['vis_inactive_days'];
+			$visible     = ( ! $needs_login || is_user_logged_in() ) && acfw_visibility_passes( $rules );
 			if ( ! apply_filters( 'acfw_banner_is_visible', $visible, $banner, $slug ) ) {
 				return '';
+			}
+
+			// A personal offer shows only while the customer's code is unused.
+			$offer = null;
+			if ( 'widget' === $banner['type'] && 'yes' === $banner['offer'] && class_exists( 'ACFW_Offers' ) ) {
+				$offer = ACFW_Offers::for_viewer( $slug, $banner );
+				if ( null === $offer ) {
+					return '';
+				}
+			}
+
+			if ( class_exists( 'ACFW_Stats' ) && ACFW_Stats::counts_visitor() ) {
+				ACFW_Stats::bump( 'banner_view', $slug );
 			}
 
 			$style = sprintf(
@@ -321,7 +383,7 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 
 			ob_start();
 			?>
-			<div class="acfw-banner acfw-banner-<?php echo esc_attr( $banner['type'] ); ?>" style="<?php echo esc_attr( $style ); ?>">
+			<div class="acfw-banner acfw-banner-<?php echo esc_attr( $banner['type'] ); ?><?php echo $offer ? ' acfw-banner-offer' : ''; ?>" data-acfw-banner="<?php echo esc_attr( $slug ); ?>" style="<?php echo esc_attr( $style ); ?>">
 				<?php if ( 'image' === $banner['type'] && $banner['image_url'] ) : ?>
 					<?php if ( $link ) : ?>
 						<a href="<?php echo esc_url( $link ); ?>"><img src="<?php echo esc_url( $banner['image_url'] ); ?>" alt="<?php echo esc_attr( $banner['title'] ); ?>" /></a>
@@ -335,7 +397,14 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 							<?php if ( $banner['title'] ) : ?>
 								<h3 class="acfw-banner-title"><?php echo esc_html( acfw_apply_smart_tags( ACFW_I18n::translate( 'banner_' . $slug . '_title', $banner['title'] ), null, false ) ); ?> <?php echo $count; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h3>
 							<?php endif; ?>
-							<div class="acfw-banner-content"><?php echo wp_kses_post( wpautop( acfw_apply_smart_tags( ACFW_I18n::translate( 'banner_' . $slug . '_content', $banner['content'] ) ) ) ); ?></div>
+							<?php $acfw_text = ACFW_I18n::translate( 'banner_' . $slug . '_content', $banner['content'] ); ?>
+							<?php $acfw_text = $offer ? strtr( $acfw_text, $offer['vars'] ) : $acfw_text; ?>
+							<div class="acfw-banner-content"><?php echo wp_kses_post( wpautop( acfw_apply_smart_tags( $acfw_text ) ) ); ?></div>
+							<?php
+							if ( $offer ) {
+								echo $offer['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in ACFW_Offers::markup().
+							}
+							?>
 							<?php if ( $link ) : ?>
 								<a class="acfw-banner-link" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $link_text ); ?></a>
 							<?php endif; ?>
