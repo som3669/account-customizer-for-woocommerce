@@ -244,6 +244,7 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 				'acfw_pin_enable'        => $toggle( 'menu', __( 'Let customers pin favourites', 'my-account-dashboard-builder' ), 'no' ),
 				'acfw_collapsible'       => $toggle( 'menu', __( 'Collapse to icons', 'my-account-dashboard-builder' ), 'no', false, __( 'A button that shrinks the menu to an icon rail.', 'my-account-dashboard-builder' ) ),
 				'acfw_sticky_menu'       => $toggle( 'menu', __( 'Stay in view on scroll', 'my-account-dashboard-builder' ), 'no', true ),
+				'acfw_status_badges'     => $toggle( 'menu', __( 'Status badges', 'my-account-dashboard-builder' ), 'yes', false, __( 'Orders to pay, open returns, and a dot where details are missing.', 'my-account-dashboard-builder' ) ),
 				'acfw_group_open'        => $toggle( 'menu', __( 'Open every group', 'my-account-dashboard-builder' ), 'no' ),
 				'acfw_logout_confirm'    => $toggle( 'menu', __( 'Ask before logging out', 'my-account-dashboard-builder' ), 'no' ),
 
@@ -325,6 +326,14 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 						'center' => __( 'Centre', 'my-account-dashboard-builder' ),
 						'right'  => __( 'End', 'my-account-dashboard-builder' ),
 					),
+				),
+				'acfw_dashboard_layout'  => array(
+					'group'   => 'dashboard',
+					'type'    => 'layout',
+					'label'   => __( 'Arrange the dashboard', 'my-account-dashboard-builder' ),
+					'default' => acfw_sanitize_dashboard_layout( '' ),
+					'live'    => true,
+					'hint'    => __( 'Drag the parts into the order customers see them, or use the arrows.', 'my-account-dashboard-builder' ),
 				),
 				'acfw_dashboard_stats'   => $toggle( 'dashboard', __( 'Account numbers', 'my-account-dashboard-builder' ), 'no', false, __( 'Cards with the customer’s orders, spend and downloads.', 'my-account-dashboard-builder' ) ),
 				'acfw_stat_orders'       => $toggle( 'dashboard', __( 'Total orders', 'my-account-dashboard-builder' ), 'yes' ),
@@ -425,6 +434,8 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 				'acfw_stat_piechart'     => __( 'A chart of the customer’s orders by status.', 'my-account-dashboard-builder' ),
 				'acfw_dashboard_tiles'   => __( 'A grid of shortcuts to the pages in the menu.', 'my-account-dashboard-builder' ),
 				'acfw_profile_meter'     => __( 'How complete the customer’s profile is, and what is still missing.', 'my-account-dashboard-builder' ),
+				'acfw_dashboard_layout'  => __( 'The order of the parts of the dashboard, and which of them show.', 'my-account-dashboard-builder' ),
+				'acfw_status_badges'     => __( 'Badges that update themselves: “1 to pay” on Orders, “1 open” on Returns, and a dot on Account details or Addresses while something is missing.', 'my-account-dashboard-builder' ),
 				'acfw_custom_css'        => __( 'Your own CSS, for anything the controls here do not cover.', 'my-account-dashboard-builder' ),
 			);
 		}
@@ -484,6 +495,8 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 					return max( $min, min( $max, $num ) );
 				case 'css':
 					return wp_strip_all_tags( (string) $value );
+				case 'layout':
+					return acfw_sanitize_dashboard_layout( $value );
 				case 'image':
 					return esc_url_raw( (string) $value );
 				case 'text':
@@ -528,7 +541,9 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 		 * @return string
 		 */
 		public static function draft_key() {
-			return 'acfw_design_draft_' . get_current_user_id();
+			// Viewing as a customer, the draft is still the shop manager's.
+			$uid = class_exists( 'ACFW_View_As' ) && ACFW_View_As::active() ? ACFW_View_As::real_user_id() : get_current_user_id();
+			return 'acfw_design_draft_' . $uid;
 		}
 
 		/**
@@ -538,7 +553,14 @@ if ( ! class_exists( 'ACFW_Design' ) ) {
 		 */
 		public static function is_preview() {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only flag; only honoured for shop managers, who only see their own draft.
-			return isset( $_GET[ self::PREVIEW_ARG ] ) && is_user_logged_in() && current_user_can( 'manage_woocommerce' );
+			if ( ! isset( $_GET[ self::PREVIEW_ARG ] ) || ! is_user_logged_in() ) {
+				return false;
+			}
+			// Viewing as a customer inside the Studio: the shop manager is behind it.
+			if ( class_exists( 'ACFW_View_As' ) && ACFW_View_As::active() ) {
+				return user_can( ACFW_View_As::real_user_id(), 'manage_woocommerce' );
+			}
+			return current_user_can( 'manage_woocommerce' );
 		}
 
 		/**

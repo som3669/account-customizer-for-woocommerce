@@ -47,6 +47,11 @@ function acfw_missing_wc_notice() {
 	<?php
 }
 
+// "View as a customer" swaps the user as soon as WordPress resolves it, so it
+// is hooked here, before any plugin can ask who is logged in.
+require_once ACFW_DIR . 'includes/class-acfw-view-as.php';
+ACFW_View_As::boot();
+
 /**
  * Bootstrap the plugin once all plugins are loaded.
  */

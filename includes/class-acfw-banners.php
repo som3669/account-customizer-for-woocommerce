@@ -313,6 +313,27 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 		}
 
 		/**
+		 * A banner's visibility rules, in the shape acfw_visibility_passes() reads.
+		 *
+		 * @param array $banner Banner.
+		 * @return array
+		 */
+		public static function rules( $banner ) {
+			$banner = wp_parse_args( (array) $banner, self::defaults() );
+			return array(
+				'visibility'        => $banner['visibility'],
+				'usr_roles'         => (array) $banner['roles'],
+				'vis_from'          => $banner['vis_from'],
+				'vis_to'            => $banner['vis_to'],
+				'vis_products'      => (array) $banner['vis_products'],
+				'vis_min_orders'    => $banner['vis_min_orders'],
+				'vis_max_orders'    => $banner['vis_max_orders'],
+				'vis_min_spent'     => $banner['vis_min_spent'],
+				'vis_inactive_days' => $banner['vis_inactive_days'],
+			);
+		}
+
+		/**
 		 * Render a single banner by slug.
 		 *
 		 * @param string $slug Banner slug.
@@ -326,17 +347,7 @@ if ( ! class_exists( 'ACFW_Banners' ) ) {
 			}
 
 			// The same rules as menu items: roles, dates, purchases, order history.
-			$rules       = array(
-				'visibility'        => $banner['visibility'],
-				'usr_roles'         => (array) $banner['roles'],
-				'vis_from'          => $banner['vis_from'],
-				'vis_to'            => $banner['vis_to'],
-				'vis_products'      => (array) $banner['vis_products'],
-				'vis_min_orders'    => $banner['vis_min_orders'],
-				'vis_max_orders'    => $banner['vis_max_orders'],
-				'vis_min_spent'     => $banner['vis_min_spent'],
-				'vis_inactive_days' => $banner['vis_inactive_days'],
-			);
+			$rules       = self::rules( $banner );
 			$needs_login = 'roles' === $banner['visibility'] || acfw_rule_product_ids( $rules ) || $banner['vis_min_orders'] || null !== acfw_rule_max_orders( $rules ) || $banner['vis_min_spent'] || $banner['vis_inactive_days'];
 			$visible     = ( ! $needs_login || is_user_logged_in() ) && acfw_visibility_passes( $rules );
 			if ( ! apply_filters( 'acfw_banner_is_visible', $visible, $banner, $slug ) ) {

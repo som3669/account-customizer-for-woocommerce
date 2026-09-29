@@ -25,6 +25,8 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 * Control who sees what: by **user role**, **date range**, **products the customer bought**, **number of orders** (at least or at most), **total spent**, or **how long since their last order**.
 * **Menus for customer groups** — wholesale buyers, members or any role get a menu of their own, while item settings stay shared.
 * Each item on the canvas says who can see it ( e.g. "Customer · 2+ orders" ).
+* **View as a customer** — see My Account exactly as one customer does, with a list of what is hidden from them and why ( "Needs 3+ orders (has 1)" ). Read-only: nothing changes for them.
+* **Status badges** that update themselves: "1 to pay" on Orders, "1 open" on Returns, and a dot where account details are missing.
 * Set the landing endpoint customers open on, plus login and logout redirects.
 
 = Fill it with content =
@@ -52,6 +54,7 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 * **Order tracking** — a dashboard summary that auto-detects WooCommerce Shipment Tracking and falls back to a status timeline.
 * **Dashboard stats** — orders, pending, total spent, refunds, downloads, points, latest order, and an orders-by-status chart. Each card links to the page it sums up.
 * **Profile completeness meter** that lists what is missing, with a link to each form, and optional quick-link tiles.
+* **Arrange the dashboard** — drag the greeting, heading, numbers, meter, tiles, tracking and Buy again into any order, or hide them.
 
 = Let customers help themselves =
 
@@ -138,6 +141,7 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 == Changelog ==
 
 = Unreleased =
+* New: view My Account as a customer ( read-only, with why each hidden item is hidden ), status badges on the menu, a dashboard you can arrange, and a How to use guide in the admin header.
 * New: personal offers in banners, customer fields, cancelling orders, returns, an address book, a privacy page, menus for customer groups, Insights, a My Account box in Appearance → Menus, and "at most N orders" / "last order more than N days ago" visibility rules.
 * New: icons for account pages from Subscriptions, Memberships, Bookings and other plugins, a Wishlist page for YITH and TI WooCommerce Wishlist, and points from YITH Points and Rewards and myCred.
 * Tweak: a badge made only of empty smart tags is hidden.

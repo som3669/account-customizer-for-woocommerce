@@ -16,6 +16,7 @@ require_once __DIR__ . '/tabs/class-acfw-tab-tools.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-insights.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-fields.php';
 require_once __DIR__ . '/tabs/class-acfw-tab-returns.php';
+require_once __DIR__ . '/class-acfw-guide.php';
 
 if ( ! class_exists( 'ACFW_Admin' ) ) {
 
@@ -231,6 +232,15 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					'searching'      => __( 'Searching…', 'my-account-dashboard-builder' ),
 					'noResults'      => __( 'No products found.', 'my-account-dashboard-builder' ),
 					'everyone'       => __( 'Everyone', 'my-account-dashboard-builder' ),
+					'viewAs'         => array(
+						'nonce'     => wp_create_nonce( ACFW_View_As::NONCE ),
+						'self'      => __( 'Yourself', 'my-account-dashboard-builder' ),
+						'label'     => __( 'View as', 'my-account-dashboard-builder' ),
+						'search'    => __( 'Type a name or email…', 'my-account-dashboard-builder' ),
+						'none'      => __( 'No customers found. Staff accounts cannot be previewed.', 'my-account-dashboard-builder' ),
+						'searching' => __( 'Searching…', 'my-account-dashboard-builder' ),
+						'close'     => __( 'Close the preview', 'my-account-dashboard-builder' ),
+					),
 					'canvas'         => $this->canvas_strings(),
 				)
 			);
@@ -258,7 +268,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			// Design Studio: its own script, the media library and the CSS editor.
 			if ( 'design' === $this->current_tab() ) {
 				list( $studio_url, $studio_ver ) = acfw_asset_src( 'js/design-studio.js' );
-				wp_enqueue_script( 'acfw-design-studio', $studio_url, array( 'jquery' ), $studio_ver, true );
+				wp_enqueue_script( 'acfw-design-studio', $studio_url, array( 'jquery', 'jquery-ui-sortable', 'acfw-admin' ), $studio_ver, true );
 				$css_editor = wp_enqueue_code_editor( array( 'type' => 'text/css' ) );
 				wp_add_inline_script( 'acfw-design-studio', 'window.acfwStudioCodeEditor = ' . wp_json_encode( $css_editor ) . ';', 'before' );
 				return;
@@ -457,7 +467,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				return '';
 			}
 			$section = sanitize_key( wp_unslash( $_GET['section'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return in_array( $section, array( 'general', 'presets', 'tools' ), true ) ? $section : '';
+			return in_array( $section, array( 'general', 'orders', 'presets', 'tools' ), true ) ? $section : '';
 		}
 
 		/**
@@ -555,6 +565,10 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 						</nav>
 					</div>
 					<div class="acfw-header-actions">
+						<button type="button" class="button acfw-header-btn acfw-guide-toggle" aria-expanded="false" aria-controls="acfw-guide" aria-haspopup="dialog">
+							<span class="dashicons dashicons-editor-help" aria-hidden="true"></span>
+							<span class="acfw-btn-text"><?php esc_html_e( 'How to use', 'my-account-dashboard-builder' ); ?></span>
+						</button>
 						<?php if ( 'banners' === $tab ) : ?>
 							<button type="button" class="button acfw-header-btn acfw-add-banner-btn">
 								<span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add banner', 'my-account-dashboard-builder' ); ?>
@@ -580,6 +594,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					</div>
 				</div>
 				<hr class="wp-header-end" />
+				<?php ACFW_Guide::render( $tab ); ?>
 
 				<?php
 				$acfw_toasts = array();

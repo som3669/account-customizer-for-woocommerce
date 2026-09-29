@@ -25,6 +25,7 @@ require_once ACFW_DIR . 'includes/helper/functions-acfw.php';
 // Class definitions only: nothing here runs a constructor or adds a hook.
 require_once ACFW_DIR . 'includes/class-acfw-items.php';
 require_once ACFW_DIR . 'includes/class-acfw-order-stats.php';
+require_once ACFW_DIR . 'includes/class-acfw-view-as.php';
 require_once ACFW_DIR . 'includes/class-acfw-banners.php';
 require_once ACFW_DIR . 'includes/class-acfw-design.php';
 require_once ACFW_DIR . 'includes/admin/class-acfw-import-export.php';

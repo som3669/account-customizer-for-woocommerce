@@ -92,6 +92,7 @@ if ( ! class_exists( 'ACFW' ) ) {
 			new ACFW_Addresses();
 			new ACFW_Profiles();
 			new ACFW_Compat();
+			new ACFW_View_As();
 
 			if ( is_admin() ) {
 				require_once ACFW_DIR . 'includes/admin/class-acfw-import-export.php';

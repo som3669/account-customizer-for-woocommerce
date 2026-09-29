@@ -109,12 +109,12 @@ if ( ! class_exists( 'ACFW_Stats' ) ) {
 		 * Should the current visitor be counted?
 		 *
 		 * Customers only: shop managers preview every page and banner, and would
-		 * skew the numbers.
+		 * skew the numbers; a preview as a customer is not their visit either.
 		 *
 		 * @return bool
 		 */
 		public static function counts_visitor() {
-			return self::enabled() && is_user_logged_in() && ! current_user_can( 'manage_woocommerce' );
+			return self::enabled() && is_user_logged_in() && ! current_user_can( 'manage_woocommerce' ) && ! ( class_exists( 'ACFW_View_As' ) && ACFW_View_As::active() );
 		}
 
 		/**

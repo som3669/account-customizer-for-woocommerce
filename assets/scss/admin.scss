@@ -4756,6 +4756,7 @@ p.acfw-card.acfw-insights-empty {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
+	min-height: 36px;
 	border-radius: 8px;
 }
 
@@ -4787,8 +4788,57 @@ p.acfw-card.acfw-insights-empty {
 .acfw-profile-roles label {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
+	color: #3c4b63;
 	font-size: 13px;
+	line-height: 1.4;
+	cursor: pointer;
+}
+
+// WordPress gives checkboxes a negative top margin, which lifts them off the text.
+.acfw-profile-roles input[type="checkbox"] {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.acfw-profile-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: 1px solid #d5ddea;
+	border-radius: 8px;
+	background: #fff;
+	color: #3c4b63;
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.acfw-profile-icon:hover,
+.acfw-profile-icon:focus-visible {
+	border-color: #2563eb;
+	background: #f2f6fd;
+	color: #1d4ed8;
+}
+
+.acfw-profile-icon.is-danger:hover,
+.acfw-profile-icon.is-danger:focus-visible {
+	border-color: #b32d2e;
+	background: #fdecec;
+	color: #b32d2e;
+}
+
+.acfw-profile-icon:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 1px;
+}
+
+.acfw-profile-icon .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
 }
 
 .acfw-profile-missing {
@@ -4831,5 +4881,507 @@ p.acfw-card.acfw-insights-empty {
 
 	.acfw-return-date {
 		margin-left: 0;
+	}
+}
+
+// ---- View as a customer: the picker ( Studio toolbar and the Preview overlay ) ----
+.acfw-view-as {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.acfw-view-as-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: $acfw-ink;
+	font-size: 13px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.acfw-view-as-label .dashicons {
+	color: #2563eb;
+}
+
+.acfw-view-as .select2-container .select2-selection--single {
+	height: 34px;
+	border-color: #d5ddea;
+	border-radius: 8px;
+}
+
+.acfw-view-as .select2-container .select2-selection--single .select2-selection__rendered {
+	line-height: 32px;
+}
+
+.acfw-view-as .select2-container .select2-selection--single .select2-selection__arrow {
+	height: 32px;
+}
+
+.acfw-va-option {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.3;
+}
+
+.acfw-va-roles {
+	color: #64748b;
+	font-size: 11.5px;
+}
+
+.select2-results__option--highlighted .acfw-va-roles {
+	color: inherit;
+	opacity: 0.8;
+}
+
+// The Preview overlay gets a head bar with the picker and the close button.
+// The Banners tab has its own small .acfw-preview-frame ( 108px ); the
+// overlay's must not take that size.
+.acfw-preview-overlay .acfw-preview-frame {
+	display: flex;
+	flex: 0 1 auto;
+	flex-direction: column;
+	width: 100%;
+	max-width: 1200px;
+	height: 90vh;
+	border: 0;
+	border-radius: 10px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.acfw-preview-head {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 12px;
+	border-bottom: 1px solid $acfw-line;
+	background: #f8fafc;
+}
+
+.acfw-preview-spacer {
+	flex: 1 1 auto;
+}
+
+.acfw-preview-overlay .acfw-preview-frame iframe {
+	flex: 1 1 auto;
+	height: auto;
+	min-height: 0;
+}
+
+.acfw-preview-head .acfw-preview-close {
+	position: static;
+	flex: 0 0 auto;
+	box-shadow: none;
+	background: transparent;
+}
+
+.acfw-preview-head .acfw-preview-close:hover,
+.acfw-preview-head .acfw-preview-close:focus-visible {
+	background: #eef2f8;
+}
+
+// ---- Design Studio: arrange the dashboard ------------------------------------------
+.acfw-layout-list {
+	display: grid;
+	gap: 6px;
+	margin: 8px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.acfw-layout-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 7px 8px;
+	border: 1px solid $acfw-line;
+	border-radius: 9px;
+	background: #fff;
+}
+
+.acfw-layout-row.ui-sortable-helper {
+	box-shadow: 0 10px 24px rgba(15, 37, 69, 0.16);
+}
+
+.acfw-layout-list .ui-sortable-placeholder {
+	visibility: visible !important;
+	height: 40px;
+	border: 2px dashed #bfd0ea;
+	border-radius: 9px;
+	background: #f2f6fd;
+}
+
+.acfw-layout-handle {
+	color: #94a3b8;
+	cursor: grab;
+}
+
+.acfw-layout-handle:active {
+	cursor: grabbing;
+}
+
+.acfw-layout-text {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.acfw-layout-name {
+	color: $acfw-ink;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.acfw-layout-note {
+	color: #64748b;
+	font-size: 11.5px;
+}
+
+.acfw-layout-move {
+	display: inline-flex;
+	gap: 2px;
+}
+
+.acfw-layout-move button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: #64748b;
+	cursor: pointer;
+}
+
+.acfw-layout-move button:hover,
+.acfw-layout-move button:focus-visible {
+	background: #eef2f8;
+	color: $acfw-ink;
+}
+
+.acfw-layout-move .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.acfw-layout-row:first-child .acfw-layout-up,
+.acfw-layout-row:last-child .acfw-layout-down {
+	visibility: hidden;
+}
+
+.acfw-sf-subhead .acfw-sf-label {
+	color: #64748b;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+// ---- How to use: the guide panel ( header button on every tab ) -------------------
+body.acfw-guide-open {
+	overflow: hidden;
+}
+
+.acfw-guide {
+	position: fixed;
+	inset: 0;
+	z-index: 100060;
+	display: flex;
+	justify-content: flex-end;
+	background: rgba(15, 37, 69, 0.38);
+	animation: acfw-guide-fade 0.15s ease-out;
+}
+
+.acfw-guide[hidden] {
+	display: none;
+}
+
+.acfw-guide-panel {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 460px;
+	height: 100%;
+	background: #f8fafc;
+	box-shadow: -20px 0 50px rgba(15, 37, 69, 0.22);
+	animation: acfw-guide-slide 0.2s ease-out;
+}
+
+@keyframes acfw-guide-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes acfw-guide-slide {
+	from {
+		transform: translateX(24px);
+		opacity: 0.6;
+	}
+}
+
+.acfw-guide-head {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 20px 20px 14px;
+	border-bottom: 1px solid $acfw-line;
+	background: #fff;
+}
+
+.acfw-guide-mark {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 10px;
+	background: linear-gradient(135deg, #2563eb, #1d4ed8);
+	color: #fff;
+	font-size: 20px;
+}
+
+.acfw-guide-heading {
+	flex: 1 1 auto;
+}
+
+.acfw-guide-heading h2 {
+	margin: 0;
+	color: $acfw-ink;
+	font-size: 17px;
+	font-weight: 700;
+}
+
+.acfw-guide-heading p {
+	margin: 2px 0 0;
+	color: #64748b;
+	font-size: 12.5px;
+}
+
+.acfw-guide-close {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	margin: -4px -6px 0 0;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: #5a6b85;
+	cursor: pointer;
+}
+
+.acfw-guide-close:hover,
+.acfw-guide-close:focus-visible {
+	background: #eef2f8;
+	color: $acfw-ink;
+}
+
+.acfw-guide-close:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 1px;
+}
+
+.acfw-guide-search {
+	position: relative;
+	flex: 0 0 auto;
+	padding: 12px 20px;
+	border-bottom: 1px solid $acfw-line;
+	background: #fff;
+}
+
+.acfw-guide-search .dashicons {
+	position: absolute;
+	top: 50%;
+	left: 31px;
+	transform: translateY(-50%);
+	color: #94a3b8;
+	font-size: 17px;
+}
+
+.acfw-guide-search-input {
+	width: 100%;
+	min-height: 38px;
+	padding-left: 34px !important;
+	border: 1px solid #d5ddea !important;
+	border-radius: 9px !important;
+}
+
+.acfw-guide-search-input:focus {
+	border-color: #2563eb !important;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+.acfw-guide-body {
+	flex: 1 1 auto;
+	padding: 14px 20px 28px;
+	overflow-y: auto;
+}
+
+.acfw-guide-section {
+	margin: 0 0 8px;
+	border: 1px solid $acfw-line;
+	border-radius: 12px;
+	background: #fff;
+}
+
+.acfw-guide-section[hidden] {
+	display: none;
+}
+
+.acfw-guide-section > summary {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 14px;
+	border-radius: 12px;
+	color: $acfw-ink;
+	font-size: 14px;
+	font-weight: 600;
+	list-style: none;
+	cursor: pointer;
+}
+
+.acfw-guide-section > summary::-webkit-details-marker {
+	display: none;
+}
+
+.acfw-guide-section > summary:hover {
+	background: #f8fafc;
+}
+
+.acfw-guide-section > summary:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: -2px;
+}
+
+.acfw-guide-icon {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 8px;
+	background: #eef4ff;
+	color: #2563eb;
+	font-size: 17px;
+}
+
+.acfw-guide-title {
+	flex: 1 1 auto;
+}
+
+.acfw-guide-chevron {
+	color: #94a3b8;
+	transition: transform 0.15s ease;
+}
+
+.acfw-guide-section[open] > summary .acfw-guide-chevron {
+	transform: rotate(180deg);
+}
+
+.acfw-guide-content {
+	padding: 0 16px 16px 54px;
+}
+
+.acfw-guide-intro {
+	margin: 0 0 8px;
+	color: #5a6b85;
+	font-size: 13px;
+}
+
+.acfw-guide-steps {
+	margin: 0 0 12px;
+	padding-left: 18px;
+	color: #334155;
+	font-size: 13px;
+	line-height: 1.55;
+}
+
+.acfw-guide-steps li {
+	margin: 0 0 6px;
+	padding-left: 2px;
+}
+
+.acfw-guide-steps li::marker {
+	color: #2563eb;
+	font-weight: 700;
+}
+
+.acfw-guide-steps code,
+.acfw-guide-steps kbd {
+	padding: 1px 5px;
+	border-radius: 4px;
+	background: #f1f5f9;
+	color: $acfw-ink;
+	font-size: 12px;
+}
+
+.acfw-guide-steps kbd {
+	border: 1px solid #d5ddea;
+	border-bottom-width: 2px;
+}
+
+.acfw-guide-link.button {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	min-height: 32px;
+	border-color: #2563eb;
+	border-radius: 8px;
+	color: #1d4ed8;
+}
+
+.acfw-guide-link.button:hover,
+.acfw-guide-link.button:focus {
+	border-color: #1d4ed8;
+	background: #f2f6fd;
+	color: #1d4ed8;
+}
+
+.acfw-guide-link .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.acfw-guide-empty {
+	margin: 20px 0 0;
+	color: #64748b;
+	text-align: center;
+}
+
+@media (max-width: 782px) {
+	.acfw-guide-panel {
+		max-width: none;
+	}
+
+	.acfw-guide-content {
+		padding-left: 16px;
+	}
+
+	.acfw-guide-toggle .acfw-btn-text {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.acfw-guide,
+	.acfw-guide-panel {
+		animation: none;
 	}
 }

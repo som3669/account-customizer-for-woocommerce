@@ -56,6 +56,9 @@
 			if ( 'css' === type && window.acfwCssEditor ) {
 				return window.acfwCssEditor.codemirror.getValue();
 			}
+			if ( 'layout' === type ) {
+				return readLayout( $sf );
+			}
 			return String( $in.val() || '' );
 		}
 
@@ -64,6 +67,8 @@
 			var type = $sf.data( 'type' );
 			var $in  = $sf.find( '.acfw-sf-input' );
 			if ( ! $sf.length ) {
+				// A switch the dashboard arrangement's rows carry ( numbers, meter, tiles ).
+				$studio.find( '.acfw-layout-switch[data-option="' + key + '"]' ).prop( 'checked', 'yes' === value );
 				return;
 			}
 			if ( 'toggle' === type ) {
@@ -80,6 +85,8 @@
 				paintSwatch( $sf );
 			} else if ( 'css' === type && window.acfwCssEditor ) {
 				window.acfwCssEditor.codemirror.setValue( value || '' );
+			} else if ( 'layout' === type ) {
+				writeLayout( $sf, value );
 			} else {
 				$in.val( value );
 				if ( 'image' === type ) {
@@ -98,6 +105,78 @@
 			var key = $sf.data( 'key' );
 			var hex = readControl( $sf ) || ( fields[ key ] && fields[ key ]['default'] ) || '#ffffff';
 			$sf.find( '.acfw-sf-swatch' ).val( 3 === hex.length - 1 ? '#' + hex[ 1 ] + hex[ 1 ] + hex[ 2 ] + hex[ 2 ] + hex[ 3 ] + hex[ 3 ] : hex );
+		}
+
+		/* ---- Dashboard arrangement ------------------------------------------- */
+
+		// Rows in order; a part the arrangement itself hides gets a "-". Parts
+		// switched by an option of their own ( numbers, meter, tiles ) never do.
+		function readLayout( $sf ) {
+			return $sf.find( '.acfw-layout-row' ).map( function () {
+				var $sw = $( this ).find( '.acfw-layout-switch' );
+				var off = ! $sw.data( 'option' ) && ! $sw.is( ':checked' );
+				return ( off ? '-' : '' ) + $( this ).data( 'part' );
+			} ).get().join( ',' );
+		}
+
+		function writeLayout( $sf, value ) {
+			var $list = $sf.find( '.acfw-layout-list' );
+			String( value || '' ).split( ',' ).forEach( function ( token ) {
+				var $row = $list.children( '[data-part="' + token.replace( /^-/, '' ) + '"]' );
+				if ( ! $row.length ) {
+					return;
+				}
+				$list.append( $row );
+				var $sw = $row.find( '.acfw-layout-switch' );
+				if ( ! $sw.data( 'option' ) ) {
+					$sw.prop( 'checked', '-' !== token.charAt( 0 ) );
+				}
+			} );
+		}
+
+		function layoutChanged( el ) {
+			set( 'acfw_dashboard_layout', readLayout( $( el ).closest( '.acfw-sf' ) ) );
+		}
+
+		$studio.on( 'change', '.acfw-layout-switch', function () {
+			var option = $( this ).data( 'option' );
+			if ( option ) {
+				set( option, this.checked ? 'yes' : 'no' );
+			} else {
+				layoutChanged( this );
+			}
+		} );
+
+		$studio.on( 'click', '.acfw-layout-up, .acfw-layout-down', function () {
+			var $row = $( this ).closest( '.acfw-layout-row' );
+			var up   = $( this ).hasClass( 'acfw-layout-up' );
+			var $to  = up ? $row.prev() : $row.next();
+			if ( ! $to.length ) {
+				return;
+			}
+			if ( up ) {
+				$row.insertBefore( $to );
+			} else {
+				$row.insertAfter( $to );
+			}
+			// At the top or the bottom that arrow hides; keep focus on the other one.
+			var $keep = $row.is( ':first-child' ) && up ? $row.find( '.acfw-layout-down' ) : ( $row.is( ':last-child' ) && ! up ? $row.find( '.acfw-layout-up' ) : $( this ) );
+			$keep.trigger( 'focus' );
+			if ( window.wp && window.wp.a11y ) {
+				window.wp.a11y.speak( $row.find( '.acfw-layout-name' ).text() + ' ' + ( $row.index() + 1 ) + '/' + $row.parent().children().length );
+			}
+			layoutChanged( $row );
+		} );
+
+		if ( $.fn.sortable ) {
+			$studio.find( '.acfw-layout-list' ).sortable( {
+				handle: '.acfw-layout-handle',
+				axis: 'y',
+				tolerance: 'pointer',
+				update: function () {
+					layoutChanged( this );
+				},
+			} );
 		}
 
 		/* ---- Dependent controls ( stat cards need the numbers on, … ) ------ */
@@ -512,6 +591,21 @@
 		} );
 
 		$studio.on( 'click', '.acfw-studio-reload', reloadFrame );
+
+		// View as a customer: open the preview as them ( '' = yourself ).
+		var $note = $studio.find( '.acfw-studio-note' );
+		$studio.on( 'acfw:viewas', '.acfw-view-as-select', function ( e, url ) {
+			var src = $studio.data( 'preview' );
+			if ( url ) {
+				var u = new window.URL( url, window.location.href );
+				u.searchParams.set( $( this ).data( 'preview-arg' ) || 'acfw_preview', '1' );
+				src = u.toString();
+			}
+			if ( frame ) {
+				frame.src = src;
+			}
+			$note.text( url ? $note.data( 'other' ) : $note.data( 'self' ) );
+		} );
 
 		/* ---- Custom CSS: WordPress' code editor, when it is available ---------------- */
 

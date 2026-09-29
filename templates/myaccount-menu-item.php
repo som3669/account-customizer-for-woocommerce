@@ -11,6 +11,7 @@
  * @var string   $classes    Space-separated CSS classes for the <li>.
  * @var int|null $count      Item count ( orders / downloads ), or null.
  * @var string   $badge      Custom badge text, shown instead of the count.
+ * @var array    $status     Status badge ( type text|dot, text, label ), or null.
  * @var bool     $is_current Whether this item is the page being viewed.
  * @var bool     $pinnable   Whether customers can pin items to the top.
  *
@@ -29,6 +30,10 @@ $acfw_current = ! empty( $is_current ) || false !== strpos( $classes, 'is-active
 		<span class="acfw-label"><?php echo esc_html( $item['label'] ); ?></span>
 		<?php if ( isset( $badge ) && '' !== (string) $badge ) : ?>
 			<span class="acfw-count acfw-count-text"><?php echo esc_html( $badge ); ?></span>
+		<?php elseif ( ! empty( $status ) && 'dot' === ( $status['type'] ?? '' ) ) : ?>
+			<span class="acfw-status-dot" title="<?php echo esc_attr( $status['label'] ); ?>" aria-hidden="true"></span><span class="acfw-sr"><?php echo esc_html( $status['label'] ); ?></span>
+		<?php elseif ( ! empty( $status['text'] ) ) : ?>
+			<span class="acfw-count acfw-count-status" title="<?php echo esc_attr( $status['label'] ); ?>"><span aria-hidden="true"><?php echo esc_html( $status['text'] ); ?></span><span class="acfw-sr"><?php echo esc_html( $status['label'] ); ?></span></span>
 		<?php elseif ( isset( $count ) && null !== $count ) : ?>
 			<span class="acfw-count"><?php echo esc_html( $count ); ?></span>
 		<?php endif; ?>

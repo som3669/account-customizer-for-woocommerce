@@ -94,6 +94,18 @@
 			nav.classList.toggle( 'acfw-hide-icons', 'no' === v.acfw_show_icons );
 			nav.classList.toggle( 'acfw-sticky', 'yes' === v.acfw_sticky_menu );
 		} );
+
+		// The dashboard's parts, in the arranged order.
+		var parts = document.querySelector( '.acfw-dashboard' );
+		if ( parts && v.acfw_dashboard_layout ) {
+			String( v.acfw_dashboard_layout ).split( ',' ).forEach( function ( token ) {
+				var el = parts.querySelector( '[data-acfw-part="' + token.replace( /^-/, '' ) + '"]' );
+				if ( el && el.parentNode === parts ) {
+					parts.appendChild( el );
+					el.hidden = '-' === token.charAt( 0 );
+				}
+			} );
+		}
 	}
 
 	window.addEventListener( 'message', function ( e ) {

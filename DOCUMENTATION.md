@@ -30,12 +30,15 @@ working area. It has four regions.
 
 The header bar contains:
 
-- **Tab navigation** — *Menu Items, Design, Settings, Banners* (Import / Export sits under Settings).
+- **Tab navigation** — *Menu Items, Design, Banners, Fields, Returns, Insights, Settings* (Import / Export and Orders & privacy sit under Settings).
+- **How to use** (top‑right, on every tab) — a guide panel with every feature in a few
+  steps and a button to the screen where it is done. It opens on the section for the tab
+  you are on; search it by word (e.g. *coupon*), and close it with Escape or ×.
 - **Action buttons** (top‑right), which change per tab:
   - *Banners:* **Add banner**.
   - *Menu Items* has none: items are added with **Add to menu**, under the menu (see below).
-- **Floating buttons** (pinned to the right edge, always available):
-  - **Preview** — opens the live My Account page in an in‑page overlay.
+- **⋯ More actions**:
+  - **Preview** — opens the live My Account page in an overlay, as you or, with **View as**, as a customer.
   - **View My Account** — opens the live page in a new browser tab.
 
 ### 2. Left Panel
@@ -247,21 +250,55 @@ Controls are grouped by what the customer sees.
   Modern cards, Minimal, Pills, Tabs); **Placement** (left of, right of or above the
   content); **Current page marker** (bar, underline, dot or colour only); **On hover**
   (tint only, nudge, lift); the current‑page, item and hover colours; and switches for
-  icons, order and download counts, a search box, pinning favourites, collapsing to an
-  icon rail, staying in view on scroll, opening every group and asking before log out.
+  icons, order and download counts, **Status badges**, a search box, pinning favourites,
+  collapsing to an icon rail, staying in view on scroll, opening every group and asking
+  before log out.
 - **Profile card** — show the card above the menu, a default picture, its shape,
   alignment and size, the name and role, and whether customers may upload their own
   picture (and how large).
 - **Dashboard** — a heading (smart tags work, e.g. `Welcome back, {first_name}!`), its
-  alignment, **Account numbers** (Total orders, Orders in progress, Total spent,
-  Downloads, Refunds, Reward points, Latest order, Orders by status chart — each card
-  links to the page it sums up), **Shortcut tiles** and **Profile completeness** (which
-  lists what is missing, with a link to each form).
+  alignment, and **Arrange the dashboard** (see below), where **Account numbers**,
+  **Profile completeness** and **Shortcut tiles** are switched on. Under it, the cards
+  Account numbers show: Total orders, Orders in progress, Total spent, Downloads,
+  Refunds, Reward points, Latest order and the Orders by status chart. Each card links
+  to the page it sums up; the profile meter lists what is missing, with a link to each
+  form.
 - **Custom CSS** — your own rules, loaded on account pages after the plugin's styles,
   with syntax highlighting when it is on in your WordPress profile.
 
 Switches that other controls depend on reveal them only when they are on (the stat
 cards under Account numbers, the picture options under the profile card).
+
+### Arrange the dashboard
+
+The **Dashboard** group lists every part of the dashboard in the order customers see it:
+the **Notice** (written under *Settings → General*), **WooCommerce greeting** (the
+"Hello … From your account dashboard" text), **Heading**, **Account numbers**, **Profile
+completeness**, **Shortcut tiles**, **Order tracking** and **Buy again** (switched on under
+*Settings → General*), and **Other plugins** (what other plugins add to the dashboard).
+
+- Drag a part by its handle, or use its arrows, to move it. The preview follows at once.
+- Its switch shows or hides it on the dashboard. Hiding Buy again here keeps its own
+  page in the menu; hiding the WooCommerce greeting removes that text.
+- A part with nothing to show (no notice written, no heading) takes no room.
+
+The dashboard's banners keep their own place, set on the Dashboard menu item (top or
+bottom). When the Dashboard item's content *replaces* WooCommerce's, the arrangement is
+not used.
+
+### Status badges
+
+With **Status badges** on (*Menu*, on by default), menu items say where the customer has
+something to do, in place of the plain count:
+
+- **Orders** — *1 to pay* while an order waits for payment (pending or failed);
+- **Returns** — *1 open* while a return request is open (requested, approved or received);
+- **Account details** and **Addresses** — an amber dot while something the profile
+  meter checks is missing there (a name, a phone number, a billing address). Screen
+  readers hear what is missing.
+
+A badge you type on an item (*General → Badge*) still wins. Shortcut tiles show the same
+badges. Add your own with the `acfw_status_badges` filter.
 
 ### The preview
 
@@ -274,6 +311,33 @@ cards under Account numbers, the picture options under the profile card).
   are switched off, so previewing never signs you out.
 - The preview is only shown to you: it reads your unsaved design, and customers keep
   seeing the saved one.
+
+### View as a customer
+
+Pick a customer in **View as** (in the preview's toolbar here, and in **⋯ → Preview** on
+every tab) to see My Account exactly as they do: their menu or group menu, their rules,
+badges, offers and dashboard. Search by name, email or username; **Yourself** goes back
+to your own account.
+
+A bar at the bottom says who you are viewing as and which menu they get, and **N hidden
+from them** lists every menu item and banner on the page they do not see, with why:
+
+- *Needs 3+ orders (has 1)*, *Needs £500.00 spent (has £189.00)*;
+- *Only for Wholesale (this customer is Customer)*;
+- *Only for customers with no orders yet (has 2)*;
+- *Only when the last order is over 90 days old (the last was 3 days ago)*;
+- *Shows from 1 October 2026*, *Switched off*, *Its feature is switched off in Settings*.
+
+The preview only looks. Links inside My Account work; buttons and forms (Log out, Pay,
+Cancel, Order again, Buy again, picture upload, every form) are switched off, on the
+page and on the server. It never signs you in as them: the link is signed for you,
+works on My Account pages only and stops working after two hours. Nothing is written
+for the customer: no coupon is made for a personal offer (the banner shows their code
+if they have one, or a placeholder), nothing is counted in Insights, and WooCommerce's
+"last active" time, their cart and session are left alone (WooCommerce may refresh its
+own cached total of what they spent). Staff accounts (anyone who can edit posts or
+manage the shop) cannot be viewed as. The cart in the site header, which the theme
+loads separately, is still yours.
 
 ### Saving
 
@@ -442,7 +506,7 @@ pnpm zip              # build + package the distributable ZIP
 - Edit `assets/scss/*.scss` and `assets/js/*.js` sources — not the compiled `assets/css/*.css`.
 - Assets enqueue minified with a filemtime cache‑buster; define `SCRIPT_DEBUG` for unminified.
 - **Template overrides:** copy files from `templates/` into `yourtheme/my-account-dashboard-builder/`.
-- **Filters:** `acfw_endpoint_items` (endpoints to register), `acfw_disabled_keys` (items hidden because their feature is off), `acfw_default_icons` (icons for known account pages), `acfw_smart_tag_value` (one smart tag's value), `acfw_design_fields` (the Design Studio's controls), `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_template_preserved_keys`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_smart_tag_values`, `acfw_item_is_visible`, `acfw_banner_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`, `acfw_default_endpoint`, `acfw_reserved_item_keys`, `acfw_profile_meter_fields`.
+- **Filters:** `acfw_status_badges` (the menu's status badges), `acfw_dashboard_blocks` (the dashboard's parts; print a new one on `acfw_dashboard_part_{key}`), `acfw_endpoint_items` (endpoints to register), `acfw_disabled_keys` (items hidden because their feature is off), `acfw_default_icons` (icons for known account pages), `acfw_smart_tag_value` (one smart tag's value), `acfw_design_fields` (the Design Studio's controls), `acfw_prebuilt_templates`, `acfw_design_option_keys`, `acfw_design_option_defaults`, `acfw_template_preserved_keys`, `acfw_menu_styles`, `acfw_default_type_icon`, `acfw_smart_tags`, `acfw_smart_tag_values`, `acfw_item_is_visible`, `acfw_banner_is_visible`, `acfw_item_classes`, `acfw_endpoint_content`, `acfw_is_account_page`, `acfw_default_endpoint`, `acfw_reserved_item_keys`, `acfw_profile_meter_fields`.
 - **Events:** after an AJAX page change the front end triggers `acfw:navigated` on `document.body`, with the new URL.
 
 **Embedding the menu elsewhere:**

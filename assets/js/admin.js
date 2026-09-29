@@ -1005,19 +1005,184 @@
 			}
 		} );
 
-		/* ---- Preview overlay (live account page in an iframe) ---- */
+		/* ---- How to use: the guide panel ---- */
+		var $guide      = $( '#acfw-guide' );
+		var guideReturn = null;
+		function openGuide() {
+			guideReturn = document.activeElement;
+			$guide.prop( 'hidden', false );
+			$( 'body' ).addClass( 'acfw-guide-open' );
+			$( '.acfw-guide-toggle' ).attr( 'aria-expanded', 'true' );
+			var $open = $guide.find( '.acfw-guide-section[open]' ).first();
+			if ( $open.length ) {
+				$open.get( 0 ).scrollIntoView( { block: 'nearest' } );
+			}
+			$guide.find( '.acfw-guide-search-input' ).trigger( 'focus' );
+		}
+		function closeGuide() {
+			if ( $guide.prop( 'hidden' ) ) {
+				return;
+			}
+			$guide.prop( 'hidden', true );
+			$( 'body' ).removeClass( 'acfw-guide-open' );
+			$( '.acfw-guide-toggle' ).attr( 'aria-expanded', 'false' );
+			if ( guideReturn ) {
+				$( guideReturn ).trigger( 'focus' );
+				guideReturn = null;
+			}
+		}
+		$( document ).on( 'click', '.acfw-guide-toggle', function () {
+			if ( $guide.prop( 'hidden' ) ) {
+				openGuide();
+			} else {
+				closeGuide();
+			}
+		} );
+		$guide.on( 'click', '[data-acfw-guide-close]', closeGuide );
+		// A click on the dimmed page, not the panel, closes it.
+		$guide.on( 'click', function ( e ) {
+			if ( e.target === this ) {
+				closeGuide();
+			}
+		} );
+		$( document ).on( 'keydown', function ( e ) {
+			if ( $guide.prop( 'hidden' ) ) {
+				return;
+			}
+			if ( 'Escape' === e.key ) {
+				closeGuide();
+				return;
+			}
+			// Tab stays inside the panel.
+			if ( 'Tab' === e.key ) {
+				var $stops = $guide.find( 'input, summary, a[href], button' ).filter( ':visible' );
+				var first  = $stops.get( 0 );
+				var last   = $stops.get( $stops.length - 1 );
+				if ( e.shiftKey && document.activeElement === first ) {
+					e.preventDefault();
+					last.focus();
+				} else if ( ! e.shiftKey && document.activeElement === last ) {
+					e.preventDefault();
+					first.focus();
+				}
+			}
+		} );
+		// Search: sections with the words stay, and open; the rest hide.
+		$guide.on( 'input', '.acfw-guide-search-input', function () {
+			var words = $.trim( this.value ).toLowerCase().split( /\s+/ ).filter( Boolean );
+			$guide.find( '.acfw-guide-section' ).each( function () {
+				var text  = this.textContent.toLowerCase();
+				var match = words.every( function ( w ) {
+					return -1 !== text.indexOf( w );
+				} );
+				this.hidden = ! match;
+				if ( words.length && match ) {
+					this.open = true;
+				}
+			} );
+			$guide.find( '.acfw-guide-empty' ).prop( 'hidden', !! $guide.find( '.acfw-guide-section:not([hidden])' ).length );
+		} );
+
+		/* ---- View as a customer: the customer picker of the previews ---- */
+		var viewAs = acfwAdmin.viewAs || {};
+		function initViewAs( $select, $parent ) {
+			if ( ! $.fn.select2 || $select.data( 'select2' ) ) {
+				return;
+			}
+			$select.select2( {
+				width: '260px',
+				dropdownParent: $parent && $parent.length ? $parent : $( document.body ),
+				minimumInputLength: 0,
+				language: {
+					noResults: function () {
+						return viewAs.none;
+					},
+					searching: function () {
+						return viewAs.searching;
+					},
+					inputTooShort: function () {
+						return viewAs.search;
+					},
+				},
+				ajax: {
+					url: acfwAdmin.ajaxUrl,
+					type: 'POST',
+					dataType: 'json',
+					delay: 250,
+					data: function ( params ) {
+						return { action: 'acfw_view_as_search', nonce: viewAs.nonce, term: params.term || '' };
+					},
+					processResults: function ( res, params ) {
+						var list = ( res && res.success && res.data && res.data.results ) || [];
+						if ( ! params.term ) {
+							list.unshift( { id: 0, text: viewAs.self, url: '' } );
+						}
+						return { results: list };
+					},
+				},
+				templateResult: function ( item ) {
+					if ( ! item.id || ! item.roles ) {
+						return item.text;
+					}
+					return $( '<span class="acfw-va-option"></span>' )
+						.append( $( '<span class="acfw-va-name"></span>' ).text( item.text ) )
+						.append( $( '<span class="acfw-va-roles"></span>' ).text( item.roles ) );
+				},
+			} );
+			// Tell whoever shows the preview which page to open ( '' = yourself ).
+			$select.on( 'select2:select', function ( e ) {
+				var d = ( e.params && e.params.data ) || {};
+				$select.trigger( 'acfw:viewas', [ d.url || '', d.id ? d.text : '' ] );
+			} );
+		}
+		$( '.acfw-view-as-select' ).each( function () {
+			initViewAs( $( this ), $( this ).closest( '.acfw-view-as' ) );
+		} );
+
+		/* ---- Preview overlay ( the account page in an iframe, as you or a customer ) ---- */
+		function closePreview() {
+			$( '.acfw-preview-overlay' ).remove();
+			$( 'body' ).removeClass( 'acfw-preview-open' );
+		}
 		$( document ).on( 'click', '.acfw-preview-btn', function () {
 			var url = $( this ).data( 'url' );
 			if ( ! url ) {
 				return;
 			}
-			var $ov = $( '<div class="acfw-preview-overlay"><div class="acfw-preview-frame"><button type="button" class="acfw-preview-close" aria-label="Close">&times;</button><iframe src="' + url + '"></iframe></div></div>' );
+			var $ov = $(
+				'<div class="acfw-preview-overlay" role="dialog" aria-modal="true">' +
+					'<div class="acfw-preview-frame">' +
+						'<div class="acfw-preview-head acfw-view-as">' +
+							'<label class="acfw-view-as-label" for="acfw-view-as-overlay"><span class="dashicons dashicons-visibility" aria-hidden="true"></span></label>' +
+							'<select id="acfw-view-as-overlay" class="acfw-view-as-select"><option value="0" selected></option></select>' +
+							'<span class="acfw-preview-spacer"></span>' +
+							'<button type="button" class="acfw-preview-close">&times;</button>' +
+						'</div>' +
+						'<iframe></iframe>' +
+					'</div>' +
+				'</div>'
+			);
+			$ov.attr( 'aria-label', viewAs.label || '' );
+			$ov.find( '.acfw-view-as-label' ).append( document.createTextNode( viewAs.label || '' ) );
+			$ov.find( 'option' ).text( viewAs.self || '' );
+			$ov.find( '.acfw-preview-close' ).attr( 'aria-label', viewAs.close || 'Close' );
+			$ov.find( 'iframe' ).attr( 'src', url );
 			$( 'body' ).append( $ov ).addClass( 'acfw-preview-open' );
+			var $pick = $ov.find( '.acfw-view-as-select' );
+			initViewAs( $pick, $ov.find( '.acfw-preview-head' ) );
+			$pick.on( 'acfw:viewas', function ( e, target ) {
+				$ov.find( 'iframe' ).attr( 'src', target || url );
+			} );
+			$ov.find( '.acfw-preview-close' ).trigger( 'focus' );
 		} );
 		$( document ).on( 'click', '.acfw-preview-overlay, .acfw-preview-close', function ( e ) {
 			if ( e.target === this ) {
-				$( '.acfw-preview-overlay' ).remove();
-				$( 'body' ).removeClass( 'acfw-preview-open' );
+				closePreview();
+			}
+		} );
+		$( document ).on( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key && $( '.acfw-preview-overlay' ).length && ! $( '.select2-container--open' ).length ) {
+				closePreview();
 			}
 		} );
 

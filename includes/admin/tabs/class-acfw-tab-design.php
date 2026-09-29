@@ -16,6 +16,13 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 	class ACFW_Tab_Design extends ACFW_Admin_Tab {
 
 		/**
+		 * Saved design values, while the Studio renders.
+		 *
+		 * @var array
+		 */
+		protected $saved = array();
+
+		/**
 		 * Density presets: item height ( padding ) and space between items.
 		 *
 		 * @return array slug => array{ label, padding, gap }
@@ -105,10 +112,11 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 		 * Render the Studio.
 		 */
 		public function render() {
-			$fields = ACFW_Design::fields();
-			$saved  = ACFW_Design::saved_values();
-			$looks  = $this->looks( $saved );
-			$active = get_option( 'acfw_active_template', '' );
+			$fields      = ACFW_Design::fields();
+			$saved       = ACFW_Design::saved_values();
+			$this->saved = $saved;
+			$looks       = $this->looks( $saved );
+			$active      = get_option( 'acfw_active_template', '' );
 
 			// Each visit starts from what is saved; an old draft would only confuse.
 			delete_transient( ACFW_Design::draft_key() );
@@ -187,9 +195,16 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 								</summary>
 								<div class="acfw-studio-fields">
 									<?php
+										$owned = self::layout_options();
+									$subhead   = false;
 									foreach ( $fields as $key => $field ) {
-										if ( $group !== $field['group'] ) {
+										if ( $group !== $field['group'] || in_array( $key, $owned, true ) ) {
 											continue;
+										}
+										if ( 'acfw_dashboard_stats' === ( $field['parent'] ?? '' ) && ! $subhead ) {
+											// The number cards' own switches, under the arrangement.
+											$subhead = true;
+											echo '<div class="acfw-sf acfw-sf-subhead" data-parent="acfw_dashboard_stats"><span class="acfw-sf-label">' . esc_html__( 'Account numbers show', 'my-account-dashboard-builder' ) . '</span></div>';
 										}
 										if ( 'acfw_item_padding' === $key ) {
 											// Density leads; the two sliders sit behind "Fine-tune".
@@ -225,6 +240,12 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 							</div>
 							<code class="acfw-studio-where"><?php echo esc_html( wp_make_link_relative( wc_get_page_permalink( 'myaccount' ) ) ); ?></code>
 							<span class="acfw-studio-toolbar-spacer"></span>
+							<span class="acfw-view-as">
+								<label class="acfw-view-as-label" for="acfw-view-as-studio"><span class="dashicons dashicons-visibility" aria-hidden="true"></span><?php esc_html_e( 'View as', 'my-account-dashboard-builder' ); ?></label>
+								<select id="acfw-view-as-studio" class="acfw-view-as-select" data-preview-arg="<?php echo esc_attr( ACFW_Design::PREVIEW_ARG ); ?>">
+									<option value="0" selected><?php esc_html_e( 'Yourself', 'my-account-dashboard-builder' ); ?></option>
+								</select>
+							</span>
 							<button type="button" class="button acfw-studio-reload" title="<?php esc_attr_e( 'Reload the preview', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Reload the preview', 'my-account-dashboard-builder' ); ?>">
 								<span class="dashicons dashicons-update" aria-hidden="true"></span>
 							</button>
@@ -234,7 +255,7 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 								<iframe src="<?php echo esc_url( ACFW_Design::preview_url() ); ?>" title="<?php esc_attr_e( 'Preview of the My Account page', 'my-account-dashboard-builder' ); ?>"></iframe>
 							</div>
 						</div>
-						<p class="acfw-studio-note"><?php esc_html_e( 'The preview is your own account, so pages you open here show your orders. Links outside My Account and Log out are switched off.', 'my-account-dashboard-builder' ); ?></p>
+						<p class="acfw-studio-note" data-self="<?php esc_attr_e( 'The preview is your own account, so pages you open here show your orders. Links outside My Account and Log out are switched off.', 'my-account-dashboard-builder' ); ?>" data-other="<?php esc_attr_e( 'Viewing as a customer: their menu, rules, badges and offers apply, and a bar lists what is hidden from them. Nothing changes for them.', 'my-account-dashboard-builder' ); ?>"><?php esc_html_e( 'The preview is your own account, so pages you open here show your orders. Links outside My Account and Log out are switched off.', 'my-account-dashboard-builder' ); ?></p>
 					</div>
 				</div>
 
@@ -342,6 +363,22 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 		}
 
 		/**
+		 * Design options switched on and off from the dashboard arrangement's
+		 * rows ( stats, profile meter, tiles ) instead of controls of their own.
+		 *
+		 * @return string[]
+		 */
+		public static function layout_options() {
+			$options = array();
+			foreach ( acfw_dashboard_blocks() as $block ) {
+				if ( ! empty( $block['option'] ) ) {
+					$options[] = $block['option'];
+				}
+			}
+			return $options;
+		}
+
+		/**
 		 * One Studio control.
 		 *
 		 * @param string $key   Option name.
@@ -445,6 +482,49 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 							<input type="url" id="<?php echo esc_attr( $id ); ?>" class="acfw-sf-input"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?> value="<?php echo esc_attr( $value ); ?>" placeholder="https://" />
 							<button type="button" class="button acfw-sf-media"><?php esc_html_e( 'Choose', 'my-account-dashboard-builder' ); ?></button>
 						</span>
+						<?php echo $hint; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
+					</div>
+					<?php
+					break;
+
+				case 'layout':
+					$blocks = acfw_dashboard_blocks();
+					?>
+					<div class="acfw-sf acfw-sf-layout"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
+						<span class="acfw-sf-label" id="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $field['label'] ); ?><?php echo $help; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in help(). ?></span>
+						<ol class="acfw-layout-list" aria-labelledby="<?php echo esc_attr( $id ); ?>"<?php echo $descr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>>
+							<?php
+							foreach ( explode( ',', (string) $value ) as $token ) :
+								$part = ltrim( $token, '-' );
+								if ( ! isset( $blocks[ $part ] ) ) {
+									continue;
+								}
+								$block  = $blocks[ $part ];
+								$option = $block['option'] ?? '';
+								$on     = '' !== $option ? 'yes' === ( $this->saved[ $option ] ?? 'no' ) : 0 !== strpos( $token, '-' );
+								?>
+								<li class="acfw-layout-row" data-part="<?php echo esc_attr( $part ); ?>">
+									<span class="acfw-layout-handle dashicons dashicons-menu" aria-hidden="true"></span>
+									<span class="acfw-layout-text">
+										<span class="acfw-layout-name"><?php echo esc_html( $block['label'] ); ?></span>
+										<?php if ( ! empty( $block['note'] ) ) : ?>
+											<span class="acfw-layout-note"><?php echo esc_html( $block['note'] ); ?></span>
+										<?php endif; ?>
+									</span>
+									<span class="acfw-layout-move">
+										<?php /* translators: %s: dashboard part. */ ?>
+										<button type="button" class="acfw-layout-up" aria-label="<?php echo esc_attr( sprintf( __( 'Move %s up', 'my-account-dashboard-builder' ), $block['label'] ) ); ?>"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span></button>
+										<?php /* translators: %s: dashboard part. */ ?>
+										<button type="button" class="acfw-layout-down" aria-label="<?php echo esc_attr( sprintf( __( 'Move %s down', 'my-account-dashboard-builder' ), $block['label'] ) ); ?>"><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span></button>
+									</span>
+									<label class="acfw-switch">
+										<?php /* translators: %s: dashboard part. */ ?>
+										<input type="checkbox" class="acfw-layout-switch" data-option="<?php echo esc_attr( $option ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Show %s', 'my-account-dashboard-builder' ), $block['label'] ) ); ?>" <?php checked( $on ); ?> />
+										<span class="acfw-switch-slider"></span>
+									</label>
+								</li>
+							<?php endforeach; ?>
+						</ol>
 						<?php echo $hint; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
 					</div>
 					<?php

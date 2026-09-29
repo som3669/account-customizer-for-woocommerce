@@ -89,16 +89,20 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 					<?php endif; ?>
 				</p>
 				<span class="acfw-profile-actions">
+					<button type="button" class="button" data-acfw-open="acfw-profile-dialog-new"><span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span> <?php esc_html_e( 'Menu for a customer group', 'my-account-dashboard-builder' ); ?></button>
 					<?php if ( $current ) : ?>
-						<button type="button" class="button" data-acfw-open="acfw-profile-dialog-edit"><?php esc_html_e( 'Name and roles', 'my-account-dashboard-builder' ); ?></button>
+						<?php /* translators: %s: group menu name. */ ?>
+						<?php $acfw_edit = sprintf( __( 'Edit the name and roles of %s', 'my-account-dashboard-builder' ), $current['label'] ?? $profile ); ?>
+						<button type="button" class="acfw-profile-icon" data-acfw-open="acfw-profile-dialog-edit" title="<?php echo esc_attr( $acfw_edit ); ?>" aria-label="<?php echo esc_attr( $acfw_edit ); ?>"><span class="dashicons dashicons-edit" aria-hidden="true"></span></button>
 						<form method="post" class="acfw-inline-form">
 							<?php wp_nonce_field( self::NONCE ); ?>
 							<input type="hidden" name="acfw_action" value="profile_delete" />
 							<input type="hidden" name="acfw_profile" value="<?php echo esc_attr( $profile ); ?>" />
-							<button type="submit" class="button-link acfw-danger-link" data-acfw-confirm="<?php esc_attr_e( 'Delete this menu? Its customers get the main menu again.', 'my-account-dashboard-builder' ); ?>"><?php esc_html_e( 'Delete this menu', 'my-account-dashboard-builder' ); ?></button>
+							<?php /* translators: %s: group menu name. */ ?>
+							<?php $acfw_delete = sprintf( __( 'Delete %s', 'my-account-dashboard-builder' ), $current['label'] ?? $profile ); ?>
+							<button type="submit" class="acfw-profile-icon is-danger" title="<?php echo esc_attr( $acfw_delete ); ?>" aria-label="<?php echo esc_attr( $acfw_delete ); ?>" data-acfw-confirm="<?php esc_attr_e( 'Delete this menu? Its customers get the main menu again.', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
 						</form>
 					<?php endif; ?>
-					<button type="button" class="button" data-acfw-open="acfw-profile-dialog-new"><span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span> <?php esc_html_e( 'Menu for a customer group', 'my-account-dashboard-builder' ); ?></button>
 				</span>
 			</div>
 			<?php

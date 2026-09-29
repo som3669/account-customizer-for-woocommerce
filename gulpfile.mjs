@@ -29,6 +29,7 @@ const OWN_JS = [
 	'assets/js/frontend.js',
 	'assets/js/design-studio.js',
 	'assets/js/design-preview.js',
+	'assets/js/view-as.js',
 ];
 
 /* Files that ship in the plugin zip. */

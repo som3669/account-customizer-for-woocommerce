@@ -279,6 +279,36 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 		}
 
 		/**
+		 * How many of a customer's return requests are still open ( requested,
+		 * approved or received ).
+		 *
+		 * @param int $user_id Customer.
+		 * @return int
+		 */
+		public static function open_count( $user_id ) {
+			if ( ! $user_id ) {
+				return 0;
+			}
+			$ids = get_posts(
+				array(
+					'post_type'   => self::CPT,
+					'post_status' => 'publish',
+					'author'      => (int) $user_id,
+					'numberposts' => 50,
+					'fields'      => 'ids',
+					'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- a customer's own few requests.
+						array(
+							'key'     => '_acfw_status',
+							'value'   => array( 'requested', 'approved', 'received' ),
+							'compare' => 'IN',
+						),
+					),
+				)
+			);
+			return count( $ids );
+		}
+
+		/**
 		 * Can the customer ask to return items from this order now?
 		 *
 		 * @param WC_Order $order Order.

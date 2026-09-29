@@ -845,8 +845,8 @@ function acfw_day_timestamp( $date, $zone, $end_of_day ) {
  *  - vis_inactive_days: the last order is older than this many days ( a
  *    customer with no orders does not count as lapsed ).
  *
- * Shop managers pass every rule except the date window, so they can preview
- * the account area as any customer would see it.
+ * Shop managers pass every rule except the date window, so they can check
+ * the account area; "View as a customer" shows it with the rules applied.
  *
  * @param array        $rules Rules.
  * @param WP_User|null $user  User ( defaults to the current one ).
@@ -863,12 +863,48 @@ function acfw_visibility_passes( $rules, $user = null ) {
 		return true;
 	}
 
+	return ! acfw_visibility_check( $rules, $user, true, false );
+}
+
+/**
+ * Which visibility rules a user fails, with what was measured.
+ *
+ * The rules of acfw_visibility_passes(), without its shop-manager pass, so
+ * "View as a customer" can say why something is hidden. The checks run in
+ * the same order, and stop at the first failure when asked to.
+ *
+ * @param array        $rules      Rules.
+ * @param WP_User|null $user       User ( defaults to the current one ).
+ * @param bool         $first_only Stop at the first failed rule.
+ * @param bool         $dates      Check the date window too.
+ * @return array rule => what was found; empty when every rule passes.
+ */
+function acfw_visibility_check( $rules, $user = null, $first_only = false, $dates = true ) {
+	$rules = is_array( $rules ) ? $rules : array();
+	$fails = array();
+
+	if ( $dates && ! acfw_date_window_passes( $rules['vis_from'] ?? '', $rules['vis_to'] ?? '' ) ) {
+		$fails['dates'] = array(
+			'from' => (string) ( $rules['vis_from'] ?? '' ),
+			'to'   => (string) ( $rules['vis_to'] ?? '' ),
+		);
+		if ( $first_only ) {
+			return $fails;
+		}
+	}
+
 	$user = ( $user instanceof WP_User ) ? $user : wp_get_current_user();
 	$uid  = acfw_user_id( $user );
 
 	if ( isset( $rules['visibility'] ) && 'roles' === $rules['visibility'] && ! empty( $rules['usr_roles'] ) ) {
 		if ( ! array_intersect( (array) $rules['usr_roles'], (array) $user->roles ) ) {
-			return false;
+			$fails['roles'] = array(
+				'need' => array_values( (array) $rules['usr_roles'] ),
+				'has'  => array_values( (array) $user->roles ),
+			);
+			if ( $first_only ) {
+				return $fails;
+			}
 		}
 	}
 
@@ -882,21 +918,39 @@ function acfw_visibility_passes( $rules, $user = null ) {
 			}
 		}
 		if ( ! $bought ) {
-			return false;
+			$fails['products'] = array( 'need' => $products );
+			if ( $first_only ) {
+				return $fails;
+			}
 		}
 	}
 
+	$orders     = null;
 	$min_orders = absint( $rules['vis_min_orders'] ?? 0 );
 	if ( $min_orders && function_exists( 'wc_get_customer_order_count' ) ) {
-		if ( ! $uid || (int) wc_get_customer_order_count( $uid ) < $min_orders ) {
-			return false;
+		$orders = $uid ? (int) wc_get_customer_order_count( $uid ) : 0;
+		if ( ! $uid || $orders < $min_orders ) {
+			$fails['min_orders'] = array(
+				'need' => $min_orders,
+				'has'  => $orders,
+			);
+			if ( $first_only ) {
+				return $fails;
+			}
 		}
 	}
 
 	$max_orders = acfw_rule_max_orders( $rules );
-	if ( null !== $max_orders && function_exists( 'wc_get_customer_order_count' ) ) {
-		if ( $uid && (int) wc_get_customer_order_count( $uid ) > $max_orders ) {
-			return false;
+	if ( null !== $max_orders && function_exists( 'wc_get_customer_order_count' ) && $uid ) {
+		$orders = null === $orders ? (int) wc_get_customer_order_count( $uid ) : $orders;
+		if ( $orders > $max_orders ) {
+			$fails['max_orders'] = array(
+				'need' => $max_orders,
+				'has'  => $orders,
+			);
+			if ( $first_only ) {
+				return $fails;
+			}
 		}
 	}
 
@@ -905,18 +959,336 @@ function acfw_visibility_passes( $rules, $user = null ) {
 		$stats = $uid ? ACFW_Order_Stats::get( $uid ) : array();
 		$last  = (int) ( $stats['latest_time'] ?? 0 );
 		if ( ! $last || $last > time() - $inactive * DAY_IN_SECONDS ) {
-			return false;
+			$fails['inactive'] = array(
+				'need' => $inactive,
+				'last' => $last,
+			);
+			if ( $first_only ) {
+				return $fails;
+			}
 		}
 	}
 
 	$min_spent = (float) ( $rules['vis_min_spent'] ?? 0 );
 	if ( $min_spent > 0 && function_exists( 'wc_get_customer_total_spent' ) ) {
-		if ( ! $uid || (float) wc_get_customer_total_spent( $uid ) < $min_spent ) {
-			return false;
+		$spent = $uid ? (float) wc_get_customer_total_spent( $uid ) : 0.0;
+		if ( ! $uid || $spent < $min_spent ) {
+			$fails['min_spent'] = array(
+				'need' => $min_spent,
+				'has'  => $spent,
+			);
 		}
 	}
 
-	return true;
+	return $fails;
+}
+
+/**
+ * One failed visibility rule, as a phrase for the shop manager.
+ *
+ * @param string $rule Rule key from acfw_visibility_check().
+ * @param array  $data What was measured.
+ * @return string
+ */
+function acfw_visibility_reason( $rule, $data ) {
+	switch ( $rule ) {
+		case 'dates':
+			$zone  = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+			$start = acfw_day_timestamp( $data['from'] ?? '', $zone, false );
+			$end   = acfw_day_timestamp( $data['to'] ?? '', $zone, true );
+			if ( null !== $start && time() < $start ) {
+				/* translators: %s: date. */
+				return sprintf( __( 'Shows from %s', 'my-account-dashboard-builder' ), date_i18n( get_option( 'date_format' ), $start ) );
+			}
+			/* translators: %s: date. */
+			return sprintf( __( 'Ended on %s', 'my-account-dashboard-builder' ), date_i18n( get_option( 'date_format' ), (int) $end ) );
+		case 'roles':
+			/* translators: 1: roles the item is for, 2: the customer's roles. */
+			return sprintf( __( 'Only for %1$s (this customer is %2$s)', 'my-account-dashboard-builder' ), acfw_role_names( $data['need'] ?? array() ), acfw_role_names( $data['has'] ?? array() ) );
+		case 'products':
+			$ids = (array) ( $data['need'] ?? array() );
+			if ( 1 === count( $ids ) ) {
+				/* translators: %s: product name. */
+				return sprintf( __( 'Only after buying %s', 'my-account-dashboard-builder' ), get_the_title( (int) reset( $ids ) ) );
+			}
+			/* translators: %d: number of products. */
+			return sprintf( __( 'Only after buying one of %d products', 'my-account-dashboard-builder' ), count( $ids ) );
+		case 'min_orders':
+			/* translators: 1: orders needed, 2: orders the customer has. */
+			return sprintf( _n( 'Needs %1$d+ order (has %2$d)', 'Needs %1$d+ orders (has %2$d)', (int) $data['need'], 'my-account-dashboard-builder' ), (int) $data['need'], (int) $data['has'] );
+		case 'max_orders':
+			if ( 0 === (int) $data['need'] ) {
+				/* translators: %d: orders the customer has. */
+				return sprintf( __( 'Only for customers with no orders yet (has %d)', 'my-account-dashboard-builder' ), (int) $data['has'] );
+			}
+			/* translators: 1: most orders allowed, 2: orders the customer has. */
+			return sprintf( _n( 'Only up to %1$d order (has %2$d)', 'Only up to %1$d orders (has %2$d)', (int) $data['need'], 'my-account-dashboard-builder' ), (int) $data['need'], (int) $data['has'] );
+		case 'inactive':
+			if ( empty( $data['last'] ) ) {
+				/* translators: %d: days. */
+				return sprintf( _n( 'Only when the last order is over %d day old (no orders yet)', 'Only when the last order is over %d days old (no orders yet)', (int) $data['need'], 'my-account-dashboard-builder' ), (int) $data['need'] );
+			}
+			$ago = (int) floor( ( time() - (int) $data['last'] ) / DAY_IN_SECONDS );
+			/* translators: 1: days needed, 2: days since the last order. */
+			return sprintf( _n( 'Only when the last order is over %1$d day old (the last was %2$d days ago)', 'Only when the last order is over %1$d days old (the last was %2$d days ago)', (int) $data['need'], 'my-account-dashboard-builder' ), (int) $data['need'], $ago );
+		case 'min_spent':
+			/* translators: 1: amount needed, 2: amount the customer spent. */
+			return sprintf( __( 'Needs %1$s spent (has %2$s)', 'my-account-dashboard-builder' ), acfw_plain_price( (float) $data['need'] ), acfw_plain_price( (float) $data['has'] ) );
+	}
+	return (string) $rule;
+}
+
+/**
+ * Role names for a list of role slugs, joined for a sentence.
+ *
+ * @param string[] $roles Role slugs.
+ * @return string
+ */
+function acfw_role_names( $roles ) {
+	$names = function_exists( 'wp_roles' ) ? wp_roles()->get_names() : array();
+	$out   = array();
+	foreach ( (array) $roles as $role ) {
+		$out[] = isset( $names[ $role ] ) ? translate_user_role( $names[ $role ] ) : (string) $role;
+	}
+	return $out ? implode( ', ', $out ) : __( 'no role', 'my-account-dashboard-builder' );
+}
+
+/**
+ * The profile details the completeness meter and the status badges check.
+ *
+ * @param WP_User $user User.
+ * @return array[] key => array{ label, done, url }
+ */
+function acfw_profile_fields( $user ) {
+	$uid     = acfw_user_id( $user );
+	$account = wc_get_account_endpoint_url( 'edit-account' );
+	$billing = wc_get_endpoint_url( 'edit-address', 'billing', wc_get_page_permalink( 'myaccount' ) );
+
+	$fields = array(
+		'first_name'        => array(
+			'label' => __( 'First name', 'my-account-dashboard-builder' ),
+			'done'  => ! empty( $user->first_name ),
+			'url'   => $account,
+		),
+		'last_name'         => array(
+			'label' => __( 'Last name', 'my-account-dashboard-builder' ),
+			'done'  => ! empty( $user->last_name ),
+			'url'   => $account,
+		),
+		'user_email'        => array(
+			'label' => __( 'Email address', 'my-account-dashboard-builder' ),
+			'done'  => ! empty( $user->user_email ),
+			'url'   => $account,
+		),
+		'billing_phone'     => array(
+			'label' => __( 'Phone number', 'my-account-dashboard-builder' ),
+			'done'  => '' !== (string) get_user_meta( $uid, 'billing_phone', true ),
+			'url'   => $billing,
+		),
+		'billing_address_1' => array(
+			'label' => __( 'Billing address', 'my-account-dashboard-builder' ),
+			'done'  => '' !== (string) get_user_meta( $uid, 'billing_address_1', true ),
+			'url'   => $billing,
+		),
+	);
+
+	/**
+	 * Filter the fields the profile completeness meter checks.
+	 *
+	 * @param array[] $fields key => array{ label: string, done: bool, url: string }.
+	 * @param WP_User $user   Customer.
+	 */
+	$fields = apply_filters( 'acfw_profile_meter_fields', $fields, $user );
+
+	return is_array( $fields ) ? $fields : array();
+}
+
+/**
+ * Badges that say where a customer has something to do: orders waiting for
+ * payment, open returns, and account or address details still missing.
+ *
+ * @param WP_User|null $user User ( defaults to the current one ).
+ * @return array menu key => array{ type: 'text'|'dot', text: string, label: string }
+ */
+function acfw_status_badges( $user = null ) {
+	static $memo = array();
+
+	$user = ( $user instanceof WP_User ) ? $user : wp_get_current_user();
+	$uid  = acfw_user_id( $user );
+	if ( ! $uid ) {
+		return array();
+	}
+	if ( isset( $memo[ $uid ] ) ) {
+		return $memo[ $uid ];
+	}
+
+	$badges = array();
+
+	if ( class_exists( 'ACFW_Order_Stats' ) ) {
+		$stats  = ACFW_Order_Stats::get( $uid );
+		$to_pay = (int) ( $stats['by_status']['pending'] ?? 0 ) + (int) ( $stats['by_status']['failed'] ?? 0 );
+		if ( $to_pay ) {
+			$badges['orders'] = array(
+				'type'  => 'text',
+				/* translators: %d: number of orders. */
+				'text'  => sprintf( _n( '%d to pay', '%d to pay', $to_pay, 'my-account-dashboard-builder' ), $to_pay ),
+				/* translators: %d: number of orders. */
+				'label' => sprintf( _n( '%d order is waiting for payment', '%d orders are waiting for payment', $to_pay, 'my-account-dashboard-builder' ), $to_pay ),
+			);
+		}
+	}
+
+	if ( class_exists( 'ACFW_Returns' ) && ACFW_Returns::returns_enabled() ) {
+		$open = ACFW_Returns::open_count( $uid );
+		if ( $open ) {
+			$badges[ ACFW_Returns::KEY ] = array(
+				'type'  => 'text',
+				/* translators: %d: number of return requests. */
+				'text'  => sprintf( _n( '%d open', '%d open', $open, 'my-account-dashboard-builder' ), $open ),
+				/* translators: %d: number of return requests. */
+				'label' => sprintf( _n( '%d return is open', '%d returns are open', $open, 'my-account-dashboard-builder' ), $open ),
+			);
+		}
+	}
+
+	// Missing profile details, on the page where they are filled in.
+	$pages   = array(
+		'edit-account' => wc_get_account_endpoint_url( 'edit-account' ),
+		'edit-address' => wc_get_account_endpoint_url( 'edit-address' ),
+	);
+	$missing = array();
+	foreach ( acfw_profile_fields( $user ) as $field ) {
+		if ( ! empty( $field['done'] ) || empty( $field['url'] ) ) {
+			continue;
+		}
+		foreach ( $pages as $key => $url ) {
+			if ( 0 === strpos( (string) $field['url'], $url ) ) {
+				$missing[ $key ][] = (string) $field['label'];
+				break;
+			}
+		}
+	}
+	foreach ( $missing as $key => $labels ) {
+		$badges[ $key ] = array(
+			'type'  => 'dot',
+			'text'  => '',
+			/* translators: %s: list of missing details. */
+			'label' => sprintf( __( 'Still missing: %s', 'my-account-dashboard-builder' ), implode( ', ', $labels ) ),
+		);
+	}
+
+	/**
+	 * Filter the status badges of the account menu.
+	 *
+	 * @param array   $badges menu key => array{ type: 'text'|'dot', text: string, label: string }.
+	 * @param WP_User $user   Customer.
+	 */
+	$badges       = apply_filters( 'acfw_status_badges', $badges, $user );
+	$memo[ $uid ] = is_array( $badges ) ? $badges : array();
+	return $memo[ $uid ];
+}
+
+/**
+ * The parts of the dashboard that can be arranged, in their default order.
+ *
+ * Each has a label for the Design Studio, and either the design option that
+ * switches it on ( `option` ), a note on where it is set up ( `note` ), or
+ * neither, when the arrangement itself shows or hides it.
+ *
+ * @return array key => array{ label, option?, note? }
+ */
+function acfw_dashboard_blocks() {
+	$blocks = array(
+		'notice'   => array(
+			'label' => __( 'Notice', 'my-account-dashboard-builder' ),
+			'note'  => __( 'Written under Settings → General.', 'my-account-dashboard-builder' ),
+		),
+		'welcome'  => array(
+			'label' => __( 'WooCommerce greeting', 'my-account-dashboard-builder' ),
+		),
+		'title'    => array(
+			'label' => __( 'Heading', 'my-account-dashboard-builder' ),
+			'note'  => __( 'Shows when the Heading above is filled in.', 'my-account-dashboard-builder' ),
+		),
+		'stats'    => array(
+			'label'  => __( 'Account numbers', 'my-account-dashboard-builder' ),
+			'option' => 'acfw_dashboard_stats',
+		),
+		'meter'    => array(
+			'label'  => __( 'Profile completeness', 'my-account-dashboard-builder' ),
+			'option' => 'acfw_profile_meter',
+		),
+		'tiles'    => array(
+			'label'  => __( 'Shortcut tiles', 'my-account-dashboard-builder' ),
+			'option' => 'acfw_dashboard_tiles',
+		),
+		'tracking' => array(
+			'label' => __( 'Order tracking', 'my-account-dashboard-builder' ),
+			'note'  => __( 'Switched on under Settings → General.', 'my-account-dashboard-builder' ),
+		),
+		'buyagain' => array(
+			'label' => __( 'Buy again', 'my-account-dashboard-builder' ),
+			'note'  => __( 'Switched on under Settings → General.', 'my-account-dashboard-builder' ),
+		),
+		'others'   => array(
+			'label' => __( 'Other plugins', 'my-account-dashboard-builder' ),
+			'note'  => __( 'What other plugins add to the dashboard.', 'my-account-dashboard-builder' ),
+		),
+	);
+
+	/**
+	 * Filter the parts of the dashboard that can be arranged.
+	 *
+	 * @param array $blocks key => array{ label, option?, note? }.
+	 */
+	return apply_filters( 'acfw_dashboard_blocks', $blocks );
+}
+
+/**
+ * Clean a dashboard arrangement: known parts, each once, "-" in front of a
+ * hidden one, and any part missing from it added at its default place.
+ *
+ * @param mixed $value Comma-separated list, e.g. "welcome,stats,-tiles".
+ * @return string
+ */
+function acfw_sanitize_dashboard_layout( $value ) {
+	$known = array_keys( acfw_dashboard_blocks() );
+	$order = array();
+	foreach ( explode( ',', is_scalar( $value ) ? (string) $value : '' ) as $token ) {
+		$token  = strtolower( trim( $token ) );
+		$hidden = 0 === strpos( $token, '-' );
+		$key    = ltrim( $token, '-' );
+		if ( in_array( $key, $known, true ) && ! isset( $order[ $key ] ) ) {
+			$order[ $key ] = $hidden;
+		}
+	}
+	// A part the saved order does not know yet goes after the one before it.
+	$previous = null;
+	foreach ( $known as $key ) {
+		if ( ! isset( $order[ $key ] ) ) {
+			$pos   = null === $previous ? 0 : array_search( $previous, array_keys( $order ), true ) + 1;
+			$order = array_slice( $order, 0, $pos, true ) + array( $key => false ) + array_slice( $order, $pos, null, true );
+		}
+		$previous = $key;
+	}
+	$out = array();
+	foreach ( $order as $key => $hidden ) {
+		$out[] = ( $hidden ? '-' : '' ) . $key;
+	}
+	return implode( ',', $out );
+}
+
+/**
+ * The dashboard arrangement in use.
+ *
+ * @return array key => bool ( shown ), in order.
+ */
+function acfw_dashboard_layout() {
+	$layout = array();
+	foreach ( explode( ',', acfw_sanitize_dashboard_layout( get_option( 'acfw_dashboard_layout', '' ) ) ) as $token ) {
+		$layout[ ltrim( $token, '-' ) ] = 0 !== strpos( $token, '-' );
+	}
+	return $layout;
 }
 
 /**

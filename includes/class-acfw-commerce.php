@@ -82,8 +82,9 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 				add_action( 'update_option_' . $option, array( $this, 'flag_flush' ) );
 			}
 
-			// Dashboard widgets ( fires on the front end only ).
-			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_widgets' ), 7 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce hook.
+			// Dashboard parts, placed by the dashboard arrangement.
+			add_action( 'acfw_dashboard_part_tracking', array( $this, 'render_tracking_part' ) );
+			add_action( 'acfw_dashboard_part_buyagain', array( $this, 'render_buyagain_part' ) );
 		}
 
 		/**
@@ -452,15 +453,24 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 		 * Render the enabled commerce widgets on the dashboard.
 		 */
 		public function render_dashboard_widgets() {
+			$this->render_tracking_part();
+			$this->render_buyagain_part();
+		}
 
-			if ( ! is_user_logged_in() ) {
-				return;
-			}
-
-			if ( self::enabled( 'tracking' ) ) {
+		/**
+		 * The order-tracking part of the dashboard.
+		 */
+		public function render_tracking_part() {
+			if ( is_user_logged_in() && self::enabled( 'tracking' ) ) {
 				$this->render_tracking_widget();
 			}
-			if ( self::enabled( 'buyagain' ) ) {
+		}
+
+		/**
+		 * The Buy again part of the dashboard.
+		 */
+		public function render_buyagain_part() {
+			if ( is_user_logged_in() && self::enabled( 'buyagain' ) ) {
 				$this->render_buyagain_tile();
 			}
 		}

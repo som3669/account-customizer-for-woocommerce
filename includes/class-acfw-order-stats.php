@@ -169,7 +169,10 @@ if ( ! class_exists( 'ACFW_Order_Stats' ) ) {
 				'latest_time' => $latest_time,
 			);
 
-			update_user_meta( $user_id, self::META, $stats );
+			// A preview as a customer writes nothing for them, not even this cache.
+			if ( ! ( class_exists( 'ACFW_View_As' ) && ACFW_View_As::active() ) ) {
+				update_user_meta( $user_id, self::META, $stats );
+			}
 
 			return $stats;
 		}

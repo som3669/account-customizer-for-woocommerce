@@ -37,6 +37,20 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		protected $pinnable = false;
 
 		/**
+		 * The dashboard is being collected ( see dashboard_start() ).
+		 *
+		 * @var bool
+		 */
+		protected $dash_buffering = false;
+
+		/**
+		 * Dashboard parts printed by WooCommerce and other plugins.
+		 *
+		 * @var array
+		 */
+		protected $dash_parts = array();
+
+		/**
 		 * Constructor.
 		 */
 		public function __construct() {
@@ -51,17 +65,14 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			// Avatar block is rendered inside the nav ( see render_menu ), so it
 			// stacks above the menu in the same column instead of beside it.
-			// Dashboard custom title.
-			// woocommerce_account_dashboard fires after the template's own greeting,
-			// so hook the content wrapper instead to sit above everything.
-			add_action( 'woocommerce_account_content', array( $this, 'render_dashboard_notice' ), 1 );
-			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_title' ), 1 );
-			// Dashboard stat widgets ( orders, spent, downloads, pie chart… ).
-			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_stats' ), 3 );
-			// Dashboard quick-link tiles.
-			add_action( 'woocommerce_account_dashboard', array( $this, 'render_dashboard_tiles' ), 5 );
-			// Profile completeness meter.
-			add_action( 'woocommerce_account_dashboard', array( $this, 'render_profile_meter' ), 4 );
+			// The dashboard's parts ( notice, WooCommerce's greeting, heading,
+			// numbers, profile meter, tiles, other plugins' widgets ) are drawn in
+			// the order set in the Design Studio: WooCommerce's own template runs as
+			// usual, and what it prints is collected and placed with the rest.
+			add_action( 'woocommerce_account_content', array( $this, 'dashboard_start' ), 9 );
+			add_action( 'woocommerce_account_dashboard', array( $this, 'dashboard_greeting_done' ), -1000 );
+			add_action( 'woocommerce_account_dashboard', array( $this, 'dashboard_finish' ), 1000 );
+			add_action( 'woocommerce_account_content', array( $this, 'dashboard_finish' ), 11 );
 			// Replace the default WooCommerce navigation.
 			add_action( 'woocommerce_account_navigation', array( $this, 'render_menu' ), 5 );
 			// Inject per-endpoint custom content.
@@ -729,8 +740,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					continue;
 				}
 				$badge  = $this->item_badge( $item );
-				$count  = '' === $badge ? acfw_endpoint_count( $key ) : null;
-				$pill   = '' !== $badge ? $badge : ( null !== $count ? (string) $count : '' );
+				$status = '' === $badge ? $this->status_badge( $key ) : null;
+				$count  = '' === $badge && ! $status ? acfw_endpoint_count( $key ) : null;
+				$pill   = '' !== $badge ? $badge : ( ! empty( $status['text'] ) ? $status['text'] : ( null !== $count ? (string) $count : '' ) );
 				$icon   = acfw_icon_markup( $item['icon'] ?? '', $item['icon_url'] ?? '', 'acfw-tile-icon' );
 				$tiles .= sprintf(
 					'<a class="acfw-tile" href="%s">%s<span class="acfw-tile-label">%s</span>%s</a>',
@@ -766,7 +778,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			// Precedence: customer upload → admin default image → gravatar.
 			$uploaded   = class_exists( 'ACFW_Avatar' ) ? ACFW_Avatar::url( $user->ID, $size > 150 ? 'medium' : 'thumbnail' ) : '';
 			$custom     = get_option( 'acfw_avatar_image', '' );
-			$can_upload = class_exists( 'ACFW_Avatar' ) && ACFW_Avatar::enabled();
+			$can_upload = class_exists( 'ACFW_Avatar' ) && ACFW_Avatar::enabled() && ! ( class_exists( 'ACFW_View_As' ) && ACFW_View_As::active() );
 
 			if ( '' !== $uploaded ) {
 				$avatar = sprintf( '<img src="%s" alt="" width="%2$d" height="%2$d" />', esc_url( $uploaded ), $size );
@@ -885,47 +897,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		 * @return array[] key => array{ label, done, url }
 		 */
 		protected function profile_fields( $user ) {
-			$uid     = (int) $user->ID;
-			$account = wc_get_account_endpoint_url( 'edit-account' );
-			$billing = wc_get_endpoint_url( 'edit-address', 'billing', wc_get_page_permalink( 'myaccount' ) );
-
-			$fields = array(
-				'first_name'        => array(
-					'label' => __( 'First name', 'my-account-dashboard-builder' ),
-					'done'  => ! empty( $user->first_name ),
-					'url'   => $account,
-				),
-				'last_name'         => array(
-					'label' => __( 'Last name', 'my-account-dashboard-builder' ),
-					'done'  => ! empty( $user->last_name ),
-					'url'   => $account,
-				),
-				'user_email'        => array(
-					'label' => __( 'Email address', 'my-account-dashboard-builder' ),
-					'done'  => ! empty( $user->user_email ),
-					'url'   => $account,
-				),
-				'billing_phone'     => array(
-					'label' => __( 'Phone number', 'my-account-dashboard-builder' ),
-					'done'  => '' !== (string) get_user_meta( $uid, 'billing_phone', true ),
-					'url'   => $billing,
-				),
-				'billing_address_1' => array(
-					'label' => __( 'Billing address', 'my-account-dashboard-builder' ),
-					'done'  => '' !== (string) get_user_meta( $uid, 'billing_address_1', true ),
-					'url'   => $billing,
-				),
-			);
-
-			/**
-			 * Filter the fields the profile completeness meter checks.
-			 *
-			 * @param array[] $fields key => array{ label: string, done: bool, url: string }.
-			 * @param WP_User $user   Customer.
-			 */
-			$fields = apply_filters( 'acfw_profile_meter_fields', $fields, $user );
-
-			return is_array( $fields ) ? $fields : array();
+			return acfw_profile_fields( $user );
 		}
 
 		/**
@@ -1148,6 +1120,108 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 		}
 
 		/**
+		 * The status badge of a menu item, when it has one and they are on.
+		 *
+		 * @param string $key Item key.
+		 * @return array|null array{ type, text, label }
+		 */
+		protected function status_badge( $key ) {
+			if ( 'no' === get_option( 'acfw_status_badges', 'yes' ) || ! is_user_logged_in() ) {
+				return null;
+			}
+			$badges = acfw_status_badges();
+			return isset( $badges[ $key ] ) ? $badges[ $key ] : null;
+		}
+
+		/**
+		 * Dashboard: collect WooCommerce's dashboard output, to place it with the
+		 * other parts. Skipped when the dashboard's content replaces WooCommerce's.
+		 */
+		public function dashboard_start() {
+			if ( ! $this->is_account || 'dashboard' !== acfw_get_current_endpoint() || ! has_action( 'woocommerce_account_content', 'woocommerce_account_content' ) ) {
+				return;
+			}
+			$this->dash_buffering = true;
+			$this->dash_parts     = array();
+			ob_start();
+		}
+
+		/**
+		 * Dashboard: what WooCommerce's template printed before its hook is the
+		 * greeting; what hooks print from here on is other plugins' part.
+		 */
+		public function dashboard_greeting_done() {
+			if ( ! $this->dash_buffering ) {
+				return;
+			}
+			$this->dash_parts['welcome'] = (string) ob_get_clean();
+			ob_start();
+		}
+
+		/**
+		 * Dashboard: print every part in the arranged order. Also runs after
+		 * WooCommerce's content, for a theme template that has no dashboard hook.
+		 */
+		public function dashboard_finish() {
+			if ( ! $this->dash_buffering ) {
+				return;
+			}
+			$this->dash_buffering = false;
+			$rest                 = (string) ob_get_clean();
+			if ( isset( $this->dash_parts['welcome'] ) ) {
+				$this->dash_parts['others'] = $rest;
+			} else {
+				$this->dash_parts['welcome'] = $rest;
+			}
+
+			// The Studio's preview also gets the hidden parts, so switching one on
+			// or moving it shows at once; customers get only what is shown.
+			$preview = class_exists( 'ACFW_Design' ) && ACFW_Design::is_preview();
+			$html    = '';
+			foreach ( acfw_dashboard_layout() as $key => $shown ) {
+				if ( ! $shown && ! $preview ) {
+					continue;
+				}
+				$part = $this->dashboard_part( $key );
+				if ( '' === trim( $part ) ) {
+					continue;
+				}
+				$html .= '<div class="acfw-dash-part acfw-dash-' . esc_attr( $key ) . '" data-acfw-part="' . esc_attr( $key ) . '"' . ( $shown ? '' : ' hidden' ) . '>' . $part . '</div>';
+			}
+			echo '<div class="acfw-dashboard">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the parts are built from escaped markup, or are WooCommerce's and other plugins' own output.
+		}
+
+		/**
+		 * One part of the dashboard.
+		 *
+		 * @param string $key Part.
+		 * @return string
+		 */
+		protected function dashboard_part( $key ) {
+			if ( in_array( $key, array( 'welcome', 'others' ), true ) ) {
+				return $this->dash_parts[ $key ] ?? '';
+			}
+			$methods = array(
+				'notice' => 'render_dashboard_notice',
+				'title'  => 'render_dashboard_title',
+				'stats'  => 'render_dashboard_stats',
+				'meter'  => 'render_profile_meter',
+				'tiles'  => 'render_dashboard_tiles',
+			);
+			ob_start();
+			if ( isset( $methods[ $key ] ) ) {
+				$this->{$methods[ $key ]}();
+			}
+			/**
+			 * Print a dashboard part added through acfw_dashboard_blocks.
+			 *
+			 * @param string $key Part.
+			 */
+			do_action( 'acfw_dashboard_part_' . $key );
+			return (string) ob_get_clean();
+		}
+
+		/**
 		 * Render a single menu item (used by the template).
 		 *
 		 * @param string $key   Item key.
@@ -1189,8 +1263,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				$target = '';
 			}
 
-			$badge = $this->item_badge( $item );
-			$count = ( '' === $badge && 'no' !== get_option( 'acfw_show_counts', 'yes' ) ) ? acfw_endpoint_count( $key ) : null;
+			$badge  = $this->item_badge( $item );
+			$status = '' === $badge ? $this->status_badge( (string) $key ) : null;
+			$count  = ( '' === $badge && empty( $status['text'] ) && 'no' !== get_option( 'acfw_show_counts', 'yes' ) ) ? acfw_endpoint_count( $key ) : null;
 
 			// Fall back to a type-based default icon ( group = folder, page = file ).
 			if ( empty( $item['icon'] ) && empty( $item['icon_url'] ) ) {
@@ -1206,6 +1281,7 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 					'target'     => $target,
 					'count'      => $count,
 					'badge'      => $badge,
+					'status'     => $status,
 					'is_current' => $is_current,
 					// Pinning reorders the top level only, so group children get no star.
 					'pinnable'   => $this->pinnable && 0 === (int) $depth,

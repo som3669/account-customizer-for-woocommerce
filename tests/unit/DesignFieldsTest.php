@@ -20,7 +20,7 @@ class DesignFieldsTest extends TestCase {
 
 	public function test_every_field_belongs_to_a_group_and_has_a_valid_type(): void {
 		$groups = array_keys( ACFW_Design::groups() );
-		$types  = array( 'color', 'toggle', 'choice', 'range', 'text', 'css', 'image' );
+		$types  = array( 'color', 'toggle', 'choice', 'range', 'text', 'css', 'image', 'layout' );
 
 		foreach ( ACFW_Design::fields() as $key => $field ) {
 			$this->assertStringStartsWith( 'acfw_', $key );

@@ -1,6 +1,11 @@
 *** My Account Dashboard Builder Changelog ***
 
 Unreleased
+* New - How to use: a guide in the header of every tab, with each feature in a few steps and a button to where it is done. It opens on the current tab's section and can be searched.
+* New - View as a customer: pick a customer in the Design Studio's preview, or in ⋯ → Preview on any tab, and see My Account as they do, with their menu or group menu, rules, badges, offers and dashboard. A bar lists every item and banner hidden from them, with why ( "Needs 3+ orders (has 1)", "Only for Wholesale" ). Read-only: the link is signed for the shop manager and expires after two hours, buttons and forms are switched off, no coupon is made, nothing is counted, and the customer's session, cart and "last active" time are left alone. Staff accounts cannot be viewed as.
+* New - Status badges on the menu: "1 to pay" on Orders, "1 open" on Returns, and a dot on Account details or Addresses while something is missing. On by default ( Design → Menu ); shortcut tiles show them too.
+* New - Arrange the dashboard ( Design → Dashboard ): drag or move the notice, WooCommerce's greeting, heading, account numbers, profile completeness, shortcut tiles, order tracking, Buy again and other plugins' widgets into any order, and hide any of them. The preview follows as you drag.
+* Fix - The header's Preview window was only 108px tall ( it took the size of the Banners tab's preview box ).
 * New - Personal offers: a banner can give each customer who sees it a coupon of their own ( percent or amount off, for their email and one use, ending after N days, with an optional minimum spend and free shipping ). The banner shows the code with Copy and "Use it now", and {offer_code}, {offer_amount} and {offer_expiry} work in its text.
 * New - Visibility rules for items and banners: "at most N orders" ( 0 = no orders yet ) and "last order more than N days ago". Banners get the product and order rules menu items have.
 * New - Customer fields ( My Account → Fields ): text, long text, email, phone, number, date, dropdown, choices or tick box, on the registration form, the account details form and the admin order screen. Answers show on the user's profile, work as {field_key} smart tags and are part of personal data exports and erasure.

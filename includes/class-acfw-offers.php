@@ -210,6 +210,11 @@ if ( ! class_exists( 'ACFW_Offers' ) ) {
 				);
 			}
 
+			// Viewing as a customer: show their code if they have one, never make one.
+			if ( class_exists( 'ACFW_View_As' ) && ACFW_View_As::active() ) {
+				return self::for_preview( $slug, $banner );
+			}
+
 			$coupon = self::coupon_for( $slug, $banner, wp_get_current_user() );
 			if ( ! $coupon || 'ready' !== self::state( $coupon ) ) {
 				return null;
@@ -232,6 +237,34 @@ if ( ! class_exists( 'ACFW_Offers' ) ) {
 		 * @param string $expires Formatted last day, or ''.
 		 * @return array
 		 */
+		/**
+		 * The offer as the previewed customer has it, without creating a coupon.
+		 *
+		 * @param string $slug   Banner slug.
+		 * @param array  $banner Banner.
+		 * @return array|null
+		 */
+		protected static function for_preview( $slug, $banner ) {
+			$id     = (int) get_user_meta( get_current_user_id(), self::META . $slug, true );
+			$coupon = ( $id && 'shop_coupon' === get_post_type( $id ) && 'publish' === get_post_status( $id ) ) ? new WC_Coupon( $id ) : null;
+			if ( $coupon && 'ready' !== self::state( $coupon ) ) {
+				return null;
+			}
+			if ( $coupon ) {
+				$code    = strtoupper( $coupon->get_code() );
+				$expires = $coupon->get_date_expires() ? wp_date( get_option( 'date_format' ), $coupon->get_date_expires()->getTimestamp() ) : '';
+				$note    = __( 'Preview: this is their code.', 'my-account-dashboard-builder' );
+			} else {
+				$code    = acfw_offer_prefix( $banner['offer_prefix'] ) . '-······';
+				$expires = absint( $banner['offer_days'] ) ? wp_date( get_option( 'date_format' ), self::last_moment( absint( $banner['offer_days'] ) ) ) : '';
+				$note    = __( 'Preview: they get a code of their own the first time they see this banner.', 'my-account-dashboard-builder' );
+			}
+			return array(
+				'html' => self::markup( $code, $expires, '', $note ),
+				'vars' => self::vars( $code, $banner, $expires ),
+			);
+		}
+
 		protected static function vars( $code, $banner, $expires ) {
 			return array(
 				'{offer_code}'   => $code,
