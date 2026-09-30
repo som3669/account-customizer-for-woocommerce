@@ -5,7 +5,6 @@ Unreleased
 * New - View as a customer: pick a customer in the Design Studio's preview, or in ⋯ → Preview on any tab, and see My Account as they do, with their menu or group menu, rules, badges, offers and dashboard. A bar lists every item and banner hidden from them, with why ( "Needs 3+ orders (has 1)", "Only for Wholesale" ). Read-only: the link is signed for the shop manager and expires after two hours, buttons and forms are switched off, no coupon is made, nothing is counted, and the customer's session, cart and "last active" time are left alone. Staff accounts cannot be viewed as.
 * New - Status badges on the menu: "1 to pay" on Orders, "1 open" on Returns, and a dot on Account details or Addresses while something is missing. On by default ( Design → Menu ); shortcut tiles show them too.
 * New - Arrange the dashboard ( Design → Dashboard ): drag or move the notice, WooCommerce's greeting, heading, account numbers, profile completeness, shortcut tiles, order tracking, Buy again and other plugins' widgets into any order, and hide any of them. The preview follows as you drag.
-* Fix - The header's Preview window was only 108px tall ( it took the size of the Banners tab's preview box ).
 * New - Personal offers: a banner can give each customer who sees it a coupon of their own ( percent or amount off, for their email and one use, ending after N days, with an optional minimum spend and free shipping ). The banner shows the code with Copy and "Use it now", and {offer_code}, {offer_amount} and {offer_expiry} work in its text.
 * New - Visibility rules for items and banners: "at most N orders" ( 0 = no orders yet ) and "last order more than N days ago". Banners get the product and order rules menu items have.
 * New - Customer fields ( My Account → Fields ): text, long text, email, phone, number, date, dropdown, choices or tick box, on the registration form, the account details form and the admin order screen. Answers show on the user's profile, work as {field_key} smart tags and are part of personal data exports and erasure.
@@ -17,33 +16,35 @@ Unreleased
 * New - Insights ( My Account → Insights ): account page views per day and per page, banner views, clicks and click rate, and codes given, used and sales from each personal offer, over 7, 30 or 90 days. "Track endpoint views" became "Record usage".
 * New - Appearance → Menus: a My Account box with a Log in / My account link and a My account link with the customer's account pages below it.
 * New - Account pages from other plugins ( Subscriptions, Memberships, Bookings, points, wallets, tickets, affiliates ) get fitting icons, a Wishlist page is added for YITH and TI WooCommerce Wishlist, and {points_balance} reads YITH Points and Rewards and myCred.
-* Tweak - A badge made only of smart tags that come back empty is hidden instead of showing a stray word ( "{points_balance} pts" without a points plugin ).
-* Fix - An admin save that failed also said "Changes saved."
 * New - Design Studio ( My Account → Design ): ready-made looks and your saved looks, controls grouped by what customers see, and the real account page beside them at desktop, tablet and phone widths. Live values change the preview as you pick them; the rest reload it from your unsaved draft, which only you see. Save or discard in one bar.
 * New - Accent contrast check against WCAG AA, and one Density choice with a fine-tune option.
-* Tweak - The Customizer panel and the Templates tab make way for the Studio; Appearance → Customize keeps a link to it.
-* Fix - A warning in the admin sat on top of the floating Save button ( e.g. after an endpoint URL was refused ), so saving again meant closing it first. Notices now sit above the save bar.
-* Fix - Saving the Settings tab showed no confirmation.
-* Fix - Picking a Density preset in the Design Studio opened Fine-tune spacing.
-* Tweak - The Visibility tab now says that an item's dates apply to shop managers too.
-* Fix - Dashicons load for customers, who get no admin bar: the mobile menu button, pin stars, stat icons and avatar camera were blank.
 * New - Menu items: an editable endpoint URL for custom endpoints, checked against WooCommerce's endpoints, WordPress query vars and the rest of the menu.
 * New - Menu items: a badge ( e.g. "New", or "{points_balance} pts" ) shown in place of the item count.
 * New - Visibility rules: "bought any of" with a product search, a minimum number of orders and a minimum total spent. Dates now follow the site timezone.
 * New - Groups: a "Start expanded" switch per group; a group holding the current page opens on its own.
 * New - Design Studio: an info icon beside every control; hover it ( or focus the control ) for what it changes.
-* Tweak - Banners: settings in General / Style / Link / Visibility tabs, like a menu item's, with a count of visibility rules.
 * New - Banners: choose what the count badge shows ( orders, downloads, items in cart, reward points ), set the link text, and schedule a banner with show-from / show-until dates.
 * New - Dashboard: stat cards link to the page they summarise, and the profile meter lists what is missing with a link to each form.
 * New - Smart tags: {total_spent}, {member_since}, {cart_count}, {billing_phone}, {billing_city}, {billing_country}, {account_url}, {shop_url}, {site_url}.
 * New - Custom endpoints get their menu label as the page title.
 * New - Menu Items screen: the menu is drawn the way customers see it, in the look saved in the Design Studio. Drag an item to reorder it or into a group ( Alt + arrow keys from the keyboard ); "Add to menu" adds an endpoint, group, link or page; every item has its on/off switch, with Duplicate and Delete on hover; each item says who can see it ( e.g. "Customer · 2+ orders" ); switched-off items stay visible, dimmed. The item's settings open beside it in General / Content / Visibility / Advanced tabs, with its on/off switch, Duplicate and Delete. A save bar says when there are unsaved changes, and leaving with unsaved edits asks first.
+* Tweak - Menu Items: the group-menu bar ends with + Menu for a customer group, then an edit icon and a delete icon; the role checkboxes in its dialog line up with their names.
+* Tweak - A badge made only of smart tags that come back empty is hidden instead of showing a stray word ( "{points_balance} pts" without a points plugin ).
+* Tweak - The Customizer panel and the Templates tab make way for the Studio; Appearance → Customize keeps a link to it.
+* Tweak - The Visibility tab now says that an item's dates apply to shop managers too.
+* Tweak - Banners: settings in General / Style / Link / Visibility tabs, like a menu item's, with a count of visibility rules.
 * Tweak - The header's Add endpoint / Add group / Add link / Add page buttons make way for "Add to menu" under the menu.
 * Tweak - AJAX navigation handles Back / Forward, opens new tabs on Ctrl / Cmd-click, moves the active state and keeps focus for screen readers.
 * Tweak - Menu search keeps a group when one of its items matches; pinning favourites works without a reload and per customer.
 * Tweak - Order counts for the dashboard are cached per customer and cleared when their orders change.
 * Tweak - The icon library is sent once per admin page instead of once per icon picker ( the Menu Items screen is a third lighter ).
 * Tweak - Applying a template keeps your Custom CSS, avatar settings and item-count setting.
+* Fix - The header's Preview window was only 108px tall ( it took the size of the Banners tab's preview box ).
+* Fix - An admin save that failed also said "Changes saved."
+* Fix - A warning in the admin sat on top of the floating Save button ( e.g. after an endpoint URL was refused ), so saving again meant closing it first. Notices now sit above the save bar.
+* Fix - Saving the Settings tab showed no confirmation.
+* Fix - Picking a Density preset in the Design Studio opened Fine-tune spacing.
+* Fix - Dashicons load for customers, who get no admin bar: the mobile menu button, pin stars, stat icons and avatar camera were blank.
 * Fix - Custom endpoints showed the WooCommerce dashboard ( greeting and dashboard widgets ) under their own content.
 * Fix - An endpoint's banner position was never saved.
 * Fix - Items with a label in a non-Latin script ( Devanagari, Cyrillic, CJK… ) disappeared from the menu after the first save.

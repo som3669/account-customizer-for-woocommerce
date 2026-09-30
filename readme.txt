@@ -10,7 +10,7 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Turn the default WooCommerce My Account page into a branded customer dashboard: custom endpoints, block editor content, avatar uploads and one-click design templates.
+Turn WooCommerce My Account into a branded customer dashboard: drag-and-drop menu, live Design Studio, personal offers, returns and self-service.
 
 == Description ==
 
@@ -25,9 +25,14 @@ The default WooCommerce **My Account** page is a plain list of links. My Account
 * Control who sees what: by **user role**, **date range**, **products the customer bought**, **number of orders** (at least or at most), **total spent**, or **how long since their last order**.
 * **Menus for customer groups** — wholesale buyers, members or any role get a menu of their own, while item settings stay shared.
 * Each item on the canvas says who can see it ( e.g. "Customer · 2+ orders" ).
-* **View as a customer** — see My Account exactly as one customer does, with a list of what is hidden from them and why ( "Needs 3+ orders (has 1)" ). Read-only: nothing changes for them.
 * **Status badges** that update themselves: "1 to pay" on Orders, "1 open" on Returns, and a dot where account details are missing.
 * Set the landing endpoint customers open on, plus login and logout redirects.
+
+= See it the way your customers do =
+
+* **View as a customer** — pick any customer and see My Account exactly as they do: their menu or group menu, badges, offers and dashboard.
+* A bar lists everything hidden from them, and why: "Needs 3+ orders (has 1)", "Only for Wholesale", "Only for customers with no orders yet".
+* Read-only by design: buttons and forms are switched off, no coupon is created, nothing is counted, and the customer's cart and session are left alone. The preview link is signed for you and expires after two hours.
 
 = Fill it with content =
 
@@ -74,6 +79,7 @@ Render the customised menu outside the account page with the `[acfw_account_menu
 
 = Built to fit =
 
+* A **How to use** guide in the admin header: every feature in a few steps, with a button to the screen where it is done. It opens on the section for the tab you are on and can be searched.
 * Optional AJAX navigation between endpoints.
 * **Import / Export** the whole configuration as JSON, and a full reset tool.
 * Translation-ready, with string registration for **WPML** and **Polylang**.
@@ -88,6 +94,7 @@ Render the customised menu outside the account page with the `[acfw_account_menu
 3. A top-level **My Account** menu appears in wp-admin, with tabs for Menu Items, Design, Banners, Fields, Returns, Insights and Settings.
 4. Default WooCommerce endpoints are pre-loaded, so the page keeps working before you change anything.
 5. Optional: enable Buy Again, Recently viewed and Order tracking in **My Account → Settings → General**, order cancelling, returns, the address book and the privacy page in **Settings → Orders & privacy**, and avatar uploads in **My Account → Design → Profile card**.
+6. New to the plugin? Click **How to use** in the plugin's header for a short guide to every feature.
 
 == Frequently Asked Questions ==
 
@@ -123,6 +130,22 @@ Yes. A `.pot` file ships in `/languages`, and admin-entered strings (item labels
 
 Options prefixed `acfw_`; user meta keys `acfw_avatar_id`, `acfw_last_login`, `acfw_order_stats` (a cache of the dashboard counts), `acfw_addresses` (the address book), `acfw_field_{key}` (customer field answers) and `acfw_offer_{banner}` (the coupon each customer was given); return requests with their photos; and a `{prefix}acfw_stats` table of daily usage totals for Insights. Deleting the plugin from the Plugins screen removes all of it, including uploaded avatar images. The coupons made for personal offers are ordinary WooCommerce coupons that customers may still hold, so they stay. Deactivating removes nothing.
 
+= Can I see the account area the way a particular customer sees it? =
+
+Yes. Click **⋯ → Preview** on any tab ( or **View as** above the Design Studio preview ) and search for the customer. You see their menu, badges, offers and dashboard, with a list of what is hidden from them and why. It is read-only: nothing is changed or sent for them, and staff accounts cannot be viewed as.
+
+= Can different customers get different menus? =
+
+Yes. On Menu Items, **+ Menu for a customer group** makes a menu for chosen roles ( wholesale buyers, members … ). It starts as a copy of the main menu; take items out, add others and reorder it. Item settings stay shared, and everyone else keeps the main menu.
+
+= Can I change the order of the dashboard? =
+
+Yes. In **Design → Dashboard → Arrange the dashboard**, drag WooCommerce's greeting, your heading, the account numbers, the profile meter, the shortcut tiles, order tracking, Buy again and other plugins' widgets into any order, and switch any of them off. The preview follows as you drag.
+
+= Can customers cancel or return orders themselves? =
+
+Yes, once you switch it on in **Settings → Orders & privacy**. Customers can cancel orders that have not shipped, within the hours you allow, and ask to return items from completed orders with a reason and a photo. You answer each request on the **Returns** tab, and the customer is emailed.
+
 = Are personal offer codes ordinary coupons? =
 
 Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited to one use and to the customer's email address. Coupons must be switched on in WooCommerce → Settings → General.
@@ -141,17 +164,44 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 == Changelog ==
 
 = Unreleased =
-* New: view My Account as a customer ( read-only, with why each hidden item is hidden ), status badges on the menu, a dashboard you can arrange, and a How to use guide in the admin header.
-* New: personal offers in banners, customer fields, cancelling orders, returns, an address book, a privacy page, menus for customer groups, Insights, a My Account box in Appearance → Menus, and "at most N orders" / "last order more than N days ago" visibility rules.
-* New: icons for account pages from Subscriptions, Memberships, Bookings and other plugins, a Wishlist page for YITH and TI WooCommerce Wishlist, and points from YITH Points and Rewards and myCred.
-* Tweak: a badge made only of empty smart tags is hidden.
-* New: endpoint URLs, item badges, product / order-count / spend visibility rules, per-group "start expanded", banner schedules, badge sources and link text, clickable dashboard stats, an actionable profile meter and nine new smart tags.
-* New: the Menu Items screen is a canvas of the menu as customers see it: drag ( or Alt + arrow keys ) to reorder and nest, on/off switches, Duplicate and Delete on every item, a line on each item saying who can see it, and the item's settings in tabs beside it with an unsaved-changes save bar.
-* New: the Design Studio replaces the Customizer panel and the Templates tab: looks, grouped controls, a live preview at three widths, and save / discard.
-* Fix: Dashicons now load for customers, so the mobile menu button, pin stars and stat icons show.
-* Fix: custom endpoints no longer show the dashboard underneath; banner position saves; non-Latin labels no longer vanish; items and banners can no longer overwrite each other; nested endpoints resolve; the chosen colours and radius reach the menu; rgba banner colours, the Reward points stat, the landing endpoint and one-step logout work.
-* Accessibility: visible keyboard focus, keyboard-operable groups, tab-pattern settings, readable muted text and warnings that stay until closed.
-* Full list in changelog.txt.
+
+**New**
+
+* View as a customer: see My Account exactly as one customer does, from the Design Studio or ⋯ → Preview on any tab, with a list of everything hidden from them and why. Read-only, signed for the shop manager, and it expires after two hours.
+* Status badges on the menu: "1 to pay" on Orders, "1 open" on Returns, and a dot on Account details or Addresses while something is missing.
+* Arrange the dashboard: drag the greeting, heading, account numbers, profile meter, tiles, order tracking, Buy again and other plugins' widgets into any order, or hide them.
+* How to use: a guide to every feature in the admin header, searchable, with a button to where each is done.
+* Personal offers: a banner can give each customer a one-use coupon of their own, with Copy and "Use it now", and {offer_code}, {offer_amount} and {offer_expiry} in its text.
+* Customer fields on the registration form, account details and the admin order screen, with {field_key} smart tags and personal data export and erasure.
+* Cancel orders that have not shipped, and Returns with items, a reason and a photo, answered from a Returns tab that emails the customer.
+* Address book with a checkout picker, and a Privacy page for data export and erasure requests.
+* Menus for customer groups, managed from a "Menu for" switcher on Menu Items.
+* Insights: account page views, banner clicks and click rate, and the codes and sales from personal offers, over 7, 30 or 90 days.
+* A My Account box in Appearance → Menus for classic themes.
+* Visibility rules: "at most N orders" and "last order more than N days ago", for menu items and banners alike.
+* Icons for account pages from Subscriptions, Memberships, Bookings and other plugins, a Wishlist page for YITH and TI WooCommerce Wishlist, and points from YITH Points and Rewards and myCred.
+* The Menu Items canvas: the menu drawn as customers see it, with drag ( or Alt + arrow keys ) to reorder and nest, on/off switches, Duplicate and Delete, a line saying who can see each item, and its settings in tabs beside it.
+* The Design Studio in place of the Customizer panel and the Templates tab: looks, grouped controls with tooltips, a live preview at three widths, a contrast check, and save / discard.
+* Endpoint URLs, item badges, product / order / spend rules, per-group "start expanded", banner schedules, badge sources and link text, clickable dashboard stats, an actionable profile meter, and nine new smart tags.
+
+**Tweak**
+
+* The group-menu bar ends with + Menu for a customer group, then edit and delete icons.
+* A badge made only of smart tags that come back empty is hidden instead of showing a stray word.
+* Banner settings in General / Style / Link / Offer / Visibility tabs, like a menu item's.
+
+**Fix**
+
+* The header's Preview window was only 108px tall.
+* A failed admin save also said "Changes saved."
+* Dashicons now load for customers, so the mobile menu button, pin stars and stat icons show.
+* Custom endpoints no longer show the dashboard underneath; banner position saves; non-Latin labels no longer vanish; items and banners can no longer overwrite each other; nested endpoints resolve; the chosen colours and radius reach the menu; rgba banner colours, the Reward points stat, the landing endpoint and one-step logout work.
+
+**Accessibility**
+
+* Visible keyboard focus, keyboard-operable groups and dashboard arrangement, tab-pattern settings, readable muted text, and warnings that stay until closed.
+
+The full list is in changelog.txt.
 
 = 1.0.0 =
 * First public release.
