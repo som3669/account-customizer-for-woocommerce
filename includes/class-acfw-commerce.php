@@ -271,9 +271,14 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 				wp_send_json_error( array( 'message' => __( 'That product is not available to reorder.', 'my-account-dashboard-builder' ) ) );
 			}
 
+			wc_clear_notices();
 			$added = $this->add_to_cart( $product_id, $qty );
 			if ( ! $added ) {
-				wp_send_json_error( array( 'message' => __( 'Sorry, this product cannot be added to the cart.', 'my-account-dashboard-builder' ) ) );
+				wp_send_json_error(
+					array(
+						'message' => $this->cart_error_message( __( 'Sorry, this product cannot be added to the cart.', 'my-account-dashboard-builder' ) ),
+					)
+				);
 			}
 
 			wp_send_json_success(
@@ -301,17 +306,22 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 				wp_send_json_error( array( 'message' => __( 'Order not found.', 'my-account-dashboard-builder' ) ), 403 );
 			}
 
+			wc_clear_notices();
 			$added = 0;
 			foreach ( $order->get_items() as $line ) {
 				$pick    = $line->get_variation_id() ? $line->get_variation_id() : $line->get_product_id();
 				$product = $line->get_product();
-				if ( $product && $product->is_purchasable() && $product->is_in_stock() && $this->add_to_cart( $pick, $line->get_quantity() ) ) {
+				if ( $product && $product->is_purchasable() && $product->is_in_stock() && $this->add_to_cart( $pick, $line->get_quantity(), array(), $line, $order ) ) {
 					++$added;
 				}
 			}
 
 			if ( ! $added ) {
-				wp_send_json_error( array( 'message' => __( 'None of the items in that order could be added.', 'my-account-dashboard-builder' ) ) );
+				wp_send_json_error(
+					array(
+						'message' => $this->cart_error_message( __( 'None of the items in that order could be added.', 'my-account-dashboard-builder' ) ),
+					)
+				);
 			}
 
 			wp_send_json_success(
@@ -326,11 +336,17 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 		/**
 		 * Add a product ( or variation ) to the cart, carrying variation data.
 		 *
-		 * @param int $pick Product or variation ID.
-		 * @param int $qty  Quantity.
+		 * Runs the same woocommerce_add_to_cart_validation filter as the rest of
+		 * the store so quantity / required-option rules from other extensions apply.
+		 *
+		 * @param int        $pick     Product or variation ID.
+		 * @param int        $qty      Quantity.
+		 * @param array      $cart_item_data Extra cart item data ( order-again ).
+		 * @param WC_Order_Item_Product|null $order_item Optional line item when reordering a past order.
+		 * @param WC_Order|null              $order      Optional order when reordering.
 		 * @return bool
 		 */
-		protected function add_to_cart( $pick, $qty ) {
+		protected function add_to_cart( $pick, $qty, $cart_item_data = array(), $order_item = null, $order = null ) {
 
 			$product = wc_get_product( $pick );
 			if ( ! $product || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
@@ -340,13 +356,52 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			$qty = max( 1, (int) $qty );
 
 			if ( $product->is_type( 'variation' ) ) {
-				$parent_id = $product->get_parent_id();
-				$added     = WC()->cart->add_to_cart( $parent_id, $qty, $product->get_id(), $product->get_variation_attributes() );
+				$product_id   = $product->get_parent_id();
+				$variation_id = $product->get_id();
+				$variations   = $product->get_variation_attributes();
 			} else {
-				$added = WC()->cart->add_to_cart( $product->get_id(), $qty );
+				$product_id   = $product->get_id();
+				$variation_id = 0;
+				$variations   = array();
 			}
 
+			if ( $order_item && $order ) {
+				$cart_item_data = apply_filters( 'woocommerce_order_again_cart_item_data', $cart_item_data, $order_item, $order );
+				foreach ( $order_item->get_meta_data() as $meta ) {
+					if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
+						$attribute_key = 'attribute_' . sanitize_title( $meta->key );
+						if ( taxonomy_is_product_attribute( $meta->key ) ) {
+							$variations[ $attribute_key ] = sanitize_title( $meta->value );
+						} else {
+							$variations[ $attribute_key ] = html_entity_decode( wc_clean( $meta->value ), ENT_QUOTES, get_bloginfo( 'charset' ) );
+						}
+					}
+				}
+			}
+
+			// Same gate as product pages and WC order-again.
+			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty, $variation_id, $variations, $cart_item_data ) ) {
+				return false;
+			}
+
+			$added = WC()->cart->add_to_cart( $product_id, $qty, $variation_id, $variations, $cart_item_data );
+
 			return (bool) $added;
+		}
+
+		/**
+		 * Prefer WooCommerce notices from failed validation; else a fallback.
+		 *
+		 * @param string $fallback Fallback message.
+		 * @return string
+		 */
+		protected function cart_error_message( $fallback ) {
+			$notices = wc_get_notices( 'error' );
+			wc_clear_notices();
+			if ( ! empty( $notices[0]['notice'] ) ) {
+				return wp_strip_all_tags( $notices[0]['notice'] );
+			}
+			return $fallback;
 		}
 
 		/* -----------------------------------------------------------------

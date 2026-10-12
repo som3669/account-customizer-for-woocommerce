@@ -1,6 +1,6 @@
 {
   "name": "my-account-dashboard-builder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Build tooling for the Account Customizer for WooCommerce plugin.",
   "private": true,
   "scripts": {

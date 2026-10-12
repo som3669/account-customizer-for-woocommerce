@@ -13,7 +13,9 @@ namespace ACFW\Tests\Unit;
 
 class OrderTreeTest extends TestCase {
 
-	public function test_keys_with_octets_survive(): void {
+	public function test_keys_with_octets_are_dropped(): void {
+		// Percent-encoded keys from older saves broke the Menu Items screen;
+		// sanitize now strips them so the builder always loads.
 		$key  = '%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b';
 		$tree = acfw_sanitize_order_tree(
 			array(
@@ -22,7 +24,7 @@ class OrderTreeTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( array( 'dashboard', $key ), array_keys( $tree ) );
+		$this->assertSame( array( 'dashboard' ), array_keys( $tree ) );
 	}
 
 	public function test_unknown_types_fall_back_to_endpoint(): void {

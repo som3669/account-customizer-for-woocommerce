@@ -1,45 +1,45 @@
 # WooCommerce Marketplace — Submit Product form answers
 
-Zip to upload: `dist/my-account-dashboard-builder.zip` (291 KB)
+Zip to upload: `dist/my-account-dashboard-builder.zip` (491 KB, v1.0.1 — rebuild with `npm run zip`)
+
+Reviewer reply: `submission/REPLY-TO-REVIEW.md`
 
 ---
 
 ## Product Details
 
-**Name** (4–60 chars)
+**Name** (4–60 chars) — change the portal field from “My Account Customizer”
 ```
 My Account Dashboard Builder
 ```
-(28 chars. Two rejections shaped this name. First: product names may not contain
-"Woo" or "WooCommerce", even descriptively. Second: "My Account Customizer" was
-too close to an existing WordPress.org plugin by another author, so a
-distinguishing descriptor was required. The description fields may still name
-WooCommerce freely — only the name field is restricted.)
+(28 chars. Do not use “Woo” / “WooCommerce” in the Name field. “My Account Customizer”
+was too close to an existing WordPress.org plugin — keep this distinguishing name.
+Description fields may still say WooCommerce freely.)
 
 **Category** (primary)
 ```
 Store Content and Customizations
 ```
-Fallback if that option isn't present: **Store Management**.
+Fallback if that option isn't present: **Store Management** / **Personalization**.
 
 **Product short description** (≤140 chars)
 ```
-Redesign the WooCommerce My Account page: custom endpoints, block editor content, avatar uploads, one-click reorder and design templates.
+Branded My Account dashboard: drag-and-drop menu, Design Studio, Buy again, returns, personal offers and self-service tools.
 ```
-(137 chars.)
+(124 chars.)
 
 ---
 
 ## Business Details
 
-**Describe your product** (3–5 sentences)
+**Describe your product** / “How value provided?” (3–5 sentences)
 ```
-My Account Dashboard Builder turns the default My Account page into a branded customer dashboard. Store owners build unlimited menu endpoints (endpoint, page, link or grouped), add custom content with either the Classic or the native Gutenberg block editor, and apply one-click design templates or fine-tune everything (layout, colours, typography, avatar, active indicators) live in the WordPress Customizer. Customers get modern touches their store previously lacked: their own uploaded profile picture, a "Buy again" one-click reorder tab, a Recently Viewed tab, an order-tracking summary, and per-endpoint promotional banners. Every design choice is visual and preview-driven, so no code or theme edits are required. It is translation-ready (WPML and Polylang), HPOS and cart/checkout-blocks compatible, and ships as a self-contained plugin with no external service calls.
+My Account Dashboard Builder turns the default WooCommerce My Account page into a branded customer dashboard—without theme edits. Merchants build the menu on a live canvas (endpoints, pages, links and groups), add Classic or Gutenberg content, and design colours, layout and Typography in a Design Studio with a live preview. Customers get avatar upload, Buy again, recently viewed, order tracking, dashboard stats, personal offer coupons, returns, an address book, a privacy page and custom registration fields. Shop managers can “View as” any customer to see exactly what they see, and Insights shows which account pages and offers actually get used. It is translation-ready (WPML/Polylang), HPOS and cart/checkout-blocks compatible, and ships with no external service calls.
 ```
 
 **How does your product compare to existing solutions?** (2–3 sentences)
 ```
-Most My Account customizers restyle the page and stop there. My Account Dashboard Builder adds a native Gutenberg block editor for endpoint content, ready-made design templates, and dashboard widgets that drive repeat revenue — Buy again one-click reorder, Recently viewed, and order tracking. It matches the strongest paid features of competitors like YITH Customize My Account Page and ThemeGrill's Customize My Account Page (customer avatar upload, per-role and per-purchase visibility, WPML/Polylang) while staying a single self-contained plugin with zero external dependencies.
+Most My Account plugins only restyle the menu. My Account Dashboard Builder adds a Design Studio with live preview, View as customer, Gutenberg content, personal offers, returns, Insights and dashboard widgets that drive repeat purchases (Buy again, tracking, profile completeness). It covers the strongest features of tools like YITH Customize My Account Page while staying one self-contained plugin with zero external dependencies.
 ```
 
 ---
@@ -113,20 +113,14 @@ WooCommerce Shipment Tracking
 
 **Setup instructions**
 ```
-1. Upload and activate the plugin. A top-level "My Account" menu appears in wp-admin.
-2. Menu Items tab: default WooCommerce endpoints are pre-loaded. Add endpoints/links/pages/groups, set icons, and add custom content (Classic or Block editor). Drag to reorder.
-3. Templates tab: click any starter template to apply a full design in one click.
-4. Customizer: open "My Account Dashboard Builder" to fine-tune layout, colours, typography and avatar with a live preview.
-5. Settings > General: enable the commerce features (all OFF by default):
-   - Buy Again  -> adds a "Buy again" account tab + dashboard tile (one-click reorder of past products).
-   - Recently viewed -> adds a "Recently viewed" account tab.
-   - Order tracking -> adds a tracking summary to the dashboard (auto-detects WooCommerce Shipment Tracking).
-   Also enable "Let customers upload their own picture" under the Customizer > Avatar section for avatar uploads.
-6. Visit the My Account page (logged in as a customer) to see the result.
+1. Upload and activate the plugin. Open WooCommerce → Account Dashboard.
+2. Menu Items: default WooCommerce endpoints are pre-loaded. Add endpoints, pages, links or groups; set icons and content (Classic or Block editor); drag to reorder.
+3. Design: pick a look, then fine-tune Look / Menu / Profile card / Dashboard / Custom CSS beside the live preview. Nothing goes live until you click Save design.
+4. Settings → General: enable optional features (all OFF by default) — Buy again, Recently viewed, Order tracking. Enable avatar upload under Design → Profile card.
+5. Settings → Orders & privacy: optional Cancel orders, Returns, Address book, Privacy page.
+6. Visit My Account as a customer (or Design → View as) to see the result.
 
-To test the commerce features you need a customer account with at least one Completed order containing a purchasable product.
-
-Test login (reviewer): provided in the Demo site URL below / on request.
+Commerce features need a customer with at least one Completed order containing a purchasable product. Demo logins are in this field / on the demo site.
 ```
 
 **Demo site URL**
@@ -200,16 +194,18 @@ Upload: dist/my-account-dashboard-builder.zip
 Everything optional ships OFF by default, so a fresh activation changes nothing
 about the store: Buy again, Recently viewed, Order tracking, dashboard stats,
 quick-link tiles, the profile meter and customer avatar upload all start
-disabled. Enable them in "My Account > Settings > General" and under
-"Customizer > My Account > Avatar".
+disabled. Enable them in "WooCommerce → Account Dashboard → Settings" and under
+Design → Profile card.
 
 Scope and behaviour
 - The plugin only touches the WooCommerce My Account area. It replaces the
   account menu and endpoint output through WooCommerce's own hooks; no theme
   template is copied or modified, and deactivating restores the stock page while
   keeping the configuration.
+- Admin UI lives under WooCommerce → Account Dashboard (not a top-level menu).
 - Custom endpoints are registered as WooCommerce account endpoints, so rewrite
-  rules are flushed on activation and on save, not on every page load.
+  rules are flushed on activation and on save, not on every page load. Reserved
+  route names (page, product, cart, …) cannot be used as endpoint slugs.
 - Orders are read only through the WooCommerce CRUD API. HPOS (custom order
   tables) and cart/checkout blocks compatibility are both declared.
 
@@ -222,25 +218,26 @@ No external dependencies
   and falls back to a status timeline when that plugin is absent.
 
 Security
-- Every admin write is gated by a nonce plus the manage_woocommerce capability,
-  verified centrally before any tab handler runs.
+- Every admin write is gated by a nonce plus the manage_woocommerce capability
+  (shop managers can open and save), verified centrally before any tab handler runs.
 - Front-end AJAX (avatar upload/remove, one-click reorder) checks a nonce and
   requires a logged-in user, and validates ownership: Buy again only offers
   products that customer actually purchased on a completed order, re-checked at
-  add-to-cart time.
+  add-to-cart time, including woocommerce_add_to_cart_validation.
+- Smart tags insert customer-entered values as plain text only (no shortcode execution).
 - Avatar uploads are validated by extension, real MIME (wp_check_filetype_and_ext)
   and getimagesize, restricted to JPG/PNG/GIF/WebP under an admin-set size limit.
 - Rich content is filtered with wp_kses_post on save, and re-filtered on import
   for users without unfiltered_html, so an import file cannot smuggle scripts in.
-- The two direct database queries (option export and full reset) are prefix-
-  scoped and prepared; there is no user input in either.
+- Reset / Export / Import / Uninstall use an allowlist of options this plugin
+  owns; other acfw_* plugins (e.g. Advanced Coupons) are never touched.
 
 Privacy and data
-- Stores options prefixed acfw_ plus two user meta keys (acfw_avatar_id,
-  acfw_last_login). Registers a personal-data exporter and eraser for the
-  uploaded avatar.
-- Deleting the plugin removes every acfw_ option, both meta keys and the avatar
-  attachments it stored. Deactivating removes nothing.
+- Stores options this plugin owns (allowlist under acfw_) plus user meta keys
+  acfw_avatar_id, acfw_last_login (and related feature meta). Registers a
+  personal-data exporter and eraser for the uploaded avatar and customer fields.
+- Deleting the plugin removes only this plugin's options, its meta keys and the
+  avatar attachments it stored. Deactivating removes nothing.
 
 Quality
 - Translation-ready: languages/my-account-dashboard-builder.pot ships with 328 strings,

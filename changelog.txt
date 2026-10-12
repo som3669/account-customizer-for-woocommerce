@@ -1,6 +1,16 @@
 *** My Account Dashboard Builder Changelog ***
 
-Unreleased
+2026-10-12 - version 1.0.1
+* Fix - Endpoint names such as Page or Product no longer register rewrites that 404 the rest of the store; reserved slugs are blocked with a clear notice.
+* Fix - Menu Items stays usable with Chinese, Cyrillic and other non-Latin labels ( ASCII URL keys; broken percent-encoded keys are dropped safely ).
+* Fix - Reset, Export, Import and Uninstall only touch this plugin's options, not other plugins that share an acfw_ prefix ( e.g. Advanced Coupons ).
+* Fix - Smart tags such as {first_name} insert customer values as plain text only; shortcodes in a customer's name are not executed.
+* Fix - Buy again runs the same add-to-cart validation as the rest of the store and surfaces WooCommerce error notices.
+* Fix - Custom endpoints no longer show the Dashboard under their content ( placement is replace-only for custom pages ).
+* Fix - Shop managers can save Settings ( capability aligned with manage_woocommerce ).
+* Fix - Adding an item named like a default ( e.g. Orders ) creates a separate item instead of replacing it, with a notice.
+* Fix - Storefront no longer shows two icons on each default menu item.
+* Tweak - Admin screen moved under WooCommerce → Account Dashboard ( no top-level My Account menu ).
 * New - How to use: a guide in the header of every tab, with each feature in a few steps and a button to where it is done. It opens on the current tab's section and can be searched.
 * New - View as a customer: pick a customer in the Design Studio's preview, or in ⋯ → Preview on any tab, and see My Account as they do, with their menu or group menu, rules, badges, offers and dashboard. A bar lists every item and banner hidden from them, with why ( "Needs 3+ orders (has 1)", "Only for Wholesale" ). Read-only: the link is signed for the shop manager and expires after two hours, buttons and forms are switched off, no coupon is made, nothing is counted, and the customer's session, cart and "last active" time are left alone. Staff accounts cannot be viewed as.
 * New - Status badges on the menu: "1 to pay" on Orders, "1 open" on Returns, and a dot on Account details or Addresses while something is missing. On by default ( Design → Menu ); shortcut tiles show them too.

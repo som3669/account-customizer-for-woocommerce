@@ -302,12 +302,21 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 			 *
 			 * @param array $flat Key => item.
 			 */
+			$reserved = acfw_reserved_item_keys();
 			foreach ( (array) apply_filters( 'acfw_endpoint_items', acfw_flatten_items( $this->items ) ) as $key => $item ) {
 				if ( 'endpoint' !== ( $item['type'] ?? 'endpoint' ) || 'dashboard' === $key ) {
 					continue;
 				}
-				$slug = ! empty( $item['slug'] ) ? $item['slug'] : $key;
+				$slug = ! empty( $item['slug'] ) ? acfw_ascii_slug( $item['slug'] ) : acfw_ascii_slug( $key );
+				if ( '' === $slug ) {
+					continue;
+				}
 				if ( isset( WC()->query->query_vars[ $key ] ) ) {
+					continue;
+				}
+				// Never register a rewrite that steals WordPress / WooCommerce routes
+				// ( e.g. page, product ) — that made the rest of the store 404.
+				if ( ! $this->is_default( $key ) && in_array( $slug, $reserved, true ) ) {
 					continue;
 				}
 				WC()->query->query_vars[ $key ] = $slug;
@@ -343,7 +352,9 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 		 */
 		public function save_item( $key, $type, $data, $rebuild = true ) {
 
-			$key = acfw_sanitize_key( $key );
+			// ASCII-only keys: percent-encoded labels from older versions broke
+			// the Menu Items screen after save.
+			$key = acfw_ascii_slug( $key );
 			if ( ! in_array( $type, self::ITEM_TYPES, true ) || '' === $key ) {
 				return false;
 			}
@@ -353,7 +364,11 @@ if ( ! class_exists( 'ACFW_Items' ) ) {
 			$data['active'] = ! empty( $data['active'] );
 
 			if ( 'endpoint' === $type ) {
-				$data['slug'] = ! empty( $data['slug'] ) ? acfw_sanitize_key( $data['slug'] ) : $key;
+				$slug = ! empty( $data['slug'] ) ? acfw_ascii_slug( $data['slug'] ) : $key;
+				if ( '' === $slug || ( in_array( $slug, acfw_reserved_item_keys(), true ) && ! $this->is_default( $key ) ) ) {
+					$slug = $key;
+				}
+				$data['slug'] = $slug;
 			} elseif ( 'link' === $type ) {
 				$data['url']          = ! empty( $data['url'] ) ? esc_url_raw( $data['url'] ) : '#';
 				$data['target_blank'] = ! empty( $data['target_blank'] );

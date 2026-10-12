@@ -490,12 +490,54 @@ function acfw_reserved_item_keys() {
 		's',
 		'm',
 		'w',
+		// Storefront / WooCommerce routes that are not always public query vars
+		// at save time, but break the shop when used as rewrite endpoints.
+		'product',
+		'product-category',
+		'product-tag',
+		'product_cat',
+		'product_tag',
+		'shop',
+		'cart',
+		'checkout',
+		'my-account',
+		'myaccount',
+		'add-to-cart',
+		'remove_item',
+		'coupon-code',
 	);
 
 	if ( function_exists( 'WC' ) && WC()->query ) {
 		foreach ( WC()->query->get_query_vars() as $var_key => $var_slug ) {
 			$reserved[] = (string) $var_key;
 			$reserved[] = (string) $var_slug;
+		}
+	}
+
+	if ( function_exists( 'wc_get_page_id' ) ) {
+		foreach ( array( 'shop', 'cart', 'checkout', 'myaccount' ) as $wc_page ) {
+			$page_id = wc_get_page_id( $wc_page );
+			if ( $page_id && $page_id > 0 ) {
+				$slug = get_page_uri( $page_id );
+				if ( is_string( $slug ) && '' !== $slug ) {
+					$reserved[] = basename( $slug );
+					$reserved[] = $slug;
+				}
+			}
+		}
+	}
+
+	if ( function_exists( 'wc_get_permalink_structure' ) ) {
+		$permalinks = wc_get_permalink_structure();
+		foreach ( array( 'product_base', 'category_base', 'tag_base' ) as $base_key ) {
+			if ( empty( $permalinks[ $base_key ] ) ) {
+				continue;
+			}
+			$base = trim( (string) $permalinks[ $base_key ], '/' );
+			if ( '' !== $base ) {
+				$reserved[] = $base;
+				$reserved[] = basename( $base );
+			}
 		}
 	}
 
@@ -507,6 +549,125 @@ function acfw_reserved_item_keys() {
 	$reserved = apply_filters( 'acfw_reserved_item_keys', $reserved );
 
 	return array_values( array_unique( array_filter( array_map( 'strval', (array) $reserved ) ) ) );
+}
+
+/**
+ * Option names this plugin owns ( Reset / Export / Import / Uninstall ).
+ *
+ * Advanced Coupons and other extensions also use an `acfw_` prefix, so tools
+ * must never touch every option that merely starts with `acfw_`.
+ *
+ * @return array
+ */
+function acfw_owned_option_keys() {
+	$keys = array_merge(
+		acfw_design_option_keys(),
+		array(
+			// Menu structure.
+			'acfw_items_order',
+			'acfw_menu_profiles',
+			'acfw_flush_rewrite_rules',
+			// Settings tab.
+			'acfw_ajax_navigation',
+			'acfw_default_endpoint',
+			'acfw_login_redirect',
+			'acfw_logout_redirect',
+			'acfw_guest_message',
+			'acfw_dashboard_notice',
+			'acfw_notice_style',
+			'acfw_notice_dismiss',
+			'acfw_track_views',
+			'acfw_buyagain_enable',
+			'acfw_recent_enable',
+			'acfw_tracking_enable',
+			'acfw_cancel_enable',
+			'acfw_cancel_hours',
+			'acfw_returns_enable',
+			'acfw_returns_days',
+			'acfw_returns_reasons',
+			'acfw_addressbook_enable',
+			'acfw_privacy_enable',
+			// Design extras ( Customizer / Studio, not always in presets ).
+			'acfw_presets',
+			'acfw_active_template',
+			'acfw_dashboard_title',
+			'acfw_dashboard_stats',
+			'acfw_dashboard_align',
+			'acfw_dashboard_tiles',
+			'acfw_dashboard_layout',
+			'acfw_profile_meter',
+			'acfw_stat_orders',
+			'acfw_stat_pending',
+			'acfw_stat_spent',
+			'acfw_stat_refunds',
+			'acfw_stat_downloads',
+			'acfw_stat_points',
+			'acfw_stat_latest',
+			'acfw_stat_piechart',
+			'acfw_pin_enable',
+			'acfw_sticky_menu',
+			'acfw_collapsible',
+			'acfw_logout_confirm',
+			'acfw_menu_search',
+			'acfw_status_badges',
+			// Feature data.
+			'acfw_banners',
+			'acfw_fields',
+			'acfw_db_version',
+		)
+	);
+
+	/**
+	 * Filter the fixed option names owned by My Account Dashboard Builder.
+	 *
+	 * Dynamic `acfw_item_*` keys are always owned; see acfw_is_owned_option().
+	 *
+	 * @param array $keys Option names.
+	 */
+	return array_values( array_unique( apply_filters( 'acfw_owned_option_keys', $keys ) ) );
+}
+
+/**
+ * Whether an option name belongs to this plugin ( not other `acfw_` plugins ).
+ *
+ * @param string $name Option name.
+ * @return bool
+ */
+function acfw_is_owned_option( $name ) {
+	$name = (string) $name;
+	if ( 0 !== strpos( $name, 'acfw_' ) ) {
+		return false;
+	}
+	// Per-item records: acfw_item_{key}.
+	if ( 0 === strpos( $name, 'acfw_item_' ) ) {
+		return true;
+	}
+	return in_array( $name, acfw_owned_option_keys(), true );
+}
+
+/**
+ * Option names currently stored that this plugin owns.
+ *
+ * @return array
+ */
+function acfw_list_owned_option_names() {
+	global $wpdb;
+
+	$names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->prepare(
+			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+			$wpdb->esc_like( 'acfw_' ) . '%'
+		)
+	);
+
+	$owned = array();
+	foreach ( (array) $names as $name ) {
+		if ( acfw_is_owned_option( $name ) ) {
+			$owned[] = $name;
+		}
+	}
+
+	return $owned;
 }
 
 /**
@@ -551,7 +712,9 @@ function acfw_sanitize_order_tree( $tree, $depth = 0 ) {
 	$types = class_exists( 'ACFW_Items' ) ? ACFW_Items::ITEM_TYPES : array( 'endpoint', 'group', 'link', 'page' );
 
 	foreach ( $tree as $key => $node ) {
-		$key = acfw_sanitize_key( (string) $key );
+		// Drop percent-encoded octets left by older sanitize_title() keys so the
+		// Menu Items screen never receives a key that breaks HTML/redirects.
+		$key = acfw_ascii_slug( (string) $key );
 		if ( '' === $key || ! is_array( $node ) ) {
 			continue;
 		}
@@ -1795,9 +1958,20 @@ function acfw_apply_smart_tags( $content, $user = null, $escape = true ) {
 		return $content;
 	}
 
-	$values = array_map( 'strval', array_values( $map ) );
-	if ( $escape ) {
-		$values = array_map( 'esc_html', $values );
+	// Customer-entered values ( names, custom fields, … ) must never become
+	// executable shortcodes when the surrounding content later runs do_shortcode().
+	// esc_html() alone is not enough: it leaves [ and ] intact.
+	$values = array();
+	foreach ( array_values( $map ) as $raw ) {
+		$value = (string) $raw;
+		if ( function_exists( 'strip_shortcodes' ) ) {
+			$value = strip_shortcodes( $value );
+		}
+		if ( $escape ) {
+			$value = esc_html( $value );
+			$value = str_replace( array( '[', ']' ), array( '&#91;', '&#93;' ), $value );
+		}
+		$values[] = $value;
 	}
 
 	return str_replace( array_keys( $map ), $values, $content );
@@ -1820,7 +1994,9 @@ function acfw_default_endpoint_options( $key = '' ) {
 		'active'           => true,
 		'content'          => '',
 		'editor_type'      => 'classic', // classic | block.
-		'content_position' => 'before', // before | after | override.
+		// Custom endpoints have no WooCommerce body; default to replace so the
+		// dashboard never appears underneath. Built-in pages still use before.
+		'content_position' => 'override', // before | after | override.
 		'visibility'       => 'all',    // all | roles.
 		'usr_roles'        => array(),
 		'class'            => '',

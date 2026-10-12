@@ -31,7 +31,7 @@ $acfw_current = ! empty( $is_current ) || false !== strpos( $classes, 'is-active
 		<?php if ( isset( $badge ) && '' !== (string) $badge ) : ?>
 			<span class="acfw-count acfw-count-text"><?php echo esc_html( $badge ); ?></span>
 		<?php elseif ( ! empty( $status ) && 'dot' === ( $status['type'] ?? '' ) ) : ?>
-			<span class="acfw-status-dot" title="<?php echo esc_attr( $status['label'] ); ?>" aria-hidden="true"></span><span class="acfw-sr"><?php echo esc_html( $status['label'] ); ?></span>
+			<span class="acfw-status-warn" title="<?php echo esc_attr( $status['label'] ); ?>" aria-hidden="true"><span class="dashicons dashicons-warning"></span></span><span class="acfw-sr"><?php echo esc_html( $status['label'] ); ?></span>
 		<?php elseif ( ! empty( $status['text'] ) ) : ?>
 			<span class="acfw-count acfw-count-status" title="<?php echo esc_attr( $status['label'] ); ?>"><span aria-hidden="true"><?php echo esc_html( $status['text'] ); ?></span><span class="acfw-sr"><?php echo esc_html( $status['label'] ); ?></span></span>
 		<?php elseif ( isset( $count ) && null !== $count ) : ?>

@@ -63,13 +63,8 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					break;
 
 				case 'reset':
-					global $wpdb;
-					$names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-						$wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'acfw_' ) . '%' )
-					);
-					// delete_option() clears each option's cache; flushing the whole
-					// object cache would evict every other plugin's data too.
-					foreach ( (array) $names as $name ) {
+					// Only this plugin's options — never Advanced Coupons or other acfw_* data.
+					foreach ( acfw_list_owned_option_names() as $name ) {
 						delete_option( $name );
 					}
 					// Custom endpoints just disappeared; their rewrite rules must go too.
@@ -437,7 +432,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					<?php wp_nonce_field( self::NONCE ); ?>
 					<input type="hidden" name="acfw_action" value="reset" />
 					<button type="submit" class="button acfw-reset-btn"><span class="dashicons dashicons-image-rotate"></span> <?php esc_html_e( 'Reset all settings', 'my-account-dashboard-builder' ); ?></button>
-					<span class="acfw-hint"><?php esc_html_e( 'Restore endpoints, design and banners to defaults. Cannot be undone.', 'my-account-dashboard-builder' ); ?></span>
+					<span class="acfw-hint"><?php esc_html_e( 'Restore endpoints, design and banners for My Account Dashboard Builder to defaults. Other plugins are not changed. Cannot be undone.', 'my-account-dashboard-builder' ); ?></span>
 				</form>
 			</div><!-- .acfw-card -->
 			<?php endif; // Presets section. ?>

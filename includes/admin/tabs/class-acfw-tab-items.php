@@ -285,7 +285,9 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 								'active'            => ! empty( $data['active'] ),
 								'content'           => $content,
 								'editor_type'       => $editor_type,
-								'content_position'  => isset( $data['content_position'] ) ? sanitize_key( $data['content_position'] ) : 'before',
+								'content_position'  => ( ! $items->is_default( $key ) )
+									? 'override'
+									: ( isset( $data['content_position'] ) ? sanitize_key( $data['content_position'] ) : 'before' ),
 								'usr_roles'         => $roles,
 								'visibility'        => empty( $roles ) ? 'all' : 'roles',
 								'url'               => isset( $data['url'] ) ? esc_url_raw( $data['url'] ) : '',
@@ -442,14 +444,23 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 			$taken = array_diff( $taken, array( $key, $current ) );
 
 			if ( $wanted !== $key && in_array( $wanted, $taken, true ) ) {
+				$is_reserved = in_array( $wanted, acfw_reserved_item_keys(), true );
 				$this->add_notice(
-					sprintf(
-						/* translators: 1: requested URL slug, 2: menu item label, 3: the slug it keeps. */
-						__( 'The URL "%1$s" is already used, so "%2$s" keeps "%3$s".', 'my-account-dashboard-builder' ),
-						$wanted,
-						isset( $data['label'] ) ? sanitize_text_field( $data['label'] ) : $key,
-						$current
-					)
+					$is_reserved
+						? sprintf(
+							/* translators: 1: requested URL slug, 2: menu item label, 3: the slug it keeps. */
+							__( 'The URL "%1$s" is reserved by WordPress or WooCommerce and would break other store pages, so "%2$s" keeps "%3$s".', 'my-account-dashboard-builder' ),
+							$wanted,
+							isset( $data['label'] ) ? sanitize_text_field( $data['label'] ) : $key,
+							$current
+						)
+						: sprintf(
+							/* translators: 1: requested URL slug, 2: menu item label, 3: the slug it keeps. */
+							__( 'The URL "%1$s" is already used, so "%2$s" keeps "%3$s".', 'my-account-dashboard-builder' ),
+							$wanted,
+							isset( $data['label'] ) ? sanitize_text_field( $data['label'] ) : $key,
+							$current
+						)
 				);
 				return $current;
 			}
@@ -501,12 +512,24 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 			$parent = isset( $add['parent'] ) ? acfw_sanitize_key( (string) $add['parent'] ) : '';
 
 			// Never reuse a key: "Orders" must not overwrite the Orders endpoint.
+			$base = acfw_item_key_from_label( $label, $type );
 			$key  = acfw_unique_item_key( $label, $type, $items->used_names() );
 			$data = array(
-				'label'  => $label,
-				'slug'   => $key,
-				'active' => true,
+				'label'            => $label,
+				'slug'             => $key,
+				'active'           => true,
+				'content_position' => 'endpoint' === $type ? 'override' : 'before',
 			);
+			if ( $key !== $base ) {
+				$this->add_notice(
+					sprintf(
+						/* translators: 1: menu item label, 2: URL slug assigned instead. */
+						__( '"%1$s" already exists or is reserved, so a separate item was created with URL "%2$s".', 'my-account-dashboard-builder' ),
+						$label,
+						$key
+					)
+				);
+			}
 			if ( '' === $profile ) {
 				$items->save_item( $key, $type, $data, false );
 				$items->save_order( acfw_order_insert( acfw_order_from_items( $items->get_items() ), $key, $type, $after, $parent ) );
@@ -1133,8 +1156,9 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 									<div class="acfw_block_editor" data-endpoint="<?php echo esc_attr( $ukey ); ?>" data-textarea="acfw_block_content_<?php echo esc_attr( $ukey ); ?>" data-autoinit="<?php echo $is_block ? '1' : '0'; ?>"></div>
 								</div>
 							</div>
-							<p class="acfw-hint"><?php esc_html_e( 'Shortcodes and smart tags work here, e.g. Hello {first_name}.', 'my-account-dashboard-builder' ); ?></p>
+							<p class="acfw-hint"><?php esc_html_e( 'Shortcodes and smart tags work here. Smart tags such as {first_name} insert customer details as plain text only.', 'my-account-dashboard-builder' ); ?></p>
 						</div>
+						<?php if ( ! $is_custom ) : ?>
 						<div class="acfw-field">
 							<label for="<?php echo esc_attr( $uid . '-position' ); ?>"><?php esc_html_e( 'Placement', 'my-account-dashboard-builder' ); ?></label>
 							<select id="<?php echo esc_attr( $uid . '-position' ); ?>" name="<?php echo esc_attr( $name ); ?>[content_position]">
@@ -1143,10 +1167,10 @@ if ( ! class_exists( 'ACFW_Tab_Items' ) ) {
 								<option value="after" <?php selected( $cp, 'after' ); ?>><?php esc_html_e( 'After default content', 'my-account-dashboard-builder' ); ?></option>
 								<option value="override" <?php selected( $cp, 'override' ); ?>><?php esc_html_e( 'Replace default content', 'my-account-dashboard-builder' ); ?></option>
 							</select>
-							<?php if ( $is_custom ) : ?>
-								<p class="acfw-hint"><?php esc_html_e( 'A custom endpoint has no default content, so this only matters for WooCommerce pages.', 'my-account-dashboard-builder' ); ?></p>
-							<?php endif; ?>
 						</div>
+						<?php else : ?>
+							<input type="hidden" name="<?php echo esc_attr( $name ); ?>[content_position]" value="override" />
+						<?php endif; ?>
 
 						<h3 class="acfw-section-title"><?php esc_html_e( 'Banners', 'my-account-dashboard-builder' ); ?></h3>
 						<div class="acfw-field">

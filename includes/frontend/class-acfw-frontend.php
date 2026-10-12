@@ -83,6 +83,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 
 			// Dashboard column template ( left / center / right ) via body class.
 			add_filter( 'body_class', array( $this, 'body_class' ) );
+
+			// Warn on Addresses when phone or billing address is still empty.
+			add_filter( 'woocommerce_my_account_my_address_description', array( $this, 'address_missing_warning' ), 20 );
 		}
 
 		/**
@@ -925,29 +928,82 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			);
 			$pct     = $total ? (int) round( ( $total - count( $missing ) ) / $total * 100 ) : 0;
 			?>
-			<div class="acfw-profile-meter">
+			<div class="acfw-profile-meter<?php echo $missing ? ' has-missing' : ''; ?>">
 				<div class="acfw-pm-head">
 					<strong id="acfw-pm-label"><?php esc_html_e( 'Profile completeness', 'my-account-dashboard-builder' ); ?></strong>
 					<span><?php echo esc_html( $pct ); ?>%</span>
 				</div>
 				<div class="acfw-pm-bar" role="progressbar" aria-labelledby="acfw-pm-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( $pct ); ?>"><span style="width:<?php echo esc_attr( $pct ); ?>%"></span></div>
 				<?php if ( $missing ) : ?>
-					<p class="acfw-pm-missing">
-						<?php esc_html_e( 'Still missing:', 'my-account-dashboard-builder' ); ?>
-						<?php
-						$links = array();
-						foreach ( $missing as $field ) {
-							$label   = isset( $field['label'] ) ? (string) $field['label'] : '';
-							$links[] = ! empty( $field['url'] )
-								? '<a href="' . esc_url( $field['url'] ) . '">' . esc_html( $label ) . '</a>'
-								: esc_html( $label );
-						}
-						echo implode( ', ', $links ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-						?>
-					</p>
+					<div class="acfw-missing-notice" role="status">
+						<span class="acfw-missing-notice-icon dashicons dashicons-warning" aria-hidden="true"></span>
+						<div class="acfw-missing-notice-body">
+							<strong class="acfw-missing-notice-title"><?php esc_html_e( 'Still missing', 'my-account-dashboard-builder' ); ?></strong>
+							<ul class="acfw-missing-chips">
+								<?php foreach ( $missing as $field ) : ?>
+									<?php
+									$label = isset( $field['label'] ) ? (string) $field['label'] : '';
+									$url   = ! empty( $field['url'] ) ? (string) $field['url'] : '';
+									?>
+									<li>
+										<?php if ( $url ) : ?>
+											<a class="acfw-missing-chip" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
+										<?php else : ?>
+											<span class="acfw-missing-chip is-static"><?php echo esc_html( $label ); ?></span>
+										<?php endif; ?>
+									</li>
+								<?php endforeach; ?>
+							</ul>
+						</div>
+					</div>
 				<?php endif; ?>
 			</div>
 			<?php
+		}
+
+		/**
+		 * Warning above the Addresses list when phone or billing address is empty.
+		 *
+		 * @param string $description Default WooCommerce intro copy.
+		 * @return string
+		 */
+		public function address_missing_warning( $description ) {
+			if ( ! is_user_logged_in() ) {
+				return $description;
+			}
+
+			$user  = wp_get_current_user();
+			$chips = '';
+			foreach ( acfw_profile_fields( $user ) as $key => $field ) {
+				if ( ! empty( $field['done'] ) || ! in_array( $key, array( 'billing_phone', 'billing_address_1' ), true ) ) {
+					continue;
+				}
+				$label = isset( $field['label'] ) ? (string) $field['label'] : $key;
+				$url   = ! empty( $field['url'] ) ? (string) $field['url'] : '';
+				$chips .= '<li>';
+				if ( $url ) {
+					$chips .= '<a class="acfw-missing-chip" href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a>';
+				} else {
+					$chips .= '<span class="acfw-missing-chip is-static">' . esc_html( $label ) . '</span>';
+				}
+				$chips .= '</li>';
+			}
+
+			if ( '' === $chips ) {
+				return $description;
+			}
+
+			$warning  = '<div class="acfw-missing-notice acfw-address-warning" role="status">';
+			$warning .= '<span class="acfw-missing-notice-icon dashicons dashicons-warning" aria-hidden="true"></span>';
+			$warning .= '<div class="acfw-missing-notice-body">';
+			$warning .= '<strong class="acfw-missing-notice-title">' . esc_html__( 'Still missing', 'my-account-dashboard-builder' ) . '</strong>';
+			$warning .= '<ul class="acfw-missing-chips">' . $chips . '</ul>';
+			$warning .= '<p class="acfw-missing-notice-hint">' . esc_html__( 'Add your billing address so checkout can fill these in for you.', 'my-account-dashboard-builder' ) . '</p>';
+			$warning .= '</div></div>';
+
+			// Description stays inside WooCommerce's wrapping <p>; the notice is a
+			// block element the browser lifts above it.
+			return $warning . (string) $description;
 		}
 
 		/**
@@ -1045,11 +1101,17 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 			$key  = acfw_get_current_endpoint();
 			$item = $this->current_item();
 
+			$is_custom = $item
+				&& 'endpoint' === ( $item['type'] ?? 'endpoint' )
+				&& 'dashboard' !== $key
+				&& function_exists( 'ACFW' )
+				&& ACFW()->items
+				&& ! ACFW()->items->is_default( $key );
+
 			// A custom endpoint has no WooCommerce handler, and when
-			// woocommerce_account_content() finds none it prints the dashboard,
-			// greeting and widgets included, under the endpoint's own content.
-			// An empty handler makes the endpoint show only what it was given.
-			if ( $item && 'dashboard' !== $key && 'endpoint' === ( $item['type'] ?? 'endpoint' ) && ! has_action( 'woocommerce_account_' . $key . '_endpoint' ) ) {
+			// woocommerce_account_content() finds none it prints the dashboard
+			// under the endpoint's own content. An empty handler stops that.
+			if ( $is_custom && ! has_action( 'woocommerce_account_' . $key . '_endpoint' ) ) {
 				add_action( 'woocommerce_account_' . $key . '_endpoint', '__return_null' );
 			}
 
@@ -1057,7 +1119,9 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				return;
 			}
 
-			$position = isset( $item['content_position'] ) ? $item['content_position'] : 'before';
+			// Custom endpoints never have WooCommerce body content — always replace
+			// so "Before default content" cannot show the full dashboard underneath.
+			$position = $is_custom ? 'override' : ( isset( $item['content_position'] ) ? $item['content_position'] : 'before' );
 
 			switch ( $position ) {
 				case 'after':

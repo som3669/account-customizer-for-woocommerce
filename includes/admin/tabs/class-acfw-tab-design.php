@@ -154,6 +154,7 @@ if ( ! class_exists( 'ACFW_Tab_Design' ) ) {
 					/* translators: %s: contrast ratio, e.g. 2.9:1. */
 					'contrastLo' => __( 'Current page text contrast %s, below the 4.5:1 WCAG AA minimum. Try a darker accent.', 'my-account-dashboard-builder' ),
 					'lookName'   => __( 'Name this look', 'my-account-dashboard-builder' ),
+					'inUse'      => __( 'In use', 'my-account-dashboard-builder' ),
 				),
 			);
 			?>

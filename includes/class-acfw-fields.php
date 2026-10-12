@@ -114,14 +114,20 @@ if ( ! class_exists( 'ACFW_Fields' ) ) {
 		 * @param string $value Current value.
 		 */
 		protected static function render_field( $field, $value ) {
+			$help = isset( $field['help'] ) ? trim( (string) $field['help'] ) : '';
 			$args = array(
 				'type'        => $field['type'],
 				'label'       => $field['label'],
 				'required'    => ! empty( $field['required'] ),
 				'placeholder' => $field['placeholder'],
-				'description' => $field['help'],
+				// Empty on purpose: themes often turn WC "description" into a tip
+				// that overlaps the input. Help is shown as a label tooltip instead.
+				'description' => '',
 				'class'       => array( 'form-row-wide', 'acfw-custom-field' ),
 			);
+			if ( '' !== $help ) {
+				$args['class'][] = 'acfw-has-tip';
+			}
 			if ( in_array( $field['type'], array( 'select', 'radio' ), true ) ) {
 				$args['options'] = array( '' => __( 'Choose…', 'my-account-dashboard-builder' ) ) + array_combine( $field['options'], $field['options'] );
 				if ( 'radio' === $field['type'] ) {
@@ -132,7 +138,24 @@ if ( ! class_exists( 'ACFW_Fields' ) ) {
 				$args['label'] = $field['label'];
 				$value         = 'yes' === $value ? 1 : 0;
 			}
+
+			ob_start();
 			woocommerce_form_field( self::META . $field['key'], $args, $value );
+			$html = (string) ob_get_clean();
+
+			if ( '' !== $help ) {
+				$tip_id = 'acfw-tip-' . sanitize_html_class( (string) $field['key'] );
+				$tip    = '<span class="acfw-field-tip">'
+					. '<button type="button" class="acfw-field-tip-toggle" aria-describedby="' . esc_attr( $tip_id ) . '" aria-label="' . esc_attr__( 'Help', 'my-account-dashboard-builder' ) . '">'
+					. '<span aria-hidden="true">?</span>'
+					. '</button>'
+					. '<span class="acfw-field-tip-bubble" id="' . esc_attr( $tip_id ) . '" role="tooltip">' . esc_html( $help ) . '</span>'
+					. '</span>';
+				// After the label text / "(optional)" marker, before </label>.
+				$html = preg_replace( '/<\/label>/', $tip . '</label>', $html, 1 );
+			}
+
+			echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WC form field HTML plus escaped tip.
 		}
 
 		/**

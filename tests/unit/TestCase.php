@@ -75,6 +75,12 @@ abstract class TestCase extends PHPUnitTestCase {
 			}
 		);
 
+		Functions\when( 'strip_shortcodes' )->alias(
+			function ( $text ) {
+				return preg_replace( '/\[(\/?)[^\]]+\]/', '', (string) $text );
+			}
+		);
+
 		// Stands in for kses: drops script/style blocks and event attributes.
 		Functions\when( 'wp_kses_post' )->alias(
 			function ( $string ) {

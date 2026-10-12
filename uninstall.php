@@ -81,17 +81,24 @@ function acfw_uninstall_site() {
 	// Usage counts for Insights.
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}acfw_stats" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed table name.
 
-	// Every plugin option is prefixed `acfw_`; presets, banners, items and
-	// design settings are all covered by the one pattern.
-	$acfw_like = $wpdb->esc_like( 'acfw_' ) . '%';
-	$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $acfw_like )
-	);
+	// Only options owned by this plugin. Other extensions ( e.g. Advanced
+	// Coupons ) also use an `acfw_` prefix and must be left alone.
+	if ( ! function_exists( 'acfw_list_owned_option_names' ) ) {
+		require_once dirname( __FILE__ ) . '/includes/helper/functions-acfw.php';
+	}
+	foreach ( acfw_list_owned_option_names() as $acfw_option_name ) {
+		delete_option( $acfw_option_name );
+	}
 
-	// Transients live under a prefixed option name ( _transient_acfw_… ),
-	// which the pattern above does not match.
+	// Only this plugin's transients — never a blanket acfw_% wipe ( Advanced
+	// Coupons and others share that prefix ).
 	delete_transient( 'acfw_import_notice' );
-	foreach ( array( '_transient_acfw_', '_transient_timeout_acfw_' ) as $acfw_prefix ) {
+	foreach ( array(
+		'_transient_acfw_design_draft_',
+		'_transient_timeout_acfw_design_draft_',
+		'_transient_acfw_admin_notices_',
+		'_transient_timeout_acfw_admin_notices_',
+	) as $acfw_prefix ) {
 		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $acfw_prefix ) . '%' )
 		);

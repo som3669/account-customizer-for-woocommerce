@@ -28,6 +28,27 @@
 		var needsReload = false;
 		var busy = false;
 
+		// Keep the look already marked "In use" so Save refreshes its badge
+		// even if the card was not clicked again in this visit.
+		( function () {
+			var slug = String( $studio.find( '.acfw-look.is-in-use' ).first().data( 'look' ) || '' );
+			if ( slug && 0 !== slug.indexOf( 'preset-' ) ) {
+				look = slug;
+			}
+		}() );
+
+		function markLookInUse( slug ) {
+			$studio.find( '.acfw-look' ).removeClass( 'is-in-use' ).find( '.acfw-look-tag' ).remove();
+			if ( ! slug ) {
+				return;
+			}
+			$studio.find( '.acfw-look[data-look="' + slug + '"]' ).each( function () {
+				$( this )
+					.addClass( 'is-in-use' )
+					.append( $( '<span class="acfw-look-tag"></span>' ).text( i18n.inUse || 'In use' ) );
+			} );
+		}
+
 		/* ---- Reading and writing controls -------------------------------- */
 
 		function control( key ) {
@@ -533,8 +554,7 @@
 				saved = $.extend( {}, res.data.values );
 				draft = $.extend( {}, res.data.values );
 				if ( look ) {
-					$studio.find( '.acfw-look' ).removeClass( 'is-in-use' ).find( '.acfw-look-tag' ).remove();
-					$studio.find( '.acfw-look[data-look="' + look + '"]' ).addClass( 'is-in-use' );
+					markLookInUse( look );
 				}
 				refreshBar( res.data.message );
 				reloadFrame();
@@ -605,6 +625,15 @@
 				frame.src = src;
 			}
 			$note.text( url ? $note.data( 'other' ) : $note.data( 'self' ) );
+		} );
+
+		/* ---- Rail groups: opening one closes the others ---------------------------- */
+		// Native details "toggle" does not bubble, so bind each group directly.
+		$studio.find( '.acfw-studio-group' ).on( 'toggle', function () {
+			if ( ! this.open ) {
+				return;
+			}
+			$studio.find( '.acfw-studio-group' ).not( this ).prop( 'open', false );
 		} );
 
 		/* ---- Custom CSS: WordPress' code editor, when it is available ---------------- */

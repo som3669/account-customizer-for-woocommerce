@@ -102,11 +102,21 @@
 
 .acfw-menu ul li::before,
 .acfw-menu ul li::after {
-	content: none;
+	content: none !important;
 }
 
+/* Beat Storefront ( and similar ) per-endpoint a::before icon rules so the
+   plugin's HTML icon is the only glyph. */
+.woocommerce-MyAccount-navigation.acfw-menu ul li.woocommerce-MyAccount-navigation-link > a::before,
+.woocommerce-MyAccount-navigation.acfw-menu ul li.acfw-menu-item > a::before,
 .acfw-menu .acfw-menu-item > a::before {
-	content: none;
+	content: none !important;
+	display: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	float: none !important;
+	width: 0 !important;
+	height: 0 !important;
 }
 
 /* ---- Item base ---- */
@@ -1951,7 +1961,7 @@ body.acfw-dash-tpl-right .woocommerce-MyAccount-content {
 
 .acfw-tile:focus-visible,
 a.acfw-stat:focus-visible,
-.acfw-pm-missing a:focus-visible {
+a.acfw-missing-chip:focus-visible {
 	outline: 2px solid var(--acfw-accent, #2563eb);
 	outline-offset: 2px;
 }
@@ -1994,15 +2004,125 @@ a.acfw-stat:hover {
 	transform: translateY(-1px);
 }
 
-.acfw-pm-missing {
-	margin: 10px 0 0;
-	font-size: 0.9em;
-	color: var(--acfw-text, #383838);
+.acfw-profile-meter.has-missing {
+	border-color: rgba(217, 119, 6, 0.28);
 }
 
-.acfw-pm-missing a {
-	color: var(--acfw-accent, #2563eb);
+/* Shared “still missing” notice ( dashboard meter + Addresses ). */
+.acfw-missing-notice {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin: 12px 0 0;
+	padding: 12px 14px;
+	border: 1px solid rgba(217, 119, 6, 0.28);
+	border-left: 3px solid #d97706;
+	border-radius: var(--acfw-radius, 8px);
+	background: linear-gradient(180deg, #fffbeb 0%, #fff8eb 100%);
+	color: #78350f;
+	font-size: 0.9em;
+	line-height: 1.45;
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+.acfw-missing-notice-icon {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 999px;
+	background: rgba(217, 119, 6, 0.12);
+	color: #d97706;
+	font-size: 16px;
+	line-height: 1;
+}
+
+.acfw-missing-notice-icon::before {
+	margin: 0;
+	width: auto;
+	height: auto;
+}
+
+.acfw-missing-notice-body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.acfw-missing-notice-title {
+	display: block;
+	margin: 0 0 8px;
+	font-size: 0.95em;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+}
+
+.acfw-missing-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.acfw-missing-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 1px solid rgba(180, 83, 9, 0.28);
+	border-radius: 999px;
+	background: #fff;
+	color: #9a3412;
+	font-size: 0.95em;
 	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	box-shadow: 0 1px 2px rgba(120, 53, 15, 0.06);
+	transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+a.acfw-missing-chip::after {
+	content: "→";
+	font-weight: 700;
+	opacity: 0.7;
+}
+
+a.acfw-missing-chip:hover,
+a.acfw-missing-chip:focus-visible {
+	border-color: #d97706;
+	background: #fff7ed;
+	color: #7c2d12;
+	outline: none;
+	transform: translateY(-1px);
+}
+
+.acfw-missing-chip.is-static {
+	cursor: default;
+	box-shadow: none;
+}
+
+.acfw-missing-notice-hint {
+	margin: 10px 0 0 !important;
+	color: #a16207;
+	font-size: 0.92em;
+}
+
+.acfw-address-warning {
+	margin: 0 0 1.25em;
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-MyAccount-content > p:has(.acfw-address-warning),
+.woocommerce:has(.acfw-menu) .woocommerce-MyAccount-content > p:has(+ .woocommerce-Addresses) {
+	color: var(--acfw-muted, #6b7280);
+	font-size: 0.95em;
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Address address:not(:has(br)):not(:has(p)) {
+	color: var(--acfw-muted, #6b7280);
+	font-style: normal;
 }
 
 // ---- Order actions: Cancel and Return items on the order page ------------------------
@@ -2143,6 +2263,118 @@ a.acfw-stat:hover {
 }
 
 // ---- Address book ---------------------------------------------------------------------
+/* WooCommerce default billing/shipping cards on Addresses. WC's .col2-set
+   clearfix (::before/::after) becomes extra grid items and pushes Billing
+   to the right / Shipping to the left — kill those pseudos so the two
+   cards sit side by side. */
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses.col2-set,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses.u-columns {
+	display: grid !important;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+	float: none;
+	width: 100%;
+	max-width: 100%;
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses.col2-set::before,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses.col2-set::after,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses.u-columns::before,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses.u-columns::after {
+	content: none !important;
+	display: none !important;
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses .woocommerce-Address,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses .u-column1,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses .u-column2,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses .col-1,
+.woocommerce:has(.acfw-menu) .woocommerce-Addresses .col-2 {
+	float: none !important;
+	clear: none !important;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	width: auto !important;
+	max-width: none !important;
+	margin: 0 !important;
+	padding: 18px 20px;
+	border: 1px solid var(--acfw-border, #e1e1e1);
+	border-radius: calc(var(--acfw-radius, 8px) + 2px);
+	background: var(--acfw-surface, #fff);
+	box-sizing: border-box;
+	box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Address-title {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px 16px;
+	margin: 0;
+	padding: 0 0 12px;
+	border-bottom: 1px solid var(--acfw-border, #eef2f7);
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Address-title::after {
+	content: none;
+	display: none;
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Address-title h2,
+.woocommerce:has(.acfw-menu) .woocommerce-Address-title h3 {
+	float: none;
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+	font-size: 1.05em;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--acfw-text, #0f172a);
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Address-title .edit {
+	float: none;
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	margin: 0;
+	padding: 6px 12px;
+	border: 1px solid var(--acfw-accent, #2563eb);
+	border-radius: 999px;
+	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+	color: var(--acfw-accent, #2563eb);
+	font-size: 0.875em;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	white-space: nowrap;
+	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Address-title .edit:hover,
+.woocommerce:has(.acfw-menu) .woocommerce-Address-title .edit:focus-visible {
+	background: var(--acfw-accent, #2563eb);
+	color: #fff;
+	outline: none;
+}
+
+.woocommerce:has(.acfw-menu) .woocommerce-Address address {
+	display: block;
+	margin: 0;
+	font-style: normal;
+	line-height: 1.55;
+	color: var(--acfw-muted, #6b7280);
+}
+
+@media (max-width: 900px) {
+	.woocommerce:has(.acfw-menu) .woocommerce-Addresses.col2-set,
+	.woocommerce:has(.acfw-menu) .woocommerce-Addresses.u-columns {
+		grid-template-columns: 1fr;
+	}
+}
+
 .acfw-addressbook {
 	margin-top: 2em;
 }
@@ -2241,21 +2473,33 @@ a.acfw-stat:hover {
 	color: #92400e;
 }
 
-.acfw-menu .acfw-status-dot {
+.acfw-menu .acfw-status-warn {
 	flex: 0 0 auto;
-	width: 8px;
-	height: 8px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	margin-left: auto;
-	border-radius: 50%;
-	background: #f59e0b;
-	box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+	color: #d97706;
+	line-height: 1;
 }
 
-.acfw-menu.is-collapsed .acfw-status-dot {
+.acfw-menu .acfw-status-warn .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}
+
+.acfw-menu.is-collapsed .acfw-status-warn {
 	position: absolute;
-	top: 8px;
-	right: 8px;
+	top: 4px;
+	right: 4px;
 	margin: 0;
+}
+
+.acfw-menu.is-collapsed .acfw-status-warn .dashicons {
+	width: 14px;
+	height: 14px;
+	font-size: 14px;
 }
 
 // ---- Dashboard parts ( arranged in the Design Studio ) ----
@@ -2395,4 +2639,94 @@ body.acfw-viewing-as {
 	.acfw-vab-why {
 		padding-left: 0;
 	}
+}
+
+/* Custom customer fields: help sits as a tooltip after the label
+   ( e.g. "test (optional) ?" ), not under the input. */
+.woocommerce .acfw-custom-field.form-row {
+	margin-bottom: 1.25em;
+}
+
+.woocommerce .acfw-custom-field > label,
+.woocommerce-page .acfw-custom-field > label {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0 4px;
+}
+
+.acfw-field-tip {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	margin-left: 4px;
+	vertical-align: middle;
+}
+
+.acfw-field-tip-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	padding: 0;
+	border: 1px solid var(--acfw-border, #d1d5db);
+	border-radius: 999px;
+	background: var(--acfw-surface, #fff);
+	color: var(--acfw-muted, #6b7280);
+	font: 700 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	cursor: help;
+	box-shadow: none;
+}
+
+.acfw-field-tip-toggle:hover,
+.acfw-field-tip-toggle:focus-visible,
+.acfw-field-tip:focus-within .acfw-field-tip-toggle {
+	border-color: var(--acfw-accent, #2563eb);
+	background: var(--acfw-accent-tint, rgba(37, 99, 235, 0.08));
+	color: var(--acfw-accent, #2563eb);
+	outline: none;
+}
+
+.acfw-field-tip-bubble {
+	position: absolute;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	z-index: 30;
+	box-sizing: border-box;
+	width: max-content;
+	max-width: min(260px, 70vw);
+	padding: 8px 11px;
+	border: 1px solid var(--acfw-border, #e1e5ef);
+	border-radius: 8px;
+	background: #111827;
+	color: #f9fafb;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.45;
+	text-align: left;
+	white-space: normal;
+	box-shadow: 0 8px 22px rgba(15, 23, 42, 0.2);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: translate(-50%, 4px);
+	transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s ease;
+}
+
+.acfw-field-tip-bubble::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	border: 6px solid transparent;
+	border-top-color: #111827;
+	transform: translateX(-50%);
+}
+
+.acfw-field-tip:hover .acfw-field-tip-bubble,
+.acfw-field-tip:focus-within .acfw-field-tip-bubble {
+	opacity: 1;
+	visibility: visible;
+	transform: translate(-50%, 0);
 }

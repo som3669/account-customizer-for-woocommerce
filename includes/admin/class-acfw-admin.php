@@ -67,39 +67,14 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * Register the submenu page under WooCommerce.
 		 */
 		public function register_menu() {
-
-			$icon = 'data:image/svg+xml;base64,' . base64_encode( '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><circle cx="19" cy="18" r="5" fill="#a7aaad"/><path d="M9 35c0-5.5 4.5-9.5 10-9.5s10 4 10 9.5" fill="#a7aaad"/><path d="M35 12v24" stroke="#a7aaad" stroke-width="2.4" stroke-linecap="round"/><circle cx="35" cy="21" r="4" fill="#a7aaad"/></svg>' ); // phpcs:ignore
-
-			add_menu_page(
+			add_submenu_page(
+				'woocommerce',
 				__( 'My Account Dashboard Builder', 'my-account-dashboard-builder' ),
-				__( 'My Account', 'my-account-dashboard-builder' ),
+				__( 'Account Dashboard', 'my-account-dashboard-builder' ),
 				'manage_woocommerce',
 				self::PAGE,
-				array( $this, 'render_page' ),
-				$icon,
-				56
+				array( $this, 'render_page' )
 			);
-
-			$base = 'admin.php?page=' . self::PAGE;
-			$subs = array(
-				self::PAGE              => __( 'Menu Items', 'my-account-dashboard-builder' ),
-				$base . '&tab=design'   => __( 'Design', 'my-account-dashboard-builder' ),
-				$base . '&tab=general'  => __( 'Settings', 'my-account-dashboard-builder' ),
-				$base . '&tab=banners'  => __( 'Banners', 'my-account-dashboard-builder' ),
-				$base . '&tab=fields'   => __( 'Fields', 'my-account-dashboard-builder' ),
-				$base . '&tab=returns'  => __( 'Returns', 'my-account-dashboard-builder' ),
-				$base . '&tab=insights' => __( 'Insights', 'my-account-dashboard-builder' ),
-			);
-			foreach ( $subs as $slug => $title ) {
-				add_submenu_page(
-					self::PAGE,
-					$title,
-					$title,
-					'manage_woocommerce',
-					$slug,
-					self::PAGE === $slug ? array( $this, 'render_page' ) : ''
-				);
-			}
 		}
 
 		/**
@@ -140,7 +115,15 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			);
 
 			foreach ( $settings as $option => $sanitize ) {
-				register_setting( 'acfw_settings', $option, array( 'sanitize_callback' => $sanitize ) );
+				register_setting(
+					'acfw_settings',
+					$option,
+					array(
+						'sanitize_callback' => $sanitize,
+						// Match the menu capability so shop managers can save.
+						'capability'        => 'manage_woocommerce',
+					)
+				);
 			}
 
 			// Settings → Orders & privacy. A group of its own: options.php resets
@@ -156,7 +139,14 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'acfw_privacy_enable'     => 'sanitize_text_field',
 			);
 			foreach ( $orders as $option => $sanitize ) {
-				register_setting( 'acfw_settings_orders', $option, array( 'sanitize_callback' => $sanitize ) );
+				register_setting(
+					'acfw_settings_orders',
+					$option,
+					array(
+						'sanitize_callback' => $sanitize,
+						'capability'        => 'manage_woocommerce',
+					)
+				);
 			}
 		}
 
@@ -166,7 +156,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 		 * @param string $hook Current admin page hook.
 		 */
 		public function enqueue_assets( $hook ) {
-			if ( 'toplevel_page_' . self::PAGE !== $hook ) {
+			if ( 'woocommerce_page_' . self::PAGE !== $hook ) {
 				return;
 			}
 

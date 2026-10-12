@@ -52,6 +52,23 @@ class SmartTagsTest extends TestCase {
 		$this->assertSame( 'Hi <b>O\'Neil</b>', acfw_apply_smart_tags( 'Hi {first_name}', $user, false ) );
 	}
 
+	public function test_customer_values_cannot_carry_shortcodes(): void {
+		// strip_shortcodes() only removes registered tags; neutralize leftover brackets
+		// so a later do_shortcode() cannot run customer-controlled markup.
+		Functions\when( 'strip_shortcodes' )->alias(
+			function ( $text ) {
+				return str_replace( '[gallery]', '', (string) $text );
+			}
+		);
+
+		$registered = $this->customer( 108, array( 'first_name' => 'Jo[gallery]' ) );
+		$this->assertSame( 'Hi Jo', acfw_apply_smart_tags( 'Hi {first_name}', $registered ) );
+
+		$brackets = $this->customer( 109, array( 'first_name' => 'Jo[custom]' ) );
+		$this->assertSame( 'Hi Jo&#91;custom&#93;', acfw_apply_smart_tags( 'Hi {first_name}', $brackets ) );
+		$this->assertSame( 'Hi Jo[custom]', acfw_apply_smart_tags( 'Hi {first_name}', $brackets, false ) );
+	}
+
 	public function test_unknown_tokens_stay_in_place(): void {
 		$this->assertSame( 'Tier: {loyalty_tier}', acfw_apply_smart_tags( 'Tier: {loyalty_tier}', $this->customer( 103 ) ) );
 	}

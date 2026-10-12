@@ -27,14 +27,8 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 		 * @return array
 		 */
 		public static function export() {
-			global $wpdb;
-
-			$names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'acfw\_%'"
-			);
-
 			$data = array();
-			foreach ( (array) $names as $name ) {
+			foreach ( acfw_list_owned_option_names() as $name ) {
 				if ( in_array( $name, self::SKIP, true ) ) {
 					continue;
 				}
@@ -78,8 +72,8 @@ if ( ! class_exists( 'ACFW_Import_Export' ) ) {
 			$allow_raw_html = current_user_can( 'unfiltered_html' );
 
 			foreach ( $parsed['options'] as $name => $value ) {
-				// Only restore our own, safely-prefixed options.
-				if ( 0 !== strpos( (string) $name, 'acfw_' ) || in_array( $name, self::SKIP, true ) ) {
+				// Only restore options this plugin owns ( never other acfw_* plugins ).
+				if ( ! acfw_is_owned_option( (string) $name ) || in_array( $name, self::SKIP, true ) ) {
 					continue;
 				}
 

@@ -14,7 +14,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 // The files under test guard on ABSPATH and read the plugin constants.
 define( 'ABSPATH', dirname( __DIR__ ) . '/' );
-define( 'ACFW_VERSION', '1.0.0' );
+define( 'ACFW_VERSION', '1.0.1' );
 define( 'ACFW_DIR', dirname( __DIR__ ) . '/' );
 define( 'ACFW_URL', 'http://example.test/wp-content/plugins/my-account-dashboard-builder/' );
 define( 'ACFW_ASSETS_URL', ACFW_URL . 'assets' );

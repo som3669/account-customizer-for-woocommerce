@@ -100,51 +100,64 @@ if ( ! class_exists( 'ACFW_Tab_Fields' ) ) {
 					<code class="acfw-field-card-tag"><?php echo esc_html( '' !== $field['key'] ? '{field_' . $field['key'] . '}' : '' ); ?></code>
 					<button type="button" class="acfw-icon-btn acfw-node-remove acfw-field-remove" title="<?php esc_attr_e( 'Remove this field', 'my-account-dashboard-builder' ); ?>" aria-label="<?php esc_attr_e( 'Remove this field', 'my-account-dashboard-builder' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
 				</div>
-				<div class="acfw-field-card-grid">
-					<label class="acfw-fc">
-						<span><?php esc_html_e( 'Label', 'my-account-dashboard-builder' ); ?></span>
-						<input type="text" class="acfw-fc-label" name="<?php echo esc_attr( $name ); ?>[label]" value="<?php echo esc_attr( $field['label'] ); ?>" required />
-					</label>
-					<label class="acfw-fc">
-						<span><?php esc_html_e( 'Key', 'my-account-dashboard-builder' ); ?></span>
-						<input type="text" class="acfw-fc-key" name="<?php echo esc_attr( $name ); ?>[key]" value="<?php echo esc_attr( $field['key'] ); ?>" pattern="[a-z0-9_]+" spellcheck="false" autocomplete="off" />
-					</label>
-					<label class="acfw-fc">
-						<span><?php esc_html_e( 'Type', 'my-account-dashboard-builder' ); ?></span>
-						<select class="acfw-fc-type" name="<?php echo esc_attr( $name ); ?>[type]">
-							<?php foreach ( ACFW_Fields::types() as $type => $type_label ) : ?>
-								<option value="<?php echo esc_attr( $type ); ?>" <?php selected( $field['type'], $type ); ?>><?php echo esc_html( $type_label ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</label>
-					<label class="acfw-fc acfw-fc-inline">
-						<span class="acfw-switch"><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[required]" value="1" <?php checked( ! empty( $field['required'] ) ); ?> /><span class="acfw-switch-slider"></span></span>
-						<span><?php esc_html_e( 'Required', 'my-account-dashboard-builder' ); ?></span>
-					</label>
-					<label class="acfw-fc">
-						<span><?php esc_html_e( 'Placeholder', 'my-account-dashboard-builder' ); ?></span>
-						<input type="text" name="<?php echo esc_attr( $name ); ?>[placeholder]" value="<?php echo esc_attr( $field['placeholder'] ); ?>" />
-					</label>
-					<label class="acfw-fc">
-						<span><?php esc_html_e( 'Help text', 'my-account-dashboard-builder' ); ?></span>
-						<input type="text" name="<?php echo esc_attr( $name ); ?>[help]" value="<?php echo esc_attr( $field['help'] ); ?>" />
-					</label>
-					<label class="acfw-fc acfw-fc-wide acfw-fc-options"<?php echo in_array( $field['type'], array( 'select', 'radio' ), true ) ? '' : ' hidden'; ?>>
+
+				<div class="acfw-field-card-body">
+					<div class="acfw-field-card-row acfw-field-card-row-main">
+						<label class="acfw-fc acfw-fc-label-col">
+							<span><?php esc_html_e( 'Label', 'my-account-dashboard-builder' ); ?></span>
+							<input type="text" class="acfw-fc-label" name="<?php echo esc_attr( $name ); ?>[label]" value="<?php echo esc_attr( $field['label'] ); ?>" required />
+						</label>
+						<label class="acfw-fc">
+							<span><?php esc_html_e( 'Key', 'my-account-dashboard-builder' ); ?></span>
+							<input type="text" class="acfw-fc-key" name="<?php echo esc_attr( $name ); ?>[key]" value="<?php echo esc_attr( $field['key'] ); ?>" pattern="[a-z0-9_]+" spellcheck="false" autocomplete="off" />
+						</label>
+						<label class="acfw-fc">
+							<span><?php esc_html_e( 'Type', 'my-account-dashboard-builder' ); ?></span>
+							<select class="acfw-fc-type" name="<?php echo esc_attr( $name ); ?>[type]">
+								<?php foreach ( ACFW_Fields::types() as $type => $type_label ) : ?>
+									<option value="<?php echo esc_attr( $type ); ?>" <?php selected( $field['type'], $type ); ?>><?php echo esc_html( $type_label ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</label>
+						<label class="acfw-fc acfw-fc-inline acfw-fc-required">
+							<span class="acfw-switch"><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[required]" value="1" <?php checked( ! empty( $field['required'] ) ); ?> /><span class="acfw-switch-slider"></span></span>
+							<span><?php esc_html_e( 'Required', 'my-account-dashboard-builder' ); ?></span>
+						</label>
+					</div>
+
+					<div class="acfw-field-card-row acfw-field-card-row-copy">
+						<label class="acfw-fc">
+							<span><?php esc_html_e( 'Placeholder', 'my-account-dashboard-builder' ); ?></span>
+							<input type="text" name="<?php echo esc_attr( $name ); ?>[placeholder]" value="<?php echo esc_attr( $field['placeholder'] ); ?>" />
+						</label>
+						<label class="acfw-fc">
+							<span><?php esc_html_e( 'Help text', 'my-account-dashboard-builder' ); ?></span>
+							<input type="text" name="<?php echo esc_attr( $name ); ?>[help]" value="<?php echo esc_attr( $field['help'] ); ?>" placeholder="<?php esc_attr_e( 'Shown under the field for customers', 'my-account-dashboard-builder' ); ?>" />
+						</label>
+					</div>
+
+					<label class="acfw-fc acfw-fc-options"<?php echo in_array( $field['type'], array( 'select', 'radio' ), true ) ? '' : ' hidden'; ?>>
 						<span><?php esc_html_e( 'Options, one per line', 'my-account-dashboard-builder' ); ?></span>
 						<textarea name="<?php echo esc_attr( $name ); ?>[options]" rows="3"><?php echo esc_textarea( implode( "\n", $field['options'] ) ); ?></textarea>
 					</label>
-					<fieldset class="acfw-fc acfw-fc-wide acfw-fc-places">
+
+					<fieldset class="acfw-fc-places">
 						<legend><?php esc_html_e( 'Show it on', 'my-account-dashboard-builder' ); ?></legend>
-						<?php
-						$places = array(
-							'register' => __( 'Registration form', 'my-account-dashboard-builder' ),
-							'account'  => __( 'Account details', 'my-account-dashboard-builder' ),
-							'order'    => __( 'The customer’s orders (admin)', 'my-account-dashboard-builder' ),
-						);
-						foreach ( $places as $place => $place_label ) :
-							?>
-							<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[places][<?php echo esc_attr( $place ); ?>]" value="1" <?php checked( ! empty( $field['places'][ $place ] ) ); ?> /> <?php echo esc_html( $place_label ); ?></label>
-						<?php endforeach; ?>
+						<div class="acfw-fc-places-list">
+							<?php
+							$places = array(
+								'register' => __( 'Registration form', 'my-account-dashboard-builder' ),
+								'account'  => __( 'Account details', 'my-account-dashboard-builder' ),
+								'order'    => __( 'The customer’s orders (admin)', 'my-account-dashboard-builder' ),
+							);
+							foreach ( $places as $place => $place_label ) :
+								?>
+								<label class="acfw-fc-place">
+									<input type="checkbox" name="<?php echo esc_attr( $name ); ?>[places][<?php echo esc_attr( $place ); ?>]" value="1" <?php checked( ! empty( $field['places'][ $place ] ) ); ?> />
+									<span><?php echo esc_html( $place_label ); ?></span>
+								</label>
+							<?php endforeach; ?>
+						</div>
 					</fieldset>
 				</div>
 			</div>

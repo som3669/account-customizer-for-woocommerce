@@ -82,4 +82,19 @@ class ItemKeyTest extends TestCase {
 		$this->assertSame( 'order-2', acfw_unique_item_key( 'Order', 'endpoint', array() ) );
 		$this->assertSame( 'page-2', acfw_unique_item_key( 'Page', 'endpoint', array() ) );
 	}
+
+	public function test_store_routes_are_reserved(): void {
+		$this->assertSame( 'product-2', acfw_unique_item_key( 'Product', 'endpoint', array() ) );
+		$this->assertSame( 'shop-2', acfw_unique_item_key( 'Shop', 'endpoint', array() ) );
+		$this->assertSame( 'cart-2', acfw_unique_item_key( 'Cart', 'endpoint', array() ) );
+	}
+
+	public function test_owned_option_helper_ignores_other_acfw_plugins(): void {
+		$this->assertTrue( acfw_is_owned_option( 'acfw_items_order' ) );
+		$this->assertTrue( acfw_is_owned_option( 'acfw_item_support' ) );
+		$this->assertTrue( acfw_is_owned_option( 'acfw_banners' ) );
+		// Advanced Coupons-style keys must not be treated as ours.
+		$this->assertFalse( acfw_is_owned_option( 'acfw_bogo_deals' ) );
+		$this->assertFalse( acfw_is_owned_option( 'acfw_store_credits' ) );
+	}
 }

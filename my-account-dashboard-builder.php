@@ -3,7 +3,7 @@
  * Plugin Name: My Account Dashboard Builder
  * Plugin URI:  https://rube.thulo.eu.org/my-account-dashboard-builder
  * Description: Customize the WooCommerce "My Account" page: reorder the menu, add custom endpoints, groups and links, set per-endpoint content, control visibility by user role and restyle the whole area.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Rcube
  * Author URI:  https://rube.thulo.eu.org
  * Text Domain: my-account-dashboard-builder
@@ -12,7 +12,7 @@
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  * WC requires at least: 6.0
- * WC tested up to: 11.0
+ * WC tested up to: 11.2
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -21,7 +21,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ACFW_VERSION', '1.0.0' );
+define( 'ACFW_VERSION', '1.0.1' );
 define( 'ACFW_FILE', __FILE__ );
 define( 'ACFW_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ACFW_URL', plugin_dir_url( __FILE__ ) );

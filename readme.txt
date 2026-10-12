@@ -5,8 +5,8 @@ Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 6.0
-WC tested up to: 11.0
-Stable tag: 1.0.0
+WC tested up to: 11.2
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,7 +91,7 @@ Render the customised menu outside the account page with the `[acfw_account_menu
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install the zip via **Plugins → Add New → Upload Plugin**.
 2. Activate through the **Plugins** screen. WooCommerce must be active.
-3. A top-level **My Account** menu appears in wp-admin, with tabs for Menu Items, Design, Banners, Fields, Returns, Insights and Settings.
+3. Open **WooCommerce → Account Dashboard**. Tabs cover Menu Items, Design, Banners, Fields, Returns, Insights and Settings.
 4. Default WooCommerce endpoints are pre-loaded, so the page keeps working before you change anything.
 5. Optional: enable Buy Again, Recently viewed and Order tracking in **My Account → Settings → General**, order cancelling, returns, the address book and the privacy page in **Settings → Orders & privacy**, and avatar uploads in **My Account → Design → Profile card**.
 6. New to the plugin? Click **How to use** in the plugin's header for a short guide to every feature.
@@ -116,7 +116,7 @@ Yes, once you enable it in My Account → Design → Profile card. Uploads are r
 
 = Does the Buy again tab let customers reorder anything? =
 
-No. It only offers products that customer actually purchased on a completed order, and it re-checks purchase history and stock on every add-to-cart request.
+No. It only offers products that customer actually purchased on a completed order, and it re-checks purchase history, stock and the store's normal `woocommerce_add_to_cart_validation` rules on every add-to-cart request.
 
 = Is it compatible with HPOS and the block-based cart and checkout? =
 
@@ -128,7 +128,7 @@ Yes. A `.pot` file ships in `/languages`, and admin-entered strings (item labels
 
 = What data does it store, and what happens on uninstall? =
 
-Options prefixed `acfw_`; user meta keys `acfw_avatar_id`, `acfw_last_login`, `acfw_order_stats` (a cache of the dashboard counts), `acfw_addresses` (the address book), `acfw_field_{key}` (customer field answers) and `acfw_offer_{banner}` (the coupon each customer was given); return requests with their photos; and a `{prefix}acfw_stats` table of daily usage totals for Insights. Deleting the plugin from the Plugins screen removes all of it, including uploaded avatar images. The coupons made for personal offers are ordinary WooCommerce coupons that customers may still hold, so they stay. Deactivating removes nothing.
+Options this plugin owns (an allowlist under the `acfw_` prefix, so tools never touch other plugins that share that prefix); user meta keys `acfw_avatar_id`, `acfw_last_login`, `acfw_order_stats` (a cache of the dashboard counts), `acfw_addresses` (the address book), `acfw_field_{key}` (customer field answers) and `acfw_offer_{banner}` (the coupon each customer was given); return requests with their photos; and a `{prefix}acfw_stats` table of daily usage totals for Insights. Deleting the plugin from the Plugins screen removes only this plugin's data, including uploaded avatar images. The coupons made for personal offers are ordinary WooCommerce coupons that customers may still hold, so they stay. Deactivating removes nothing.
 
 = Can I see the account area the way a particular customer sees it? =
 
@@ -163,45 +163,28 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 
 == Changelog ==
 
-= Unreleased =
+= 1.0.1 =
+
+**Fix (WooCommerce Marketplace review)**
+
+* Endpoint names such as Page or Product no longer register rewrites that 404 other store pages.
+* Non-Latin labels (Chinese, Cyrillic, …) no longer crash Menu Items; keys stay ASCII and the screen always loads.
+* Reset, Export, Import and Uninstall only touch this plugin's options (not other `acfw_` plugins such as Advanced Coupons).
+* Smart tags insert customer values as plain text only; shortcodes in a name are not executed.
+* Buy again runs the same `woocommerce_add_to_cart_validation` rules as the rest of the store.
+* Custom endpoints no longer show the Dashboard under their content when placement is "Before default content".
+* Shop managers can save Settings (`manage_woocommerce` capability).
+* Adding an item named like a default (e.g. Orders) creates a separate item instead of replacing it.
+* Storefront no longer shows two icons on each default menu item.
+* Admin screen moved under WooCommerce → Account Dashboard.
 
 **New**
 
-* View as a customer: see My Account exactly as one customer does, from the Design Studio or ⋯ → Preview on any tab, with a list of everything hidden from them and why. Read-only, signed for the shop manager, and it expires after two hours.
-* Status badges on the menu: "1 to pay" on Orders, "1 open" on Returns, and a dot on Account details or Addresses while something is missing.
-* Arrange the dashboard: drag the greeting, heading, account numbers, profile meter, tiles, order tracking, Buy again and other plugins' widgets into any order, or hide them.
-* How to use: a guide to every feature in the admin header, searchable, with a button to where each is done.
-* Personal offers: a banner can give each customer a one-use coupon of their own, with Copy and "Use it now", and {offer_code}, {offer_amount} and {offer_expiry} in its text.
-* Customer fields on the registration form, account details and the admin order screen, with {field_key} smart tags and personal data export and erasure.
-* Cancel orders that have not shipped, and Returns with items, a reason and a photo, answered from a Returns tab that emails the customer.
-* Address book with a checkout picker, and a Privacy page for data export and erasure requests.
-* Menus for customer groups, managed from a "Menu for" switcher on Menu Items.
-* Insights: account page views, banner clicks and click rate, and the codes and sales from personal offers, over 7, 30 or 90 days.
-* A My Account box in Appearance → Menus for classic themes.
-* Visibility rules: "at most N orders" and "last order more than N days ago", for menu items and banners alike.
-* Icons for account pages from Subscriptions, Memberships, Bookings and other plugins, a Wishlist page for YITH and TI WooCommerce Wishlist, and points from YITH Points and Rewards and myCred.
-* The Menu Items canvas: the menu drawn as customers see it, with drag ( or Alt + arrow keys ) to reorder and nest, on/off switches, Duplicate and Delete, a line saying who can see each item, and its settings in tabs beside it.
-* The Design Studio in place of the Customizer panel and the Templates tab: looks, grouped controls with tooltips, a live preview at three widths, a contrast check, and save / discard.
-* Endpoint URLs, item badges, product / order / spend rules, per-group "start expanded", banner schedules, badge sources and link text, clickable dashboard stats, an actionable profile meter, and nine new smart tags.
+* View as a customer, status badges, arrange the dashboard, How to use guide, personal offers, customer fields, cancel/returns, address book, privacy page, menus for customer groups, Insights, Design Studio, Menu Items canvas, and related visibility / smart-tag improvements. Full list in changelog.txt.
 
-**Tweak**
+**Tweak / Accessibility**
 
-* The group-menu bar ends with + Menu for a customer group, then edit and delete icons.
-* A badge made only of smart tags that come back empty is hidden instead of showing a stray word.
-* Banner settings in General / Style / Link / Offer / Visibility tabs, like a menu item's.
-
-**Fix**
-
-* The header's Preview window was only 108px tall.
-* A failed admin save also said "Changes saved."
-* Dashicons now load for customers, so the mobile menu button, pin stars and stat icons show.
-* Custom endpoints no longer show the dashboard underneath; banner position saves; non-Latin labels no longer vanish; items and banners can no longer overwrite each other; nested endpoints resolve; the chosen colours and radius reach the menu; rgba banner colours, the Reward points stat, the landing endpoint and one-step logout work.
-
-**Accessibility**
-
-* Visible keyboard focus, keyboard-operable groups and dashboard arrangement, tab-pattern settings, readable muted text, and warnings that stay until closed.
-
-The full list is in changelog.txt.
+* See changelog.txt.
 
 = 1.0.0 =
 * First public release.
@@ -220,6 +203,9 @@ The full list is in changelog.txt.
 * WPML and Polylang string registration; HPOS and cart/checkout blocks compatibility declared.
 
 == Upgrade Notice ==
+
+= 1.0.1 =
+Fixes all items from the WooCommerce Marketplace review: reserved endpoint names, non-Latin labels, scoped Reset/Export/Import/Uninstall, plain-text smart tags, Buy again validation, custom endpoint content, shop manager Settings saves, same-name menu items, Storefront double icons, and admin menu under WooCommerce.
 
 = 1.0.0 =
 First public release.
