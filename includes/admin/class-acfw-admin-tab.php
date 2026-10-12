@@ -17,7 +17,7 @@ if ( ! class_exists( 'ACFW_Admin_Tab' ) ) {
 	 */
 	abstract class ACFW_Admin_Tab {
 
-		const PAGE  = 'acfw-settings';
+		const PAGE  = 'my-account-dashboard-builder';
 		const NONCE = 'acfw_admin_action';
 
 		/**

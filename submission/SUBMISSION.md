@@ -1,6 +1,6 @@
 # WooCommerce Marketplace — Submit Product form answers
 
-Zip to upload: `dist/my-account-dashboard-builder.zip` (491 KB, v1.0.1 — rebuild with `npm run zip`)
+Zip to upload: `dist/my-account-dashboard-builder.zip` (~491 KB, v1.0.2 — rebuild with `npm run zip`)
 
 Reviewer reply: `submission/REPLY-TO-REVIEW.md`
 
@@ -129,7 +129,7 @@ https://rcube.thulo.eu.org/account-customizer/
 ```
 That home page introduces the product and links straight to the customer demo
 (`/my-account/`) and to the plugin's admin screen
-(`/wp-admin/admin.php?page=acfw-settings`), so a reviewer can reach either from
+(`/wp-admin/admin.php?page=my-account-dashboard-builder`), so a reviewer can reach either from
 one URL. Its block markup is in `demo-home-page.html` in this folder — paste it
 into a new page via the editor's Code editor view, publish, then set it as the
 homepage under Settings > Reading.

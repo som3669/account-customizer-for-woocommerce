@@ -1,5 +1,12 @@
 *** My Account Dashboard Builder Changelog ***
 
+2026-10-12 - version 1.0.2
+* Fix - Admin page and Settings API groups renamed so Advanced Coupons for WooCommerce can use Coupons → Settings and Account Dashboard works when both plugins are active.
+* Fix - Shop managers can save Settings via options.php ( option_page_capability filters, not only register_setting capability ).
+* Fix - Return photos are stored in a private uploads folder and served only to shop staff or the customer who filed the request.
+* Tweak - MEMORY.md and other internal notes are excluded from the release zip.
+* Tweak - WC tested up to 11.2.
+
 2026-10-12 - version 1.0.1
 * Fix - Endpoint names such as Page or Product no longer register rewrites that 404 the rest of the store; reserved slugs are blocked with a clear notice.
 * Fix - Menu Items stays usable with Chinese, Cyrillic and other non-Latin labels ( ASCII URL keys; broken percent-encoded keys are dropped safely ).

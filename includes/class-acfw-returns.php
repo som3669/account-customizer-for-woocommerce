@@ -64,6 +64,20 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 		const HOLDING = array( 'requested', 'approved', 'received', 'refunded' );
 
 		/**
+		 * Upload subdir for return photos ( blocked from direct HTTP access ).
+		 *
+		 * @var string
+		 */
+		const PHOTO_DIR = 'madb-return-photos';
+
+		/**
+		 * Attachment meta marking a private return photo.
+		 *
+		 * @var string
+		 */
+		const PHOTO_META = '_acfw_private_return';
+
+		/**
 		 * Hook cancellations, the Returns page and the admin order box.
 		 */
 		public function __construct() {
@@ -72,6 +86,12 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 				add_action( $hook, array( __CLASS__, 'flag_flush' ) );
 			}
 			add_filter( 'acfw_disabled_keys', array( __CLASS__, 'disabled_key' ) );
+
+			// Gate return photos whether or not new requests are still accepted.
+			add_action( 'wp_ajax_acfw_return_photo', array( __CLASS__, 'serve_photo' ) );
+			add_filter( 'wp_get_attachment_url', array( __CLASS__, 'filter_attachment_url' ), 10, 2 );
+			add_filter( 'wp_get_attachment_image_src', array( __CLASS__, 'filter_image_src' ), 10, 4 );
+			add_action( 'template_redirect', array( __CLASS__, 'block_attachment_page' ) );
 
 			if ( self::cancel_enabled() ) {
 				add_filter( 'woocommerce_valid_order_statuses_for_cancel', array( $this, 'cancellable_statuses' ), 10, 2 );
@@ -634,6 +654,7 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 
 		/**
 		 * Keep the photo, if one came with the request ( images up to 5 MB ).
+		 * Stored under a private uploads subdir; served only to staff or the customer.
 		 *
 		 * @param int $request_id Request.
 		 * @return int Attachment ID, 0 for none.
@@ -651,8 +672,233 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 			require_once ABSPATH . 'wp-admin/includes/media.php';
+			self::ensure_private_dir();
+			add_filter( 'upload_dir', array( __CLASS__, 'private_upload_dir' ) );
 			$id = media_handle_upload( 'acfw_return_photo', $request_id, array(), array( 'test_form' => false ) );
-			return is_wp_error( $id ) ? 0 : (int) $id;
+			remove_filter( 'upload_dir', array( __CLASS__, 'private_upload_dir' ) );
+			if ( is_wp_error( $id ) ) {
+				return 0;
+			}
+			$id = (int) $id;
+			update_post_meta( $id, self::PHOTO_META, '1' );
+			wp_update_post(
+				array(
+					'ID'          => $id,
+					'post_status' => 'private',
+				)
+			);
+			return $id;
+		}
+
+		/**
+		 * Route return photos into a non-public uploads subfolder.
+		 *
+		 * @param array $dirs Upload dirs.
+		 * @return array
+		 */
+		public static function private_upload_dir( $dirs ) {
+			$subdir         = '/' . self::PHOTO_DIR;
+			$dirs['subdir'] = $subdir;
+			$dirs['path']   = $dirs['basedir'] . $subdir;
+			$dirs['url']    = $dirs['baseurl'] . $subdir;
+			return $dirs;
+		}
+
+		/**
+		 * Create the private folder and block direct HTTP access ( Apache ).
+		 */
+		public static function ensure_private_dir() {
+			$upload = wp_upload_dir();
+			if ( ! empty( $upload['error'] ) ) {
+				return;
+			}
+			$dir = trailingslashit( $upload['basedir'] ) . self::PHOTO_DIR;
+			if ( ! wp_mkdir_p( $dir ) ) {
+				return;
+			}
+			$htaccess = $dir . '/.htaccess';
+			if ( ! file_exists( $htaccess ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- one-time guard file.
+				file_put_contents( $htaccess, "Order deny,allow\nDeny from all\nRequire all denied\n" );
+			}
+			$index = $dir . '/index.php';
+			if ( ! file_exists( $index ) ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- one-time guard file.
+				file_put_contents( $index, "<?php\n// Silence is golden.\n" );
+			}
+		}
+
+		/**
+		 * Whether this attachment is a gated return photo.
+		 *
+		 * @param int $attachment_id Attachment.
+		 * @return bool
+		 */
+		public static function is_private_photo( $attachment_id ) {
+			$attachment_id = (int) $attachment_id;
+			if ( $attachment_id <= 0 ) {
+				return false;
+			}
+			if ( get_post_meta( $attachment_id, self::PHOTO_META, true ) ) {
+				return true;
+			}
+			$parent = (int) get_post_field( 'post_parent', $attachment_id );
+			return $parent > 0 && self::CPT === get_post_type( $parent );
+		}
+
+		/**
+		 * Staff or the customer who filed the return may view the photo.
+		 *
+		 * @param int $attachment_id Attachment.
+		 * @return bool
+		 */
+		public static function can_view_photo( $attachment_id ) {
+			if ( ! is_user_logged_in() ) {
+				return false;
+			}
+			if ( current_user_can( 'manage_woocommerce' ) ) {
+				return true;
+			}
+			$parent = (int) get_post_field( 'post_parent', $attachment_id );
+			if ( $parent <= 0 || self::CPT !== get_post_type( $parent ) ) {
+				return false;
+			}
+			return (int) get_post_field( 'post_author', $parent ) === get_current_user_id();
+		}
+
+		/**
+		 * Authenticated URL that streams the photo.
+		 *
+		 * @param int $attachment_id Attachment.
+		 * @return string
+		 */
+		public static function photo_url( $attachment_id ) {
+			return add_query_arg(
+				array(
+					'action' => 'acfw_return_photo',
+					'id'     => (int) $attachment_id,
+					'nonce'  => wp_create_nonce( 'acfw_return_photo_' . (int) $attachment_id ),
+				),
+				admin_url( 'admin-ajax.php' )
+			);
+		}
+
+		/**
+		 * Absolute path to a return photo inside the uploads directory, or empty.
+		 * Never built from request path segments ( avoids PHAR / path-traversal flags ).
+		 *
+		 * @param int $attachment_id Attachment ID ( already absint'd by caller ).
+		 * @return string
+		 */
+		protected static function resolve_photo_path( $attachment_id ) {
+			$file = get_attached_file( $attachment_id );
+			if ( ! is_string( $file ) || '' === $file || wp_is_stream( $file ) ) {
+				return '';
+			}
+			$real = realpath( $file );
+			if ( false === $real || ! is_file( $real ) || ! is_readable( $real ) ) {
+				return '';
+			}
+			$uploads = wp_get_upload_dir();
+			if ( empty( $uploads['basedir'] ) ) {
+				return '';
+			}
+			$base = realpath( $uploads['basedir'] );
+			if ( false === $base ) {
+				return '';
+			}
+			$base_n = trailingslashit( wp_normalize_path( $base ) );
+			$real_n = wp_normalize_path( $real );
+			if ( 0 !== strpos( $real_n, $base_n ) ) {
+				return '';
+			}
+			return $real;
+		}
+
+		/**
+		 * Replace public file URLs with the gated endpoint.
+		 *
+		 * @param string $url Attachment URL.
+		 * @param int    $id  Attachment ID.
+		 * @return string
+		 */
+		public static function filter_attachment_url( $url, $id ) {
+			if ( self::is_private_photo( $id ) ) {
+				return self::photo_url( $id );
+			}
+			return $url;
+		}
+
+		/**
+		 * Replace thumbnail/srcset URLs for private return photos.
+		 *
+		 * @param array|false  $image         Image data.
+		 * @param int          $attachment_id Attachment.
+		 * @param string|int[] $size          Size.
+		 * @param bool         $icon          Icon fallback.
+		 * @return array|false
+		 */
+		public static function filter_image_src( $image, $attachment_id, $size, $icon ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+			if ( ! $image || ! self::is_private_photo( $attachment_id ) ) {
+				return $image;
+			}
+			$image[0] = self::photo_url( $attachment_id );
+			return $image;
+		}
+
+		/**
+		 * Hide the attachment attachment page for return photos.
+		 */
+		public static function block_attachment_page() {
+			if ( ! is_attachment() ) {
+				return;
+			}
+			$id = get_queried_object_id();
+			if ( ! self::is_private_photo( $id ) ) {
+				return;
+			}
+			if ( self::can_view_photo( $id ) ) {
+				wp_safe_redirect( self::photo_url( $id ) );
+				exit;
+			}
+			wp_die( esc_html__( 'You are not allowed to view this file.', 'my-account-dashboard-builder' ), 403 );
+		}
+
+		/**
+		 * Stream a return photo to an authorised viewer.
+		 */
+		public static function serve_photo() {
+			$id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- checked below.
+			if ( ! $id || ! self::is_private_photo( $id ) ) {
+				status_header( 404 );
+				exit;
+			}
+			$nonce = isset( $_GET['nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['nonce'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! wp_verify_nonce( $nonce, 'acfw_return_photo_' . $id ) || ! self::can_view_photo( $id ) ) {
+				status_header( 403 );
+				exit;
+			}
+			$path = self::resolve_photo_path( $id );
+			if ( '' === $path ) {
+				status_header( 404 );
+				exit;
+			}
+			$mime = get_post_mime_type( $id );
+			if ( ! is_string( $mime ) || '' === $mime || 0 !== strpos( $mime, 'image/' ) ) {
+				$mime = 'application/octet-stream';
+			}
+			$length = filesize( $path );
+			nocache_headers();
+			header( 'Content-Type: ' . $mime );
+			if ( false !== $length ) {
+				header( 'Content-Length: ' . (string) $length );
+			}
+			header( 'Content-Disposition: inline; filename="' . rawurlencode( wp_basename( $path ) ) . '"' );
+			header( 'X-Content-Type-Options: nosniff' );
+			// Path is realpath()'d under uploads only — not built from request path input.
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- binary stream to the client.
+			readfile( $path );
+			exit;
 		}
 
 		// ---- Emails ---------------------------------------------------------------------
@@ -680,7 +926,7 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 		 * @param WC_Order $order      Order.
 		 */
 		protected static function notify_store( $request_id, $order ) {
-			$link = admin_url( 'admin.php?page=acfw-settings&tab=returns' );
+			$link = admin_url( 'admin.php?page=' . ACFW_SLUG . '&tab=returns' );
 			$body = '<p>' . esc_html(
 				sprintf(
 					/* translators: 1: customer name, 2: order number. */
@@ -757,7 +1003,7 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 				$status = (string) get_post_meta( $request->ID, '_acfw_status', true );
 				echo '<li><strong>' . esc_html( $labels[ $status ] ?? $status ) . '</strong> · ' . esc_html( self::items_text( $request->ID, $order ) ) . '</li>';
 			}
-			echo '</ul><p><a href="' . esc_url( admin_url( 'admin.php?page=acfw-settings&tab=returns' ) ) . '">' . esc_html__( 'Answer returns', 'my-account-dashboard-builder' ) . '</a></p>';
+			echo '</ul><p><a href="' . esc_url( admin_url( 'admin.php?page=' . ACFW_SLUG . '&tab=returns' ) ) . '">' . esc_html__( 'Answer returns', 'my-account-dashboard-builder' ) . '</a></p>';
 		}
 	}
 }

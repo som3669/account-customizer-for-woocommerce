@@ -6,7 +6,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 11.2
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -163,6 +163,16 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 
 == Changelog ==
 
+= 1.0.2 =
+
+**Fix (WooCommerce Marketplace review)**
+
+* Admin page slug and Settings API groups no longer collide with Advanced Coupons for WooCommerce (`my-account-dashboard-builder` / `madb_settings`).
+* Shop managers can save Settings (`option_page_capability_*` → `manage_woocommerce`).
+* Return request photos are stored privately and served only to staff or the customer who uploaded them.
+* Internal notes file excluded from the distribution zip.
+* WC tested up to 11.2.
+
 = 1.0.1 =
 
 **Fix (WooCommerce Marketplace review)**
@@ -203,6 +213,9 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 * WPML and Polylang string registration; HPOS and cart/checkout blocks compatibility declared.
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Fixes Advanced Coupons admin coexistence, shop-manager Settings saves via options.php, private return photos, and excludes internal notes from the zip.
 
 = 1.0.1 =
 Fixes all items from the WooCommerce Marketplace review: reserved endpoint names, non-Latin labels, scoped Reset/Export/Import/Uninstall, plain-text smart tags, Buy again validation, custom endpoint content, shop manager Settings saves, same-name menu items, Storefront double icons, and admin menu under WooCommerce.

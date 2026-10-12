@@ -1,27 +1,22 @@
 # Reply to WooCommerce Marketplace review (Bruna)
 
-Copy/paste into the partner portal reply. Zip: `dist/my-account-dashboard-builder.zip` (v1.0.1).
+Copy/paste into the partner portal reply. Zip: `dist/my-account-dashboard-builder.zip` (v1.0.2).
 
 ---
 
 Hi Bruna,
 
-Thank you for the review. All ten items are fixed in **1.0.1**:
+Thank you for the follow-up. The remaining required item and the minors are fixed in **1.0.2**:
 
-1. **Reserved endpoint names** — `page`, `product`, and other store routes cannot be used as endpoint slugs (safe key + skip rewrite).
-2. **Non-Latin labels** — keys are ASCII only; Menu Items always loads; no Reset needed to remove items.
-3. **Reset / Export / Import / Uninstall** — only this plugin’s options and known transients (not other `acfw_` plugins).
-4. **Smart tags** — customer values are plain text only (no shortcode execution).
-5. **Buy again** — runs `woocommerce_add_to_cart_validation` like the rest of the store.
-6. **Custom endpoints** — no Dashboard under their content (replace placement + empty WC handler).
-7. **Shop managers** — Settings save with `manage_woocommerce`.
-8. **Same-name items** — e.g. Page “Orders” becomes `orders-2`; defaults are not replaced.
-9. **Storefront double icons** — theme `::before` icons cleared when our menu is active.
-10. **Admin menu** — under **WooCommerce → Account Dashboard**.
+1. **Advanced Coupons coexistence** — Our admin page is now `my-account-dashboard-builder` (not `acfw-settings`), Settings API groups are `madb_settings` / `madb_settings_orders`, and admin asset handles use a `madb-` prefix. With Advanced Coupons active, Coupons → Settings opens their screen, and Account Dashboard menu items edit/add/reorder normally.
+2. **Shop managers** — Settings save uses `option_page_capability_madb_settings` / `_orders` → `manage_woocommerce` (options.php was still checking `manage_options`).
+3. **MEMORY.md** — Excluded from the release zip.
+4. **Return photos** — Stored under a private uploads folder (direct URL blocked) and served only to shop staff or the customer who uploaded them.
+5. **WC tested up to** — Header and readme are **11.2**.
 
-This build also includes admin layout/UX polish since the previous upload (Addresses grid, Design Studio accordion, look “In use” badge, etc.).
+Please re-test with the attached **1.0.2** zip.
 
-Please re-test with the attached **1.0.1** zip.
+Note: after uploading, QIT reported two Security Test warnings on return-photo serving. We have a hardened build ready, but zip replacement is disabled on this reply. If you reopen the file field, we can upload it straight away.
 
 Thank you,  
 Rcube

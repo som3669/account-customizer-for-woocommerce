@@ -59,6 +59,7 @@ const DIST_GLOBS = [
 	'!phpcs.xml.dist',
 	'!phpcs.xml',
 	'!CLAUDE.md',
+	'!MEMORY.md',
 	'!DOCUMENTATION.md',
 	'!DOCUMENTATION.docx',
 	'!**/*.map',

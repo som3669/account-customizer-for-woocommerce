@@ -134,7 +134,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					</div>
 				</div>
 			<form method="post" action="options.php">
-				<?php settings_fields( 'acfw_settings' ); ?>
+				<?php settings_fields( ACFW_Admin::SETTINGS_GROUP ); ?>
 				<table class="form-table" role="presentation">
 
 						<tr>
@@ -325,7 +325,7 @@ if ( ! class_exists( 'ACFW_Tab_Settings' ) ) {
 					</div>
 				</div>
 				<form method="post" action="options.php">
-					<?php settings_fields( 'acfw_settings_orders' ); ?>
+					<?php settings_fields( ACFW_Admin::SETTINGS_GROUP_ORDERS ); ?>
 					<table class="form-table" role="presentation">
 						<tr>
 							<th scope="row"><?php esc_html_e( 'Cancel orders', 'my-account-dashboard-builder' ); ?></th>

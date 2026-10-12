@@ -38,7 +38,7 @@ if ( ! class_exists( 'ACFW_Customizer' ) ) {
 		 * @return string
 		 */
 		public static function url() {
-			return admin_url( 'admin.php?page=acfw-settings&tab=design' );
+			return admin_url( 'admin.php?page=' . ACFW_SLUG . '&tab=design' );
 		}
 
 		/**

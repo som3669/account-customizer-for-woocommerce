@@ -25,8 +25,15 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 	 */
 	class ACFW_Admin {
 
-		const PAGE  = 'acfw-settings';
+		// Distinct from Advanced Coupons' acfw-settings slug.
+		const PAGE  = 'my-account-dashboard-builder';
 		const NONCE = 'acfw_admin_action';
+
+		/**
+		 * Settings API option groups ( not shared with Advanced Coupons ).
+		 */
+		const SETTINGS_GROUP        = 'madb_settings';
+		const SETTINGS_GROUP_ORDERS = 'madb_settings_orders';
 
 		/**
 		 * Registered tab handlers keyed by tab slug.
@@ -61,6 +68,18 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 				'plugin_action_links_' . plugin_basename( ACFW_FILE ),
 				array( $this, 'action_links' )
 			);
+			// options.php checks this filter, not register_setting()'s capability.
+			add_filter( 'option_page_capability_' . self::SETTINGS_GROUP, array( $this, 'settings_capability' ) );
+			add_filter( 'option_page_capability_' . self::SETTINGS_GROUP_ORDERS, array( $this, 'settings_capability' ) );
+		}
+
+		/**
+		 * Capability for the Settings forms ( shop managers included ).
+		 *
+		 * @return string
+		 */
+		public function settings_capability() {
+			return 'manage_woocommerce';
 		}
 
 		/**
@@ -116,7 +135,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			foreach ( $settings as $option => $sanitize ) {
 				register_setting(
-					'acfw_settings',
+					self::SETTINGS_GROUP,
 					$option,
 					array(
 						'sanitize_callback' => $sanitize,
@@ -140,7 +159,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			);
 			foreach ( $orders as $option => $sanitize ) {
 				register_setting(
-					'acfw_settings_orders',
+					self::SETTINGS_GROUP_ORDERS,
 					$option,
 					array(
 						'sanitize_callback' => $sanitize,
@@ -170,7 +189,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			);
 			list( $admin_css_url, $admin_css_ver ) = acfw_asset_src( 'css/admin.css' );
 			wp_enqueue_style(
-				'acfw-admin',
+				'madb-admin',
 				$admin_css_url,
 				array(),
 				$admin_css_ver
@@ -186,30 +205,30 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 
 			// Bundled select2 ( role chips + searchable icon picker with glyphs ).
 			wp_enqueue_style(
-				'acfw-select2',
+				'madb-select2',
 				ACFW_ASSETS_URL . '/css/select2/select2.min.css',
 				array(),
 				ACFW_VERSION
 			);
 			wp_enqueue_script(
-				'acfw-select2',
+				'madb-select2',
 				ACFW_ASSETS_URL . '/js/select2/select2.min.js',
 				array( 'jquery' ),
 				ACFW_VERSION,
 				true
 			);
-			$deps = array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker', 'editor', 'wp-a11y', 'acfw-select2' );
+			$deps = array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker', 'editor', 'wp-a11y', 'madb-select2' );
 
 			list( $admin_js_url, $admin_js_ver ) = acfw_asset_src( 'js/admin.js' );
 			wp_enqueue_script(
-				'acfw-admin',
+				'madb-admin',
 				$admin_js_url,
 				$deps,
 				$admin_js_ver,
 				true
 			);
 			wp_localize_script(
-				'acfw-admin',
+				'madb-admin',
 				'acfwAdmin',
 				array(
 					'confirmDelete'  => __( 'Delete this item? This cannot be undone.', 'my-account-dashboard-builder' ),
@@ -243,7 +262,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 					'text' => $icon_label,
 				);
 			}
-			wp_add_inline_script( 'acfw-admin', 'window.acfwIconChoices = ' . wp_json_encode( $icons ) . ';', 'before' );
+			wp_add_inline_script( 'madb-admin', 'window.acfwIconChoices = ' . wp_json_encode( $icons ) . ';', 'before' );
 
 			// Menu Items: the canvas draws the menu with the storefront's own
 			// stylesheet ( compiled scoped to .acfw-canvas-page ) and the design
@@ -251,16 +270,16 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			if ( 'items' === $this->current_tab() ) {
 				require_once ACFW_DIR . 'includes/frontend/class-acfw-frontend.php';
 				list( $canvas_url, $canvas_ver ) = acfw_asset_src( 'css/canvas.css' );
-				wp_enqueue_style( 'acfw-canvas', $canvas_url, array( 'acfw-admin', 'acfw-fontawesome', 'dashicons' ), $canvas_ver );
-				wp_add_inline_style( 'acfw-canvas', ACFW_Frontend::design_css() );
+				wp_enqueue_style( 'madb-canvas', $canvas_url, array( 'madb-admin', 'acfw-fontawesome', 'dashicons' ), $canvas_ver );
+				wp_add_inline_style( 'madb-canvas', ACFW_Frontend::design_css() );
 			}
 
 			// Design Studio: its own script, the media library and the CSS editor.
 			if ( 'design' === $this->current_tab() ) {
 				list( $studio_url, $studio_ver ) = acfw_asset_src( 'js/design-studio.js' );
-				wp_enqueue_script( 'acfw-design-studio', $studio_url, array( 'jquery', 'jquery-ui-sortable', 'acfw-admin' ), $studio_ver, true );
+				wp_enqueue_script( 'madb-design-studio', $studio_url, array( 'jquery', 'jquery-ui-sortable', 'madb-admin' ), $studio_ver, true );
 				$css_editor = wp_enqueue_code_editor( array( 'type' => 'text/css' ) );
-				wp_add_inline_script( 'acfw-design-studio', 'window.acfwStudioCodeEditor = ' . wp_json_encode( $css_editor ) . ';', 'before' );
+				wp_add_inline_script( 'madb-design-studio', 'window.acfwStudioCodeEditor = ' . wp_json_encode( $css_editor ) . ';', 'before' );
 				return;
 			}
 
