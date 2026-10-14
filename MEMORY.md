@@ -31,6 +31,8 @@
 - Option reset/export/import wiping foreign options — fixed for options allowlist (do not re-report unless allowlist broken).
 - Smart-tag shortcode execution from customer values — fix present and ordered before `do_shortcode`.
 - Advanced Coupons `acfw-settings` collision — fixed (own page slug + madb settings groups + madb asset handles).
+- Advanced Coupons `acfwAdmin` JS global — fixed (`madbAdmin` localization).
+- Return photos: random names + AES seal at rest (`PHOTO_SEALED`); `.htaccess` is defence-in-depth only.
 
 ## Attack surface (public / customer)
 - My Account endpoints + custom content (`do_blocks` / `do_shortcode`).

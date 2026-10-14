@@ -1,5 +1,9 @@
 *** My Account Dashboard Builder Changelog ***
 
+2026-10-13 - version 1.0.3
+* Fix - Admin JS localization object renamed to madbAdmin so Advanced Coupons' Coupons menu badge is not shown as "undefined" on Account Dashboard.
+* Fix - Return photos use random filenames and AES encryption at rest; viewing only works through the authenticated serve link (not Apache-.htaccess alone).
+
 2026-10-12 - version 1.0.2
 * Fix - Admin page and Settings API groups renamed so Advanced Coupons for WooCommerce can use Coupons → Settings and Account Dashboard works when both plugins are active.
 * Fix - Shop managers can save Settings via options.php ( option_page_capability filters, not only register_setting capability ).

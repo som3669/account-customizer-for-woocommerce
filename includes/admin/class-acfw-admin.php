@@ -229,7 +229,7 @@ if ( ! class_exists( 'ACFW_Admin' ) ) {
 			);
 			wp_localize_script(
 				'madb-admin',
-				'acfwAdmin',
+				'madbAdmin',
 				array(
 					'confirmDelete'  => __( 'Delete this item? This cannot be undone.', 'my-account-dashboard-builder' ),
 					'confirmReset'   => __( 'Reset every menu item, design setting and banner to the defaults? This cannot be undone.', 'my-account-dashboard-builder' ),

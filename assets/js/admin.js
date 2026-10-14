@@ -1,4 +1,4 @@
-/* global jQuery, acfwAdmin, wp */
+/* global jQuery, madbAdmin, wp */
 ( function ( $ ) {
 	'use strict';
 
@@ -160,7 +160,7 @@
 			$( '.acfw-roles-select' ).each( function () {
 				$( this ).select2( {
 					width: '100%',
-					placeholder: $( this ).data( 'placeholder' ) || acfwAdmin.everyone || '',
+					placeholder: $( this ).data( 'placeholder' ) || madbAdmin.everyone || '',
 					closeOnSelect: false
 				} );
 			} );
@@ -224,23 +224,23 @@
 					minimumInputLength: 3,
 					language: {
 						inputTooShort: function () {
-							return acfwAdmin.productMinChar;
+							return madbAdmin.productMinChar;
 						},
 						searching: function () {
-							return acfwAdmin.searching;
+							return madbAdmin.searching;
 						},
 						noResults: function () {
-							return acfwAdmin.noResults;
+							return madbAdmin.noResults;
 						}
 					},
 					ajax: {
-						url: acfwAdmin.ajaxUrl,
+						url: madbAdmin.ajaxUrl,
 						dataType: 'json',
 						delay: 250,
 						data: function ( params ) {
 							return {
 								action: 'woocommerce_json_search_products_and_variations',
-								security: acfwAdmin.productNonce,
+								security: madbAdmin.productNonce,
 								term: params.term
 							};
 						},
@@ -511,7 +511,7 @@
 		// An amount the way wc_price() prints it: the store's decimals,
 		// separators and currency position.
 		function money( raw ) {
-			var c     = acfwAdmin.canvas || {};
+			var c     = madbAdmin.canvas || {};
 			var parts = parseFloat( raw ).toFixed( undefined === c.decimals ? 2 : c.decimals ).split( '.' );
 			parts[ 0 ] = parts[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, c.thousandSep || '' );
 			return fmt( c.price || '%1$s%2$s', c.currency || '', parts.join( c.decimalSep || '.' ) );
@@ -591,7 +591,7 @@
 		// "j M", the way date_i18n() prints it for the chip on the server.
 		function shortDay( value ) {
 			var m      = /^(\d{4})-(\d{2})-(\d{2})$/.exec( value || '' );
-			var months = ( acfwAdmin.canvas && acfwAdmin.canvas.months ) || [];
+			var months = ( madbAdmin.canvas && madbAdmin.canvas.months ) || [];
 			if ( ! m ) {
 				return value;
 			}
@@ -601,7 +601,7 @@
 		// Who can see an item, in words ( the chip on its row ). Mirrors
 		// ACFW_Tab_Items::rule_summary().
 		function ruleSummary( $pane ) {
-			var c        = acfwAdmin.canvas || {};
+			var c        = madbAdmin.canvas || {};
 			var parts    = [];
 			var roles    = $pane.find( '.acfw-roles-select option:selected' ).map( function () {
 				return $.trim( $( this ).text() );
@@ -916,8 +916,8 @@
 				$wrap = $( this ).closest( '.acfw-media-row' ).parent();
 			}
 			var frame = wp.media( {
-				title: acfwAdmin.mediaTitle,
-				button: { text: acfwAdmin.mediaButton },
+				title: madbAdmin.mediaTitle,
+				button: { text: madbAdmin.mediaButton },
 				library: { type: 'image' },
 				multiple: false
 			} );
@@ -964,7 +964,7 @@
 		$( document ).on( 'click', '.acfw-node-remove', function ( e ) {
 			e.stopPropagation();
 			var $form = $( '.acfw-delete-form' );
-			if ( ! window.confirm( $form.data( 'confirm' ) || acfwAdmin.confirmDelete ) ) {
+			if ( ! window.confirm( $form.data( 'confirm' ) || madbAdmin.confirmDelete ) ) {
 				return;
 			}
 			$form.find( '.acfw-delete-key' ).val( $( this ).data( 'key' ) ).end().trigger( 'submit' );
@@ -1084,7 +1084,7 @@
 		} );
 
 		/* ---- View as a customer: the customer picker of the previews ---- */
-		var viewAs = acfwAdmin.viewAs || {};
+		var viewAs = madbAdmin.viewAs || {};
 		function initViewAs( $select, $parent ) {
 			if ( ! $.fn.select2 || $select.data( 'select2' ) ) {
 				return;
@@ -1105,7 +1105,7 @@
 					},
 				},
 				ajax: {
-					url: acfwAdmin.ajaxUrl,
+					url: madbAdmin.ajaxUrl,
 					type: 'POST',
 					dataType: 'json',
 					delay: 250,
@@ -1264,14 +1264,14 @@
 
 		/* ---- Reset all settings confirm ---- */
 		$( document ).on( 'click', '.acfw-reset-btn', function ( e ) {
-			if ( ! window.confirm( acfwAdmin.confirmReset || acfwAdmin.confirmDelete ) ) {
+			if ( ! window.confirm( madbAdmin.confirmReset || madbAdmin.confirmDelete ) ) {
 				e.preventDefault();
 			}
 		} );
 
 		/* ---- Delete banner (switches the form action) ---- */
 		$( document ).on( 'click', '.acfw-banner-delete', function ( e ) {
-			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {
+			if ( ! window.confirm( madbAdmin.confirmDelete ) ) {
 				e.preventDefault();
 				return;
 			}
@@ -1281,7 +1281,7 @@
 		/* ---- Delete banner from the left list row ---- */
 		$( document ).on( 'click', '.acfw-banner-row-delete', function ( e ) {
 			e.stopPropagation();
-			if ( ! window.confirm( acfwAdmin.confirmDelete ) ) {
+			if ( ! window.confirm( madbAdmin.confirmDelete ) ) {
 				return;
 			}
 			var slug = $( this ).data( 'slug' );
@@ -1299,7 +1299,7 @@
 
 		/* ---- Menu canvas: the customer's menu, edited in place ---- */
 		var $canvas = $( '.acfw-canvas' );
-		var canvasText = acfwAdmin.canvas || {};
+		var canvasText = madbAdmin.canvas || {};
 
 		function canvasLabel( $node ) {
 			return $.trim( $node.children( '.acfw-canvas-link' ).children( '.acfw-label' ).text() );

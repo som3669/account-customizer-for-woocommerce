@@ -6,7 +6,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 6.0
 WC tested up to: 11.2
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -153,15 +153,20 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 == Screenshots ==
 
 1. The Menu Items canvas — the account menu as customers see it; drag to reorder, switch items on or off, and edit any item beside it.
-2. Editing an item: label, icon, visibility rules by role, date and purchased product, and the content editor.
+2. Editing an item: who sees it, by role, dates, products bought and order history. General, Content and Advanced settings sit in the tabs beside it.
 3. Ready-made looks at the top of the Design Studio.
-4. The Design Studio: controls grouped by what customers see, beside a live preview of the account page.
-5. The customised My Account page: avatar block, icon menu with counts, dashboard stats and profile meter.
+4. The Design Studio: controls grouped by what customers see, beside a live preview, here viewed as a customer.
+5. The customised My Account page: a personal offer banner, avatar block, icon menu with counts, dashboard stats, profile meter and order tracking.
 6. The Buy again tab — one-click reorder of previously purchased products.
 7. Settings — commerce features, redirects and navigation behaviour.
 8. Import / Export of the full configuration.
 
 == Changelog ==
+
+= 1.0.3 =
+
+* Fix - Admin script localization uses `madbAdmin` so Advanced Coupons' menu badge is not overwritten.
+* Fix - Return photos use unguessable filenames and are encrypted at rest so a direct URL cannot display the image (works on nginx as well as Apache).
 
 = 1.0.2 =
 
@@ -213,6 +218,9 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 * WPML and Polylang string registration; HPOS and cart/checkout blocks compatibility declared.
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+Fixes Advanced Coupons menu badge collision (`madbAdmin`) and hardens return photos (random names + encryption at rest).
 
 = 1.0.2 =
 Fixes Advanced Coupons admin coexistence, shop-manager Settings saves via options.php, private return photos, and excludes internal notes from the zip.

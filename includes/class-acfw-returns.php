@@ -78,6 +78,20 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 		const PHOTO_META = '_acfw_private_return';
 
 		/**
+		 * Attachment meta: file bytes are encrypted at rest.
+		 *
+		 * @var string
+		 */
+		const PHOTO_SEALED = '_acfw_photo_sealed';
+
+		/**
+		 * Magic prefix for sealed photo payloads.
+		 *
+		 * @var string
+		 */
+		const PHOTO_MAGIC = 'MADB1';
+
+		/**
 		 * Hook cancellations, the Returns page and the admin order box.
 		 */
 		public function __construct() {
@@ -654,7 +668,7 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 
 		/**
 		 * Keep the photo, if one came with the request ( images up to 5 MB ).
-		 * Stored under a private uploads subdir; served only to staff or the customer.
+		 * Random filename, no intermediates, encrypted at rest; served only via the gated link.
 		 *
 		 * @param int $request_id Request.
 		 * @return int Attachment ID, 0 for none.
@@ -669,12 +683,25 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 				wc_add_notice( __( 'The photo was left out: use a JPG, PNG or WebP image up to 5 MB.', 'my-account-dashboard-builder' ), 'notice' );
 				return 0;
 			}
+			// Unguessable name ( original customer filename is never kept on disk ).
+			$ext = ! empty( $type['ext'] ) ? $type['ext'] : 'bin';
+			try {
+				$random = bin2hex( random_bytes( 16 ) );
+			} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- fallback below.
+				$random = wp_generate_password( 32, false, false );
+			}
+			$_FILES['acfw_return_photo']['name'] = 'r' . $random . '.' . $ext; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 			require_once ABSPATH . 'wp-admin/includes/media.php';
 			self::ensure_private_dir();
 			add_filter( 'upload_dir', array( __CLASS__, 'private_upload_dir' ) );
+			add_filter( 'intermediate_image_sizes_advanced', '__return_empty_array', 999 );
+			add_filter( 'fallback_intermediate_image_sizes', '__return_empty_array', 999 );
 			$id = media_handle_upload( 'acfw_return_photo', $request_id, array(), array( 'test_form' => false ) );
+			remove_filter( 'fallback_intermediate_image_sizes', '__return_empty_array', 999 );
+			remove_filter( 'intermediate_image_sizes_advanced', '__return_empty_array', 999 );
 			remove_filter( 'upload_dir', array( __CLASS__, 'private_upload_dir' ) );
 			if ( is_wp_error( $id ) ) {
 				return 0;
@@ -687,6 +714,7 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 					'post_status' => 'private',
 				)
 			);
+			self::seal_photo_file( $id );
 			return $id;
 		}
 
@@ -705,7 +733,7 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 		}
 
 		/**
-		 * Create the private folder and block direct HTTP access ( Apache ).
+		 * Create the private folder ( Apache deny as defence-in-depth; files are also sealed ).
 		 */
 		public static function ensure_private_dir() {
 			$upload = wp_upload_dir();
@@ -726,6 +754,103 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- one-time guard file.
 				file_put_contents( $index, "<?php\n// Silence is golden.\n" );
 			}
+		}
+
+		/**
+		 * Encryption key for return photos at rest.
+		 *
+		 * @return string Binary key ( 32 bytes ).
+		 */
+		protected static function photo_key() {
+			return hash( 'sha256', wp_salt( 'auth' ) . '|madb-return-photo', true );
+		}
+
+		/**
+		 * Encrypt plaintext bytes for storage.
+		 *
+		 * @param string $plain Raw image bytes.
+		 * @return string|false Sealed payload or false.
+		 */
+		protected static function seal_bytes( $plain ) {
+			if ( ! is_string( $plain ) || '' === $plain || ! function_exists( 'openssl_encrypt' ) ) {
+				return false;
+			}
+			try {
+				$iv = random_bytes( 16 );
+			} catch ( Exception $e ) {
+				return false;
+			}
+			$cipher = openssl_encrypt( $plain, 'AES-256-CBC', self::photo_key(), OPENSSL_RAW_DATA, $iv );
+			if ( false === $cipher ) {
+				return false;
+			}
+			return self::PHOTO_MAGIC . $iv . $cipher;
+		}
+
+		/**
+		 * Decrypt a sealed payload, or return plaintext for legacy files.
+		 *
+		 * @param string $data File contents.
+		 * @return string|false
+		 */
+		protected static function unseal_bytes( $data ) {
+			if ( ! is_string( $data ) || '' === $data ) {
+				return false;
+			}
+			$magic_len = strlen( self::PHOTO_MAGIC );
+			if ( 0 !== strpos( $data, self::PHOTO_MAGIC ) || strlen( $data ) < $magic_len + 17 ) {
+				return $data; // Legacy plaintext ( pre-seal uploads ).
+			}
+			if ( ! function_exists( 'openssl_decrypt' ) ) {
+				return false;
+			}
+			$iv     = substr( $data, $magic_len, 16 );
+			$cipher = substr( $data, $magic_len + 16 );
+			$plain  = openssl_decrypt( $cipher, 'AES-256-CBC', self::photo_key(), OPENSSL_RAW_DATA, $iv );
+			return false === $plain ? false : $plain;
+		}
+
+		/**
+		 * Overwrite the attachment file with an encrypted payload so a direct URL is useless.
+		 *
+		 * @param int $attachment_id Attachment.
+		 * @return bool
+		 */
+		protected static function seal_photo_file( $attachment_id ) {
+			$path = get_attached_file( $attachment_id );
+			if ( ! is_string( $path ) || ! is_readable( $path ) || ! is_writable( $path ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+				return false;
+			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local attachment only.
+			$plain = file_get_contents( $path );
+			if ( false === $plain ) {
+				return false;
+			}
+			$sealed = self::seal_bytes( $plain );
+			if ( false === $sealed ) {
+				return false;
+			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- overwrite local attachment.
+			if ( false === file_put_contents( $path, $sealed ) ) {
+				return false;
+			}
+			update_post_meta( $attachment_id, self::PHOTO_SEALED, '1' );
+			$meta = wp_get_attachment_metadata( $attachment_id );
+			if ( is_array( $meta ) && ! empty( $meta['sizes'] ) ) {
+				$dir = dirname( $path );
+				foreach ( $meta['sizes'] as $size ) {
+					if ( empty( $size['file'] ) ) {
+						continue;
+					}
+					$extra = path_join( $dir, wp_basename( $size['file'] ) );
+					if ( is_string( $extra ) && is_file( $extra ) ) {
+						wp_delete_file( $extra );
+					}
+				}
+				$meta['sizes'] = array();
+				wp_update_attachment_metadata( $attachment_id, $meta );
+			}
+			return true;
 		}
 
 		/**
@@ -883,21 +1008,27 @@ if ( ! class_exists( 'ACFW_Returns' ) ) {
 				status_header( 404 );
 				exit;
 			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local attachment only.
+			$raw = file_get_contents( $path );
+			if ( false === $raw ) {
+				status_header( 404 );
+				exit;
+			}
+			$body = self::unseal_bytes( $raw );
+			if ( false === $body ) {
+				status_header( 404 );
+				exit;
+			}
 			$mime = get_post_mime_type( $id );
 			if ( ! is_string( $mime ) || '' === $mime || 0 !== strpos( $mime, 'image/' ) ) {
 				$mime = 'application/octet-stream';
 			}
-			$length = filesize( $path );
 			nocache_headers();
 			header( 'Content-Type: ' . $mime );
-			if ( false !== $length ) {
-				header( 'Content-Length: ' . (string) $length );
-			}
-			header( 'Content-Disposition: inline; filename="' . rawurlencode( wp_basename( $path ) ) . '"' );
+			header( 'Content-Length: ' . (string) strlen( $body ) );
+			header( 'Content-Disposition: inline; filename="return-photo"' );
 			header( 'X-Content-Type-Options: nosniff' );
-			// Path is realpath()'d under uploads only — not built from request path input.
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- binary stream to the client.
-			readfile( $path );
+			echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- binary image bytes.
 			exit;
 		}
 
