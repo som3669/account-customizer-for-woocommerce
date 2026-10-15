@@ -84,7 +84,7 @@ function acfw_uninstall_site() {
 	// Only options owned by this plugin. Other extensions ( e.g. Advanced
 	// Coupons ) also use an `acfw_` prefix and must be left alone.
 	if ( ! function_exists( 'acfw_list_owned_option_names' ) ) {
-		require_once dirname( __FILE__ ) . '/includes/helper/functions-acfw.php';
+		require_once __DIR__ . '/includes/helper/functions-acfw.php';
 	}
 	foreach ( acfw_list_owned_option_names() as $acfw_option_name ) {
 		delete_option( $acfw_option_name );

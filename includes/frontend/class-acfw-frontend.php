@@ -978,8 +978,8 @@ if ( ! class_exists( 'ACFW_Frontend' ) ) {
 				if ( ! empty( $field['done'] ) || ! in_array( $key, array( 'billing_phone', 'billing_address_1' ), true ) ) {
 					continue;
 				}
-				$label = isset( $field['label'] ) ? (string) $field['label'] : $key;
-				$url   = ! empty( $field['url'] ) ? (string) $field['url'] : '';
+				$label  = isset( $field['label'] ) ? (string) $field['label'] : $key;
+				$url    = ! empty( $field['url'] ) ? (string) $field['url'] : '';
 				$chips .= '<li>';
 				if ( $url ) {
 					$chips .= '<a class="acfw-missing-chip" href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a>';

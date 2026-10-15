@@ -366,7 +366,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			}
 
 			if ( $order_item && $order ) {
-				$cart_item_data = apply_filters( 'woocommerce_order_again_cart_item_data', $cart_item_data, $order_item, $order );
+				$cart_item_data = apply_filters( 'woocommerce_order_again_cart_item_data', $cart_item_data, $order_item, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce's own hook, run as its order-again does.
 				foreach ( $order_item->get_meta_data() as $meta ) {
 					if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
 						$attribute_key = 'attribute_' . sanitize_title( $meta->key );
@@ -380,7 +380,7 @@ if ( ! class_exists( 'ACFW_Commerce' ) ) {
 			}
 
 			// Same gate as product pages and WC order-again.
-			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty, $variation_id, $variations, $cart_item_data ) ) {
+			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $qty, $variation_id, $variations, $cart_item_data ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce's own add-to-cart gate.
 				return false;
 			}
 

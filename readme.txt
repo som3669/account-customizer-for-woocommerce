@@ -165,8 +165,8 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 
 = 1.0.3 =
 
-* Fix - Admin script localization uses `madbAdmin` so Advanced Coupons' menu badge is not overwritten.
-* Fix - Return photos use unguessable filenames and are encrypted at rest so a direct URL cannot display the image (works on nginx as well as Apache).
+* Fix - Works cleanly alongside Advanced Coupons ( its menu no longer shows "undefined" ).
+* Fix - Photos attached to returns are better protected.
 
 = 1.0.2 =
 
@@ -220,7 +220,7 @@ Yes. They are WooCommerce coupons, listed under Marketing → Coupons, limited t
 == Upgrade Notice ==
 
 = 1.0.3 =
-Fixes Advanced Coupons menu badge collision (`madbAdmin`) and hardens return photos (random names + encryption at rest).
+Works cleanly alongside Advanced Coupons, and better protects the photos customers attach to returns.
 
 = 1.0.2 =
 Fixes Advanced Coupons admin coexistence, shop-manager Settings saves via options.php, private return photos, and excludes internal notes from the zip.
